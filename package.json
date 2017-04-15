@@ -1,0 +1,14 @@
+{
+    "name": "discordmodelhogwartsbot",
+    "version": "1.0.0",
+    "description": "A bot for Model Hogwarts discord",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "MinusGix",
+    "license": "ISC",
+    "dependencies": {
+        "discord.js": "^11.0.0"
+    }
+}

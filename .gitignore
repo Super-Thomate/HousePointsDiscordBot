@@ -1,0 +1,10 @@
+#You can basically ignore this file.
+JSON/config.json
+logs
+*.log
+npm-debug.log*
+build/Release
+node_modules/
+.npm
+.node_repl_history
+.env
