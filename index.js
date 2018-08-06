@@ -1,5 +1,7 @@
 /* jshint esversion:6*/
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').load();
+}
 
 //For discord
 var Discord = require('discord.js'),
@@ -28,7 +30,8 @@ client.on("ready", function() {
 });
 client.on("message", message => {
   console.log(message.author.username + ' : ' + message.content);
-  if (message.author.username === config.botName) {
+  var botName = process.env.BOT_NAME;
+  if (message.author.username === botName) {
     return;
   }
   runCommand(message);
@@ -224,6 +227,7 @@ addCommand(['hufflepuff', 'huffle', 'huff', 'badger', 'puff', 'h'], housePointsF
 
 
 //Logs into discord
-client.login(config.botToken);
+var botToken = process.env.BOT_TOKEN;
+client.login(botToken);
 
 console.log("Starting...");
