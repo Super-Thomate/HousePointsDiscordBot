@@ -16,7 +16,7 @@ const pool = new Pool({
 var Discord = require('discord.js'),
   fs = require('fs'),
   client = new Discord.Client(),
-  config = loadJSON(__dirname + '/JSON/config.json'),
+  // config = loadJSON(__dirname + '/JSON/config.json'),
   points = {"gryffindor":0,"ravenclaw":0,"slytherin":0,"hufflepuff":0};
   //points = loadJSON(__dirname + '/JSON/points.json');
 
