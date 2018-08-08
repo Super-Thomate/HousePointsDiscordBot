@@ -5,6 +5,11 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
 
+//PG Promise
+const pgp = require('pg-promise')();
+pgp.pg.defaults.ssl = true;
+const db = pgp(process.env.DATABASE_URL);
+
 //Connect to PG db
 const { Pool } = require('pg');
 const pool = new Pool({
@@ -15,9 +20,9 @@ const pool = new Pool({
 //For discord
 var Discord = require('discord.js'),
   fs = require('fs'),
-  client = new Discord.Client(),
+  client = new Discord.Client();
   // config = loadJSON(__dirname + '/JSON/config.json'),
-  points = {"gryffindor":0,"ravenclaw":0,"slytherin":0,"hufflepuff":0};
+  // points = {"gryffindor":0,"ravenclaw":0,"slytherin":0,"hufflepuff":0};
   //points = loadJSON(__dirname + '/JSON/points.json');
 
 //Loads a JSON file
@@ -74,13 +79,13 @@ client.on("ready", function() {
     });
 
     // Update points hash
-    var points_keys = Object.keys(points);
-    points_keys.forEach(function(house) {
-      pg.query('select count from points where name = $1',
-      [house.capitalize()], function (err, result) {
-        points[house] = result.rows[0].count;
-      });
-    });
+    // var points_keys = Object.keys(points);
+    // points_keys.forEach(function(house) {
+    //   pg.query('select count from points where name = $1',
+    //   [house.capitalize()], function (err, result) {
+    //     points[house] = result.rows[0].count;
+    //   });
+    // });
   });
 });
 
@@ -148,6 +153,7 @@ function runCommand(message) {
     COMMANDS['cmd_' + firstArg.replace(process.env.commandsBegin, '')].func(args);
   }
 }
+
 addCommand(['help', 'commands'], function(args) {
   var text = 'Commands:\n',
     first = true;
@@ -165,12 +171,27 @@ addCommand(['help', 'commands'], function(args) {
   args.send(text + '.');
 });
 
-addCommand('points', function(args) {
-  var text =
-    `Gryffindor : ${points.gryffindor} point(s)
-Hufflepuff : ${points.hufflepuff} point(s)
-Ravenclaw  : ${points.ravenclaw} point(s)
-Slytherin  : ${points.slytherin} point(s)`;
+addCommand('points', async function(args) {
+//   var text =
+//     `Gryffindor : ${points.gryffindor} point(s)
+// Hufflepuff : ${points.hufflepuff} point(s)
+// Ravenclaw  : ${points.ravenclaw} point(s)
+// Slytherin  : ${points.slytherin} point(s)`;
+  var text = '';
+
+  try {
+    const points_rows = await db.any("SELECT * FROM points");
+    console.log(points_rows);
+    points_rows.forEach( function(row) {
+      text = text + row.name + ": " + row.count + " points\n";
+    });
+    // success
+  }
+  catch(e) {
+    // error
+    console.log("Failed to fetch all points data." + e);
+    text = 'Could not retrieve points.'
+  }
 
   args.send(
     text
@@ -337,7 +358,7 @@ function housePointsFunc(args) {
         [house.capitalize(), Number(args.params[1])], function (err, result) {
           if (err) {
             console.log("Failed take: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-            args.send("Failed to take" + args.params[1] + " points to " + house.capitalize() );
+            args.send("Failed to take" + args.params[1] + " points from " + house.capitalize() );
             done(err);
           }
 
@@ -367,7 +388,7 @@ function housePointsFunc(args) {
 
         // Send to Discord
         // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
-        args.send('Subtracted ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!');
+        args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!');
       });
 
     }
