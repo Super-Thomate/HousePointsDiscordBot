@@ -366,7 +366,7 @@ function housePointsFunc(args) {
     else {
       var text = '';
       // Update DB with points
-      db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args.params[1])])
+      db.any('update points set count = $2 where name = $1', [house.capitalize(), Number(args.params[1])])
       .then( () => {
         text = 'Set ' + args.params[1] + ' point(s) to ' + house.capitalize();
         console.log('PG Set' + args.params[1] + ' point(s) to ' + house.capitalize());
