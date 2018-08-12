@@ -11,11 +11,11 @@ pgp.pg.defaults.ssl = true;
 const db = pgp(process.env.DATABASE_URL);
 
 //Connect to PG db
-const { Pool } = require('pg');
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: true
-});
+// const { Pool } = require('pg');
+// const pool = new Pool({
+//   connectionString: process.env.DATABASE_URL,
+//   ssl: true
+// });
 
 //For discord
 var Discord = require('discord.js'),
@@ -42,52 +42,42 @@ function writeJSON(dir, data) {
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 
-  pool.connect(function (err, pg, done) {
-    if (err) {
-      console.log("Can not connect to the DB" + err);
-    }
-    pg.query('create table if not exists points( \
-      id serial primary key, \
-      name text, \
-      count integer default 0)', function (err, result) {
-        done();
-        if (err) {
-          console.log(err);
-          done(err);
-        }
-        console.log("Created Points table");
-    });
-    pg.query("insert into points (id, name, count) select 1, 'Gryffindor', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Gryffindor')",
-      function (err, result) {
-        done(err);
-        console.log('PG Inserted Gryffindor row into Points')
-    });
-    pg.query("insert into points (id, name, count) select 2, 'Hufflepuff', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Hufflepuff')",
-      function (err, result) {
-        done(err);
-        console.log('PG Inserted Hufflepuff row into Points')
-    });
-    pg.query("insert into points (id, name, count) select 3, 'Ravenclaw', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Ravenclaw')",
-      function (err, result) {
-        done(err);
-        console.log('PG Inserted Ravenclaw row into Points')
-    });
-    pg.query("insert into points (id, name, count) select 4, 'Slytherin', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Slytherin')",
-      function (err, result) {
-        done(err);
-        console.log('PG Inserted Slytherin row into Points')
-    });
-
-    // Update points hash
-    // var points_keys = Object.keys(points);
-    // points_keys.forEach(function(house) {
-    //   pg.query('select count from points where name = $1',
-    //   [house.capitalize()], function (err, result) {
-    //     points[house] = result.rows[0].count;
-    //   });
-    // });
-  });
+  // pg.any('create table if not exists points( \
+  //   id serial primary key, \
+  //   name text, \
+  //   count integer default 0)', function (err, result) {
+  //     done();
+  //     if (err) {
+  //       console.log(err);
+  //       done(err);
+  //     }
+  //     console.log("Created Points table");
+  // });
+  // pg.query("insert into points (id, name, count) select 1, 'Gryffindor', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Gryffindor')",
+  //   function (err, result) {
+  //     done(err);
+  //     console.log('PG Inserted Gryffindor row into Points')
+  // });
+  // pg.query("insert into points (id, name, count) select 2, 'Hufflepuff', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Hufflepuff')",
+  //   function (err, result) {
+  //     done(err);
+  //     console.log('PG Inserted Hufflepuff row into Points')
+  // });
+  // pg.query("insert into points (id, name, count) select 3, 'Ravenclaw', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Ravenclaw')",
+  //   function (err, result) {
+  //     done(err);
+  //     console.log('PG Inserted Ravenclaw row into Points')
+  // });
+  // pg.query("insert into points (id, name, count) select 4, 'Slytherin', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Slytherin')",
+  //   function (err, result) {
+  //     done(err);
+  //     console.log('PG Inserted Slytherin row into Points')
+  // });
 });
+
+var errHandler = function(err) {
+    console.log(err);
+}
 
 client.on("message", message => {
   console.log(message.author.username + ' : ' + message.content);
@@ -172,11 +162,6 @@ addCommand(['help', 'commands'], function(args) {
 });
 
 addCommand('points', async function(args) {
-//   var text =
-//     `Gryffindor : ${points.gryffindor} point(s)
-// Hufflepuff : ${points.hufflepuff} point(s)
-// Ravenclaw  : ${points.ravenclaw} point(s)
-// Slytherin  : ${points.slytherin} point(s)`;
   var text = '';
 
   try {
@@ -199,14 +184,22 @@ addCommand('points', async function(args) {
 });
 
 function get_house_points(house) {
-  return points[house];
-};
-function update_house_points(house, points) {
-  points[house] = points;
+  var value = 0;
+  try {
+    result = db.any("SELECT count FROM points WHERE name = $1", [house]);
+    console.log(result);
+    value = result[0].count;
+    console.log("first result: " + result[0] + ", value: " + value);
+  }
+  catch(e) {
+    console.log("Failed to fetch ${house} points." + e);
+  }
+
+  return value;
 };
 
 function housePointsFunc(args) {
-  var config_roles = {
+  const config_roles = {
       "takePoints": [
           "Staff"
       ],
@@ -287,57 +280,57 @@ function housePointsFunc(args) {
       args.send(' ' + args.params[1] + ' is not a number!');
     }
     else {
-      // points[house] += Number(args.params[1]);
-      // if (points[house] < 0) {
-      //   points[house] = 0;
-      // }
-
-      // writeJSON(__dirname + '/JSON/points.json', points);
-
-      pool.connect(function (err, pg, done) {
-        if (err) {
-          console.log("Can not connect to the DB" + err);
-          args.send("Can not connect to the DB");
-          done(err);
-        }
-
-        // Update DB with points
-        pg.query('update points set count = count + $2 where name = $1',
-        [house.capitalize(), Number(args.params[1])], function (err, result) {
-          if (err) {
-            console.log("Failed give: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-            args.send("Failed to give" + args.params[1] + " points to " + house.capitalize() );
-            done(err);
-          }
-
-          // Add new row to DB
-          if (result.rowCount == 0){
-            pg.query('insert into points (name, count) values ($1, $2)',
-             [house.capitalize(), Number(args.params[1])], function (err, result) {
-              console.log("Failed insert: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-              args.send("Failed to insert" + args.params[1] + " points to " + house.capitalize() );
-              done(err);
-            });
-            console.log('PG Created ' + args.params[1] + ' point(s) to ' + house.capitalize());
-          }
-          console.log('PG Added ' + args.params[1] + ' point(s) to ' + house.capitalize());
-        });
-
-        // Update points hash
-        var total_points = 0;
-        var points_keys = Object.keys(points);
-        points_keys.forEach(function(house) {
-          pg.query('select count from points where name = $1',
-          [house.capitalize()], function (err, result) {
-            points[house] = result.rows[0].count;
-            // update_house_points(house, result.rows[0].count);
-          });
-        });
-
-        // Send to Discord
-        // args.send('Added ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + get_house_points(house) + ' point(s) now!');
-        args.send('Added ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!');
+      var text = '';
+      // Update DB with points
+      db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args.params[1])])
+      .then( () => {
+        text = 'Added ' + args.params[1] + ' point(s) to ' + house.capitalize();
+        console.log('PG Added ' + args.params[1] + ' point(s) to ' + house.capitalize());
+        args.send(text);
+      })
+      .catch( error => {
+        console.log("Failed give: " + house.capitalize() + " by " + args.params[1]  + " " + err);
+        args.send("Failed to give" + args.params[1] + " points to " + house.capitalize() );
+        done(err);
       });
+
+        // Add new row to DB
+        // if (result.rowCount == 0){
+        //   db.any('insert into points (name, count) values ($1, $2)',
+        //    [house.capitalize(), Number(args.params[1])], function (err, result) {
+        //     console.log("Failed insert: " + house.capitalize() + " by " + args.params[1]  + " " + err);
+        //     args.send("Failed to insert" + args.params[1] + " points to " + house.capitalize() );
+        //     done(err);
+        //   });
+        //   console.log('PG Created ' + args.params[1] + ' point(s) to ' + house.capitalize());
+        // }
+        // console.log('PG Added ' + args.params[1] + ' point(s) to ' + house.capitalize());
+
+      // Send to Discord
+      // var text = 'Added ' + args.params[1] + ' point(s) to ' + house.capitalize();
+
+      // var new_house_points = get_house_points(house.capitalize());
+      // get_house_points(house.capitalize()).then(function(data) {
+      //    new_house_points = data;
+      // })
+      // .catch(function(error) {
+      //   console.log(error);
+      // });
+
+      // db.func('get_house_points', [house.capitalize()])
+      // .then(data => {
+      //   console.log('DATA:', data); // print data
+      //   new_house_points = data;
+      // })
+      // .catch(error => {
+      //   console.log('ERROR:', error); // print the error;
+      // });
+
+      // text = text + '!\n' + house.capitalize() + ' has ' + new_house_points + ' point(s) now!';
+
+      // args.send('Added ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + get_house_points(house.capitalize()) + ' point(s) now!');
+      // args.send('Added ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!');
+
     }
   }
   else if ((firstParam === 'subtract' || firstParam === 'sub' || firstParam === 'decrease' || firstParam === '-' || firstParam === 'take') && canTakePoints === true) {
@@ -346,51 +339,23 @@ function housePointsFunc(args) {
       args.send(' ' + args.params[1] + ' is not a number!');
     }
     else {
-      pool.connect(function (err, pg, done) {
-        if (err) {
-          console.log("Can not connect to the DB" + err);
-          args.send("Can not connect to the DB");
-          done(err);
-        }
-
-        // Update DB with points
-        pg.query('update points set count = count - $2 where name = $1',
-        [house.capitalize(), Number(args.params[1])], function (err, result) {
-          if (err) {
-            console.log("Failed take: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-            args.send("Failed to take" + args.params[1] + " points from " + house.capitalize() );
-            done(err);
-          }
-
-          // Add new row to DB
-          if (result.rowCount == 0){
-            pg.query('insert into points (name, count) values ($1, $2)',
-             [house.capitalize(), 0 - Number(args.params[1])], function (err, result) {
-              console.log("Failed insert: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-              args.send("Failed to insert" + args.params[1] + " points to " + house.capitalize() );
-              done(err);
-            });
-            console.log('PG Created ' + args.params[1] + ' point(s) to ' + house.capitalize());
-          }
-          console.log('PG Take ' + args.params[1] + ' point(s) to ' + house.capitalize());
-        });
-
-        // Update points hash
-        var total_points = 0;
-        var points_keys = Object.keys(points);
-        points_keys.forEach(function(house) {
-          pg.query('select count from points where name = $1',
-          [house.capitalize()], function (err, result) {
-            points[house] = result.rows[0].count;
-            // update_house_points(house, result.rows[0].count);
-          });
-        });
-
-        // Send to Discord
-        // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
-        args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!');
+      var text = '';
+      // Update DB with points
+      db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args.params[1])])
+      .then( () => {
+        text = 'Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize();
+        console.log('PG Added ' + args.params[1] + ' point(s) to ' + house.capitalize());
+        args.send(text);
+      })
+      .catch( error => {
+        console.log("Failed take: " + house.capitalize() + " by " + args.params[1]  + " " + err);
+        args.send("Failed to take" + args.params[1] + " points to " + house.capitalize() );
+        done(err);
       });
 
+      // Send to Discord
+      // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
+      // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!');
     }
   }
   else if ((firstParam === 'set' || firstParam === 'setas') && canSetPoints === true) {
@@ -399,51 +364,23 @@ function housePointsFunc(args) {
       args.send(' ' + args.params[1] + ' is not a number!');
     }
     else {
-      pool.connect(function (err, pg, done) {
-        if (err) {
-          console.log("Can not connect to the DB" + err);
-          args.send("Can not connect to the DB");
-          done(err);
-        }
-
-        // Update DB with points
-        pg.query('update points set count = $2 where name = $1',
-        [house.capitalize(), Number(args.params[1])], function (err, result) {
-          if (err) {
-            console.log("Failed take: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-            args.send("Failed to take" + args.params[1] + " points to " + house.capitalize() );
-            done(err);
-          }
-
-          // Add new row to DB
-          if (result.rowCount == 0){
-            pg.query('insert into points (name, count) values ($1, $2)',
-             [house.capitalize(), Number(args.params[1])], function (err, result) {
-              console.log("Failed insert: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-              args.send("Failed to insert" + args.params[1] + " points to " + house.capitalize() );
-              done(err);
-            });
-            console.log('PG Created ' + args.params[1] + ' point(s) to ' + house.capitalize());
-          }
-          console.log('PG Take ' + args.params[1] + ' point(s) to ' + house.capitalize());
-        });
-
-        // Update points hash
-        var total_points = 0;
-        var points_keys = Object.keys(points);
-        points_keys.forEach(function(house) {
-          pg.query('select count from points where name = $1',
-          [house.capitalize()], function (err, result) {
-            points[house] = result.rows[0].count;
-            // update_house_points(house, result.rows[0].count);
-          });
-        });
+      var text = '';
+      // Update DB with points
+      db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args.params[1])])
+      .then( () => {
+        text = 'Set ' + args.params[1] + ' point(s) to ' + house.capitalize();
+        console.log('PG Set' + args.params[1] + ' point(s) to ' + house.capitalize());
+        args.send(text);
+      })
+      .catch( error => {
+        console.log("Failed set: " + house.capitalize() + " by " + args.params[1]  + " " + err);
+        args.send("Failed to set" + args.params[1] + " points to " + house.capitalize() );
+        done(err);
+      });
 
         // Send to Discord
         // args.send('Set ' + house.capitalize() + " house's points to " + args.params[1] + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
-        args.send('Set ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!');
-      });
-
+        // args.send('Set ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!');
     }
   }
   else {
