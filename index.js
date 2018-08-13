@@ -18,6 +18,7 @@ const db = pgp(process.env.DATABASE_URL);
 // });
 
 var http = require("http");
+var AirbrakeClient = require('airbrake-js');
 
 http.createServer(function (request, response) {
 
@@ -32,6 +33,11 @@ http.createServer(function (request, response) {
 
 // Console will print the message
 console.log(`Server running at port ${process.env.PORT || 3000}`);
+
+var airbrake = new AirbrakeClient({
+  projectId: process.env.AIRBRAKE_PROJECT_ID || 0,
+  projectKey: process.env.AIRBRAKE_API_KEY || '';
+});
 
 //For discord
 var Discord = require('discord.js'),
