@@ -17,19 +17,7 @@ const db = pgp(process.env.DATABASE_URL);
 //   ssl: true
 // });
 
-var http = require("http");
 var AirbrakeClient = require('airbrake-js');
-
-http.createServer(function (request, response) {
-
-  // Send the HTTP header
-  // HTTP Status: 200 : OK
-  // Content Type: text/plain
-  response.writeHead(200, {'Content-Type': 'text/plain'});
-
-  // Send the response body as "Hello World"
-  response.end('Hello World\n');
-}).listen(process.env.PORT || 3000)
 
 // Console will print the message
 console.log(`Server running at port ${process.env.PORT || 3000}`);
@@ -63,6 +51,19 @@ function writeJSON(dir, data) {
 
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
+
+  var http = require("http");
+
+  http.createServer(function (request, response) {
+
+    // Send the HTTP header
+    // HTTP Status: 200 : OK
+    // Content Type: text/plain
+    response.writeHead(200, {'Content-Type': 'text/plain'});
+
+    // Send the response body as "Hello World"
+    response.end('Hello World\n');
+  }).listen(process.env.PORT || 3000)
 
   // pg.any('create table if not exists points( \
   //   id serial primary key, \
