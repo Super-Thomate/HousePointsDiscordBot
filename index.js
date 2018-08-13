@@ -312,13 +312,13 @@ function housePointsFunc(args) {
         text = 'Added ' + args.params[1] + ' point(s) to ' + house.capitalize();
         console.log('PG Added ' + args.params[1] + ' point(s) to ' + house.capitalize());
         args.send(text);
+        return;
       })
       .catch( error => {
         console.log("Failed give: " + house.capitalize() + " by " + args.params[1]  + " " + err);
         args.send("Failed to give " + args.params[1] + " points to " + house.capitalize() );
         done(err);
       });
-      return;
 
         // Add new row to DB
         // if (result.rowCount == 0){
@@ -372,13 +372,13 @@ function housePointsFunc(args) {
         text = 'Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize();
         console.log('PG Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize());
         args.send(text);
+        return;
       })
       .catch( error => {
         console.log("Failed take: " + house.capitalize() + " by " + args.params[1]  + " " + err);
         args.send("Failed to take " + args.params[1] + " points from " + house.capitalize() );
         done(err);
       });
-      return;
 
       // Send to Discord
       // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
@@ -398,13 +398,13 @@ function housePointsFunc(args) {
         text = 'Set ' + args.params[1] + ' point(s) to ' + house.capitalize();
         console.log('PG Set' + args.params[1] + ' point(s) to ' + house.capitalize());
         args.send(text);
+        return;
       })
       .catch( error => {
         console.log("Failed set: " + house.capitalize() + " by " + args.params[1]  + " " + err);
         args.send("Failed to set" + args.params[1] + " points to " + house.capitalize() );
         done(err);
       });
-      return;
 
         // Send to Discord
         // args.send('Set ' + house.capitalize() + " house's points to " + args.params[1] + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
