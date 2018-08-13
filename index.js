@@ -35,8 +35,8 @@ http.createServer(function (request, response) {
 console.log(`Server running at port ${process.env.PORT || 3000}`);
 
 var airbrake = new AirbrakeClient({
-  projectId: process.env.AIRBRAKE_PROJECT_ID || 0,
-  projectKey: process.env.AIRBRAKE_API_KEY || '';
+  projectId: process.env.AIRBRAKE_PROJECT_ID,
+  projectKey: process.env.AIRBRAKE_API_KEY
 });
 
 //For discord
