@@ -18,14 +18,39 @@ const db = pgp(process.env.DATABASE_URL);
 // });
 
 var AirbrakeClient = require('airbrake-js');
-
-// Console will print the message
-console.log(`Server running at port ${process.env.PORT || 3000}`);
-
 var airbrake = new AirbrakeClient({
   projectId: process.env.AIRBRAKE_PROJECT_ID,
   projectKey: process.env.AIRBRAKE_API_KEY
 });
+
+
+  // var http = require("http");
+  // http.createServer(function (request, response) {
+
+  //   // Send the HTTP header
+  //   // HTTP Status: 200 : OK
+  //   // Content Type: text/plain
+  //   response.writeHead(200, {'Content-Type': 'text/plain'});
+
+  //   // Send the response body as "Hello World"
+  //   response.end('Hello World\n');
+  // }).listen(process.env.PORT || 3000)
+
+const http = require('http');
+const express = require('express');
+const app = express();
+app.get("/", (request, response) => {
+  console.log(Date.now() + " Ping Received");
+  response.sendStatus(200);
+});
+app.listen(process.env.PORT);
+// setInterval(() => {
+//   http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
+// }, 280000);
+
+// Console will print the message
+console.log(`Server running at port ${process.env.PORT || 3000}`);
+
 
 //For discord
 var Discord = require('discord.js'),
@@ -52,18 +77,6 @@ function writeJSON(dir, data) {
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 
-  var http = require("http");
-
-  http.createServer(function (request, response) {
-
-    // Send the HTTP header
-    // HTTP Status: 200 : OK
-    // Content Type: text/plain
-    response.writeHead(200, {'Content-Type': 'text/plain'});
-
-    // Send the response body as "Hello World"
-    response.end('Hello World\n');
-  }).listen(process.env.PORT || 3000)
 
   // pg.any('create table if not exists points( \
   //   id serial primary key, \
