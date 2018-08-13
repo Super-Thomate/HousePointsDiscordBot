@@ -187,11 +187,13 @@ addCommand('points', async function(args) {
   var text = '';
 
   try {
-    const points_rows = await db.any("SELECT * FROM points");
+    const points_rows = await db.any("SELECT * FROM points ORDER BY id");
     console.log(points_rows);
     points_rows.forEach( function(row) {
       text = text + row.name + ": " + row.count + " points\n";
+      console.log("text each: " + text);
     });
+    console.log("text: " + text);
     // success
   }
   catch(e) {
