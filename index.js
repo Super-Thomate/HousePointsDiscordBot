@@ -296,7 +296,7 @@ function housePointsFunc(args) {
   }
 
   if (firstParam === 'points' || firstParam === 'point' || firstParam === 'p' || firstParam === undefined) {
-    args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
+    // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
   }
   else if ((firstParam === 'add' || firstParam === 'increase' || firstParam === '+' || firstParam === 'give') && canGivePoints === true) {
     // Add points
