@@ -24,18 +24,6 @@ var airbrake = new AirbrakeClient({
 });
 
 
-  // var http = require("http");
-  // http.createServer(function (request, response) {
-
-  //   // Send the HTTP header
-  //   // HTTP Status: 200 : OK
-  //   // Content Type: text/plain
-  //   response.writeHead(200, {'Content-Type': 'text/plain'});
-
-  //   // Send the response body as "Hello World"
-  //   response.end('Hello World\n');
-  // }).listen(process.env.PORT || 3000)
-
 const http = require('http');
 const express = require('express');
 const app = express();
@@ -44,13 +32,25 @@ app.get("/", (request, response) => {
   response.sendStatus(200);
 });
 app.listen(process.env.PORT);
-// setInterval(() => {
-//   http.get(`http://${process.env.PROJECT_DOMAIN}.glitch.me/`);
-// }, 280000);
+
 
 // Console will print the message
 console.log(`Server running at port ${process.env.PORT || 3000}`);
 
+const config_roles = {
+  "takePoints": [
+    "Staff", "Prefect"
+  ],
+  "setPoints": [
+    "Headmaster"
+  ],
+  "givePoints": [
+    "Staff", "Prefect"
+  ],
+  "doAllOfTheAbove": [
+    "Headmaster"
+  ]
+};
 
 //For discord
 var Discord = require('discord.js'),
@@ -238,21 +238,6 @@ function get_house_points(house) {
 };
 
 function housePointsFunc(args) {
-  const config_roles = {
-      "takePoints": [
-          "Staff"
-      ],
-      "setPoints": [
-          "Staff"
-      ],
-      "givePoints": [
-          "Staff"
-      ],
-      "doAllOfTheAbove": [
-          "Staff"
-      ]
-  };
-
   var house = this,
 
   user = args.message.member,
