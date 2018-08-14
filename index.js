@@ -116,10 +116,17 @@ var errHandler = function(err) {
 
 client.on("message", message => {
   console.log(message.author.username + ' : ' + message.content);
-  var botName = process.env.BOT_NAME;
-  if (message.author.username === botName) {
-    return;
-  }
+
+  // Ignore bots
+  if(message.author.bot) return;
+  // var botName = process.env.BOT_NAME;
+  // if (message.author.username === botName) {
+  //   return;
+  // }
+
+  // Ignore messages that don't start with prefix
+  if(message.content.indexOf(process.env.PREFIX) !== 0) return;
+
   runCommand(message);
 });
 
@@ -152,8 +159,9 @@ function addCommand(name, func, hide) {
 }
 
 function runCommand(message) {
+  console.log("Verified bot command");
   var firstArg = message.content.split(' ')[0];
-  if (firstArg.startsWith(process.env.commandsBegin) && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.commandsBegin, ''))) {
+  if (firstArg.startsWith(process.env.PREFIX) && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.PREFIX, ''))) {
     //probably don't need most of these, but it's for simplicity if I ever do need them.
     var args = {
       message,
@@ -164,10 +172,12 @@ function runCommand(message) {
       user: message.author,
       nick: message.author.username,
       username: message.author.username,
+      userTag: message.author.tag,
       avatar: message.author.avatar,
       avatarURL: message.author.avatarURL,
       isBot: message.author.bot,
       authorID: message.author.id,
+      mentions: message.mentions.members,
       lastMessageID: message.author.lastMessageID,
       dm: message.author.send.bind(message.author),
       dmCode: message.author.sendCode.bind(message.author),
@@ -175,7 +185,7 @@ function runCommand(message) {
       dmFile: message.author.sendFile.bind(message.author),
       dmMessage: message.author.sendMessage.bind(message.author),
     };
-    COMMANDS['cmd_' + firstArg.replace(process.env.commandsBegin, '')].func(args);
+    COMMANDS['cmd_' + firstArg.replace(process.env.PREFIX, '')].func(args);
   }
 }
 
@@ -191,7 +201,7 @@ addCommand(['help', 'commands'], function(args) {
     } else {
       first = false;
     }
-    text += process.env.commandsBegin + COMMANDS[cmd].name;
+    text += process.env.PREFIX + COMMANDS[cmd].name;
   }
   args.send(text + '.');
 });
@@ -237,15 +247,22 @@ function get_house_points(house) {
 };
 
 function housePointsFunc(args) {
+  console.log("Begin points manipulation commands");
+
   var house = this,
 
   user = args.message.member,
-  user_mention = "<@!" + args.message.author.id + ">",
-  roles = user.roles,
+  userMention = "<@!" + args.authorID + ">",
+  roles = user.roles;
 
-  canGivePoints = false,
+  var canGivePoints = false,
   canTakePoints = false,
   canSetPoints = false;
+  var targetUser = args.mentions.first();
+  var targetUserMention;
+  if (targetUser !== undefined) {
+    targetUserMention = "<@!" + targetUser.id + ">";
+  }
 
   roles.map((value, index, arr) => {
     for (let i = 0; i < config_roles.doAllOfTheAbove.length; i++) {
@@ -283,6 +300,7 @@ function housePointsFunc(args) {
       }
     }
   });
+  console.log("Verified roles permission");
 
   var firstParam = args.params[0];
   if (firstParam !== undefined) {
@@ -290,6 +308,10 @@ function housePointsFunc(args) {
       firstParam = firstParam.toLowerCase();
     }
   }
+  console.log("Command: " + firstParam + ", Params: " + args.params);
+  console.log("Mentions: " + args.mentions.first());
+  // const args_list = args.text.slice(process.env.PREFIX.length).trim().split(/ +/g);
+  // const command = args.shift().toLowerCase();
 
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
@@ -309,8 +331,14 @@ function housePointsFunc(args) {
         // <:HouseRavenclaw:478802571071455232>
         // <:HouseHufflepuff:478802570752688131>
         // <:HouseGryffindor:478802571046420491>
-        text = 'User earned ' + args.params[1] + ' point(s) for ' + house.capitalize() + ' by ' + user_mention;
-        console.log('PG: User earned ' + args.params[1] + ' point(s) for ' + house.capitalize() + ' by ' + user_mention);
+        if ( targetUser === undefined ) {
+          text = 'Earned ' + args.params[1] + ' point(s) for ' + house.capitalize() + ' by ' + userMention;
+          console.log('LOG: ' + text + '(' + args.username + ')');
+        }
+        else {
+          text = targetUserMention + ' earned ' + args.params[1] + ' point(s) for ' + house.capitalize() + ' by ' + userMention;
+          console.log('LOG: (' + targetUser.user.tag + ')' + text + '(' + args.userTag + ')');
+        }
         args.send(text);
       })
       .catch( error => {
@@ -368,8 +396,14 @@ function housePointsFunc(args) {
       // Update DB with points
       db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args.params[1])])
       .then( () => {
-        text = 'User lost ' + args.params[1] + ' point(s) from ' + house.capitalize() + ' by ' + user_mention;
-        console.log('PG: User lost ' + args.params[1] + ' point(s) from ' + house.capitalize() + ' by ' + user_mention);
+        if ( targetUser === undefined ) {
+          text = 'Lost ' + args.params[1] + ' point(s) from ' + house.capitalize() + ' by ' + userMention;
+          console.log('LOG: ' + text + '(' + args.userTag + ')');
+        }
+        else {
+          text = targetUserMention + ' lost ' + args.params[1] + ' point(s) from ' + house.capitalize() + ' by ' + userMention;
+          console.log('LOG: (' + targetUser.user.tag + ')' + text + '(' + args.userTag + ')');
+        }
         args.send(text);
       })
       .catch( error => {
@@ -393,8 +427,8 @@ function housePointsFunc(args) {
       // Update DB with points
       db.any('update points set count = $2 where name = $1', [house.capitalize(), Number(args.params[1])])
       .then( () => {
-        text = 'Set ' + house.capitalize() + ' to ' + args.params[1] + ' point(s)';
-        console.log('PG: Set ' + house.capitalize() + ' to ' + args.params[1] + ' point(s)');
+        text = 'Set ' + house.capitalize() + ' to ' + args.params[1] + ' point(s)' + userMention;
+        console.log('LOG: ' + text + '(' + args.userTag + ')');
         args.send(text);
       })
       .catch( error => {
@@ -409,7 +443,7 @@ function housePointsFunc(args) {
     }
   }
   else {
-    args.send(`You might not be able to do that.\nUsage:\n${process.env.commandsBegin}housename add points\n${process.env.commandsBegin}housename subtract points\n${process.env.commandsBegin}housename set points\nWhere housename is the house's name (hufflepuff, slytherin, ravenclaw, gryffindor) and points is a number.`);
+    args.send(`You might not be able to do that.\nUsage:\n${process.env.PREFIX}housename add points\n${process.env.PREFIX}housename subtract points\n${process.env.PREFIX}housename set points\nWhere housename is the house's name (hufflepuff, slytherin, ravenclaw, gryffindor) and points is a number.`);
   }
 }
 
