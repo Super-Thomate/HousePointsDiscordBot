@@ -17,12 +17,15 @@ const db = pgp(process.env.DATABASE_URL);
 //   ssl: true
 // });
 
-var AirbrakeClient = require('airbrake-js');
-var airbrake = new AirbrakeClient({
-  projectId: process.env.AIRBRAKE_PROJECT_ID,
-  projectKey: process.env.AIRBRAKE_API_KEY
-});
 
+var AirbrakeClient = require('airbrake-js');
+var airbrake;
+if ( process.env.ENVIRONMENT === 'production') {
+  var airbrake = new AirbrakeClient({
+    projectId: process.env.AIRBRAKE_PROJECT_ID,
+    projectKey: process.env.AIRBRAKE_API_KEY
+  });
+}
 
 const http = require('http');
 const express = require('express');
