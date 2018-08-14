@@ -77,7 +77,6 @@ function writeJSON(dir, data) {
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 
-
   // pg.any('create table if not exists points( \
   //   id serial primary key, \
   //   name text, \
@@ -241,6 +240,7 @@ function housePointsFunc(args) {
   var house = this,
 
   user = args.message.member,
+  user_mention = "<@!" + args.message.author.id + ">",
   roles = user.roles,
 
   canGivePoints = false,
@@ -249,7 +249,6 @@ function housePointsFunc(args) {
 
   roles.map((value, index, arr) => {
     for (let i = 0; i < config_roles.doAllOfTheAbove.length; i++) {
-      //if (config.roles.doAllOfTheAbove[i] === value.name.toLowerCase()) {
       if (roles.find("name", config_roles.doAllOfTheAbove[i])) {
         canGivePoints = true;
         canTakePoints = true;
@@ -259,7 +258,6 @@ function housePointsFunc(args) {
 
     if (!canTakePoints) {
       for (let i = 0; i < config_roles.takePoints.length; i++) {
-        //if (config.roles.takePoints[i] === value.name.toLowerCase()) {
         if (roles.find("name", config_roles.takePoints[i])) {
           canTakePoints = true;
           break;
@@ -269,7 +267,6 @@ function housePointsFunc(args) {
 
     if (!canGivePoints) {
       for (let i = 0; i < config_roles.givePoints.length; i++) {
-        //if (config.roles.givePoints[i] === value.name.toLowerCase()) {
         if (roles.find("name", config_roles.givePoints[i])) {
           canGivePoints = true;
           break;
@@ -279,7 +276,6 @@ function housePointsFunc(args) {
 
     if (!canSetPoints) {
       for (let i = 0; i < config_roles.setPoints.length; i++) {
-        //if (config.roles.setPoints[i] === value.name.toLowerCase()) {
          if (roles.find("name", config_roles.setPoints[i])) {
           canSetPoints = true;
           break;
@@ -295,10 +291,10 @@ function housePointsFunc(args) {
     }
   }
 
-  if (firstParam === 'points' || firstParam === 'point' || firstParam === 'p' || firstParam === undefined) {
+  if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
   }
-  else if ((firstParam === 'add' || firstParam === 'increase' || firstParam === '+' || firstParam === 'give') && canGivePoints === true) {
+  else if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
     // Add points
     if (isNaN(args.params[1]) || args.params[1] === 'Infinity' || args.params[1] === '-Infinity') {
       args.send(' ' + args.params[1] + ' is not a number!');
@@ -308,13 +304,17 @@ function housePointsFunc(args) {
       // Update DB with points
       db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args.params[1])])
       .then( () => {
-        text = 'Added ' + args.params[1] + ' point(s) to ' + house.capitalize();
-        console.log('PG Added ' + args.params[1] + ' point(s) to ' + house.capitalize());
+        // text = 'Added ' + args.params[1] + ' point(s) to ' + house.capitalize();
+        // <:HouseSlytherin:478802570698293260>
+        // <:HouseRavenclaw:478802571071455232>
+        // <:HouseHufflepuff:478802570752688131>
+        // <:HouseGryffindor:478802571046420491>
+        text = 'User earned ' + args.params[1] + ' point(s) for ' + house.capitalize() + ' by ' + user_mention;
+        console.log('PG: User earned ' + args.params[1] + ' point(s) for ' + house.capitalize() + ' by ' + user_mention);
         args.send(text);
-        return;
       })
       .catch( error => {
-        console.log("Failed give: " + house.capitalize() + " by " + args.params[1]  + " " + err);
+        console.log("Failed give: " + args.params[1] + " points to " + house.capitalize() + " " + err);
         args.send("Failed to give " + args.params[1] + " points to " + house.capitalize() );
         done(err);
       });
@@ -358,7 +358,7 @@ function housePointsFunc(args) {
 
     }
   }
-  else if ((firstParam === 'subtract' || firstParam === 'sub' || firstParam === 'decrease' || firstParam === '-' || firstParam === 'take') && canTakePoints === true) {
+  else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
     if (isNaN(args.params[1]) || args.params[1] === 'Infinity' || args.params[1] === '-Infinity') {
       args.send(' ' + args.params[1] + ' is not a number!');
@@ -368,13 +368,12 @@ function housePointsFunc(args) {
       // Update DB with points
       db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args.params[1])])
       .then( () => {
-        text = 'Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize();
-        console.log('PG Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize());
+        text = 'User lost ' + args.params[1] + ' point(s) from ' + house.capitalize() + ' by ' + user_mention;
+        console.log('PG: User lost ' + args.params[1] + ' point(s) from ' + house.capitalize() + ' by ' + user_mention);
         args.send(text);
-        return;
       })
       .catch( error => {
-        console.log("Failed take: " + house.capitalize() + " by " + args.params[1]  + " " + err);
+        console.log("Failed take: " + args.params[1] + " points from " + house.capitalize() + " " + err);
         args.send("Failed to take " + args.params[1] + " points from " + house.capitalize() );
         done(err);
       });
@@ -384,7 +383,7 @@ function housePointsFunc(args) {
       // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!');
     }
   }
-  else if ((firstParam === 'set' || firstParam === 'setas') && canSetPoints === true) {
+  else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
     // Set points
     if (isNaN(args.params[1]) || args.params[1] === 'Infinity' || args.params[1] === '-Infinity') {
       args.send(' ' + args.params[1] + ' is not a number!');
@@ -394,14 +393,13 @@ function housePointsFunc(args) {
       // Update DB with points
       db.any('update points set count = $2 where name = $1', [house.capitalize(), Number(args.params[1])])
       .then( () => {
-        text = 'Set ' + args.params[1] + ' point(s) to ' + house.capitalize();
-        console.log('PG Set' + args.params[1] + ' point(s) to ' + house.capitalize());
+        text = 'Set ' + house.capitalize() + ' to ' + args.params[1] + ' point(s)';
+        console.log('PG: Set ' + house.capitalize() + ' to ' + args.params[1] + ' point(s)');
         args.send(text);
-        return;
       })
       .catch( error => {
-        console.log("Failed set: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-        args.send("Failed to set" + args.params[1] + " points to " + house.capitalize() );
+        console.log("Failed set: " + house.capitalize() + " to " + args.params[1] + " points " + err);
+        args.send("Failed to set" + house.capitalize() + " to " + args.params[1] + " points" );
         done(err);
       });
 
