@@ -288,6 +288,15 @@ function housePointsFunc(args) {
   console.log("Mentions: " + args.mentions.first());
 
   var args_points = args.params[1];
+  let args_reason;
+  if ( targetUser === undefined ) {
+    args_reason = args.params.slice(2).join(" ");
+  }
+  else { // TODO check args length
+    args_reason = args.params.slice(3).join(" ");
+  }
+  console.log("Reason: " + args_reason);
+
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
   }
@@ -312,13 +321,16 @@ function housePointsFunc(args) {
         // <:HouseHufflepuff:478802570752688131>
         // <:HouseGryffindor:478802571046420491>
         if ( targetUser === undefined ) {
-          text = 'Earned ' + args_points + ' point(s) for ' + house.capitalize() + ' by ' + userMention;
-          console.log('LOG: ' + text + '(' + args.username + ')');
+          text = 'Earned ' + args_points + ' point(s) for ' + house.capitalize() + ' by ' + userMention + '.';
         }
         else {
-          text = targetUserMention + ' earned ' + args_points + ' point(s) for ' + house.capitalize() + ' by ' + userMention;
-          console.log('LOG: (' + targetUser.user.tag + ')' + text + '(' + args.userTag + ')');
+          text = targetUserMention + ' earned ' + args_points + ' point(s) for ' + house.capitalize() + ' by ' + userMention + '.';
         }
+        if ( args_reason ) {
+          text = text + ' *' + args_reason + '*';
+        }
+
+        console.log(text);
         args.send(text);
       })
       .catch( error => {
@@ -366,13 +378,16 @@ function housePointsFunc(args) {
       db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args_points)])
       .then( () => {
         if ( targetUser === undefined ) {
-          text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' by ' + userMention;
-          console.log('LOG: ' + text + '(' + args.userTag + ')');
+          text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' by ' + userMention + '.';
         }
         else {
-          text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' by ' + userMention;
-          console.log('LOG: (' + targetUser.user.tag + ')' + text + '(' + args.userTag + ')');
+          text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' by ' + userMention + '.';
         }
+        if ( args_reason ) {
+          text = text + ' *' + args_reason + '*';
+        }
+
+        console.log(text);
         args.send(text);
       })
       .catch( error => {
