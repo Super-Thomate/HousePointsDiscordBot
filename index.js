@@ -12,12 +12,13 @@ const db = pgp(process.env.DATABASE_URL);
 
 // Airbrake config, prod only
 var AirbrakeClient = require('airbrake-js');
-var airbrake;
-if ( process.env.ENVIRONMENT === 'production') {
-  var airbrake = new AirbrakeClient({
-    projectId: process.env.AIRBRAKE_PROJECT_ID,
+let airbrake;
+if ( process.env.ENVIRONMENT == 'production') {
+  airbrake = new AirbrakeClient({
+    projectId: Number(process.env.AIRBRAKE_PROJECT_ID),
     projectKey: process.env.AIRBRAKE_API_KEY
   });
+  console.log('Initialized Airbrake client');
 }
 
 const http = require('http');
