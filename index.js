@@ -10,14 +10,7 @@ const pgp = require('pg-promise')();
 pgp.pg.defaults.ssl = true;
 const db = pgp(process.env.DATABASE_URL);
 
-//Connect to PG db
-// const { Pool } = require('pg');
-// const pool = new Pool({
-//   connectionString: process.env.DATABASE_URL,
-//   ssl: true
-// });
-
-
+// Airbrake config, prod only
 var AirbrakeClient = require('airbrake-js');
 var airbrake;
 if ( process.env.ENVIRONMENT === 'production') {
@@ -36,10 +29,7 @@ app.get("/", (request, response) => {
 });
 app.listen(process.env.PORT);
 
-
-// Console will print the message
-console.log(`Server running at port ${process.env.PORT || 3000}`);
-
+// role permissions. TODO move to db
 const config_roles = {
   "takePoints": [
     "Staff", "Prefect"
@@ -59,27 +49,11 @@ const config_roles = {
 var Discord = require('discord.js'),
   fs = require('fs'),
   client = new Discord.Client();
-  // config = loadJSON(__dirname + '/JSON/config.json'),
-  // points = {"gryffindor":0,"ravenclaw":0,"slytherin":0,"hufflepuff":0};
-  //points = loadJSON(__dirname + '/JSON/points.json');
-
-//Loads a JSON file
-function loadJSON(dir) {
-  return JSON.parse(fs.readFileSync(dir, 'utf8'));
-}
-
-//Writes to a JSON file
-function writeJSON(dir, data) {
-  return fs.writeFileSync(
-    dir,
-    JSON.stringify(data),
-    'utf8'
-  );
-}
 
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 
+  // TODO create leaderboard in db with new db syntax
   // pg.any('create table if not exists points( \
   //   id serial primary key, \
   //   name text, \
@@ -122,10 +96,6 @@ client.on("message", message => {
 
   // Ignore bots
   if(message.author.bot) return;
-  // var botName = process.env.BOT_NAME;
-  // if (message.author.username === botName) {
-  //   return;
-  // }
 
   // Ignore messages that don't start with prefix
   if(message.content.indexOf(process.env.PREFIX) !== 0) return;
@@ -214,16 +184,12 @@ addCommand('points', async function(args) {
 
   try {
     const points_rows = await db.any("SELECT * FROM points ORDER BY id");
-    console.log(points_rows);
     points_rows.forEach( function(row) {
       text = text + row.name + ": " + row.count + " points\n";
-      console.log("text each: " + text);
     });
     console.log("text: " + text);
-    // success
   }
   catch(e) {
-    // error
     console.log("Failed to fetch all points data." + e);
     text = 'Could not retrieve points.'
   }
@@ -313,8 +279,6 @@ function housePointsFunc(args) {
   }
   console.log("Command: " + firstParam + ", Params: " + args.params);
   console.log("Mentions: " + args.mentions.first());
-  // const args_list = args.text.slice(process.env.PREFIX.length).trim().split(/ +/g);
-  // const command = args.shift().toLowerCase();
 
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
@@ -329,7 +293,6 @@ function housePointsFunc(args) {
       // Update DB with points
       db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args.params[1])])
       .then( () => {
-        // text = 'Added ' + args.params[1] + ' point(s) to ' + house.capitalize();
         // <:HouseSlytherin:478802570698293260>
         // <:HouseRavenclaw:478802571071455232>
         // <:HouseHufflepuff:478802570752688131>
@@ -349,21 +312,6 @@ function housePointsFunc(args) {
         args.send("Failed to give " + args.params[1] + " points to " + house.capitalize() );
         done(err);
       });
-
-        // Add new row to DB
-        // if (result.rowCount == 0){
-        //   db.any('insert into points (name, count) values ($1, $2)',
-        //    [house.capitalize(), Number(args.params[1])], function (err, result) {
-        //     console.log("Failed insert: " + house.capitalize() + " by " + args.params[1]  + " " + err);
-        //     args.send("Failed to insert" + args.params[1] + " points to " + house.capitalize() );
-        //     done(err);
-        //   });
-        //   console.log('PG Created ' + args.params[1] + ' point(s) to ' + house.capitalize());
-        // }
-        // console.log('PG Added ' + args.params[1] + ' point(s) to ' + house.capitalize());
-
-      // Send to Discord
-      // var text = 'Added ' + args.params[1] + ' point(s) to ' + house.capitalize();
 
       // var new_house_points = get_house_points(house.capitalize());
       // get_house_points(house.capitalize()).then(function(data) {
@@ -385,8 +333,6 @@ function housePointsFunc(args) {
       // text = text + '!\n' + house.capitalize() + ' has ' + new_house_points + ' point(s) now!';
 
       // args.send('Added ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + get_house_points(house.capitalize()) + ' point(s) now!');
-      // args.send('Added ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!');
-
     }
   }
   else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
@@ -415,9 +361,7 @@ function housePointsFunc(args) {
         done(err);
       });
 
-      // Send to Discord
       // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
-      // args.send('Subtracted ' + args.params[1] + ' point(s) from ' + house.capitalize() + '!');
     }
   }
   else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
@@ -440,9 +384,7 @@ function housePointsFunc(args) {
         done(err);
       });
 
-        // Send to Discord
         // args.send('Set ' + house.capitalize() + " house's points to " + args.params[1] + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
-        // args.send('Set ' + args.params[1] + ' point(s) to ' + house.capitalize() + '!');
     }
   }
   else {
