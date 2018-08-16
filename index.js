@@ -92,10 +92,10 @@ var errHandler = function(err) {
 }
 
 client.on("message", message => {
-  console.log(message.author.username + ' : ' + message.content);
-
   // Ignore bots
   if(message.author.bot) return;
+
+  console.log(message.author.username + ' : ' + message.content);
 
   // Ignore messages that don't start with prefix
   if(message.content.indexOf(process.env.PREFIX) !== 0) return;
@@ -270,6 +270,12 @@ function housePointsFunc(args) {
     }
   });
   console.log("Verified roles permission");
+
+  // Reject if user has no permissions
+  if (!(canGivePoints || canTakePoints || canSetPoints)) {
+    args.send('You do not have permission to do that.');
+    return;
+  }
 
   var firstParam = args.params[0];
   if (firstParam !== undefined) {
