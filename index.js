@@ -306,11 +306,8 @@ function housePointsFunc(args) {
     if (isNaN(args_points) || args_points === 'Infinity' || args_points === '-Infinity') {
       args.send(' ' + args_points + ' is not a number!');
     }
-    else if (args_points <= 0) {
-      args.send('Minimum point value is 1.');
-    }
-    else if (args_points > 1000) {
-      args.send('Maximum point value is 1000.');
+    else if (args_points <= 0 || args_points > 1000) {
+      args.send('Point value must be between 1 to 1000.');
     }
     else {
       var text = '';
@@ -322,13 +319,13 @@ function housePointsFunc(args) {
         // <:HouseHufflepuff:478802570752688131>
         // <:HouseGryffindor:478802571046420491>
         if ( targetUser === undefined ) {
-          text = 'Earned ' + args_points + ' point(s) for ' + house.capitalize() + ' by ' + userMention + '.';
+          text = 'Earned ' + args_points + ' point(s) for ' + house.capitalize() + ' from ' + userMention + '.';
         }
         else {
-          text = targetUserMention + ' earned ' + args_points + ' point(s) for ' + house.capitalize() + ' by ' + userMention + '.';
+          text = targetUserMention + ' earned ' + args_points + ' point(s) for ' + house.capitalize() + ' from ' + userMention + '.';
         }
         if ( args_reason ) {
-          text = text + ' *' + args_reason + '*';
+          text = text + ' *Reason: ' + args_reason + '*';
         }
 
         console.log(text);
@@ -367,11 +364,8 @@ function housePointsFunc(args) {
     if (isNaN(args_points) || args_points === 'Infinity' || args_points === '-Infinity') {
       args.send(' ' + args_points + ' is not a number!');
     }
-    else if (args_points <= 0) {
-      args.send('Minimum point value is 1.');
-    }
-    else if (args_points > 1000) {
-      args.send('Maximum point value is 1000.');
+    else if (args_points <= 0 || args_points > 1000) {
+      args.send('Point value must be between 1 to 1000.');
     }
     else {
       var text = '';
@@ -379,13 +373,13 @@ function housePointsFunc(args) {
       db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args_points)])
       .then( () => {
         if ( targetUser === undefined ) {
-          text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' by ' + userMention + '.';
+          text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
         }
         else {
-          text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' by ' + userMention + '.';
+          text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
         }
         if ( args_reason ) {
-          text = text + ' *' + args_reason + '*';
+          text = text + ' *Reason: ' + args_reason + '*';
         }
 
         console.log(text);
