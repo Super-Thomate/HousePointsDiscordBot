@@ -137,10 +137,11 @@ function runCommand(message) {
   var firstArg = message.content.split(' ')[0];
   if (firstArg.startsWith(process.env.PREFIX) && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.PREFIX, ''))) {
     //probably don't need most of these, but it's for simplicity if I ever do need them.
+    processed_content = message.content.trim().replace(/\s{2,}/g, ' ');
     var args = {
       message,
-      text: message.content,
-      params: message.content.split(' ').slice(1),
+      text: processed_content,
+      params: processed_content.split(' ').slice(1),
       send: message.channel.sendMessage.bind(message.channel),
       sendFile: message.channel.sendFile.bind(message.channel),
       user: message.author,
