@@ -296,7 +296,21 @@ function housePointsFunc(args) {
   console.log("Command: " + firstParam + ", Params: " + args.params);
   console.log("Mentions: " + args.mentions.first());
 
-  var args_points = args.params[1];
+  // Check second argument is a number
+  let args_points = args.params[1];
+  if ( isNaN(args_points) ){
+    args.send(args_points + ' is not a number!');
+    console.log(args_points + ' is not a number!');
+    return;
+  }
+  else if (args_points <= 0 || args_points > 1000) {
+    args.send('Point value must be between 1 to 1000.');
+    return;
+  }
+  else {
+    args_points = Number(args_points);
+  }
+
   let args_reason;
   if ( targetUser === undefined ) {
     args_reason = args.params.slice(2).join(" ");
@@ -311,178 +325,157 @@ function housePointsFunc(args) {
   }
   else if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
     // Add points
-    if (isNaN(args_points) || args_points === 'Infinity' || args_points === '-Infinity') {
-      args.send(' ' + args_points + ' is not a number!');
-    }
-    else if (args_points <= 0 || args_points > 1000) {
-      args.send('Point value must be between 1 to 1000.');
-    }
-    else {
-      // Update DB with points
-      db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args_points)])
-      .then( () => {
-        var text = '';
-        let embed = {
-          "color": 0xFFFFFF,
-          "description": "",
-          "author": {},
-          "footer": {"icon_url": 'https://i.imgur.com/Ur1VL2r.png'}
-        };
-        embed["author"]["name"] =  args_points + ' points for ' + house.capitalize();
-        embed["footer"]["text"] = `Rewarded by: ${args.displayName}`;
-        // embed["timestamp"] = "2018-08-18T08:46:11.522Z";
+    // Update DB with points
+    db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args_points)])
+    .then( () => {
+      var text = '';
+      let embed = {
+        "color": 0xFFFFFF,
+        "description": "",
+        "author": {},
+        "footer": {"icon_url": 'https://i.imgur.com/Ur1VL2r.png'}
+      };
+      embed["author"]["name"] =  args_points + ' points for ' + house.capitalize();
+      embed["footer"]["text"] = `Rewarded by: ${args.displayName}`;
+      // embed["timestamp"] = "2018-08-18T08:46:11.522Z";
 
-        if ( targetUser === undefined ) {
-          text = 'Earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
-        }
-        else {
-          text = targetUserMention + ' earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
-          embed["description"] = 'Earned by ' + targetUserMention + '.';
-        }
-        if ( args_reason ) {
-          text = text + ' *Reason: ' + args_reason + '*';
-          embed["description"] = [embed["description"], 'Reason: ' + args_reason].join(' ');
-        }
+      if ( targetUser === undefined ) {
+        text = 'Earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
+      }
+      else {
+        text = targetUserMention + ' earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
+        embed["description"] = 'Earned by ' + targetUserMention + '.';
+      }
+      if ( args_reason ) {
+        text = text + ' *Reason: ' + args_reason + '*';
+        embed["description"] = [embed["description"], 'Reason: ' + args_reason].join(' ');
+      }
 
-        switch(house.capitalize()) {
-          case 'Gryffindor':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/ds8VV2l.png';
-            embed["color"] = 0xEA0000;
-            break;
-          case 'Hufflepuff':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/sB4KbDn.png';
-            embed["color"] = 0xFFE500;
-            break;
-          case 'Ravenclaw':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/un87c3p.png';
-            embed["color"] = 0x2362AF;
-            break;
-          case 'Slytherin':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/idnZ3xJ.png';
-            embed["color"] = 0x047A00;
-            break;
-        }
+      switch(house.capitalize()) {
+        case 'Gryffindor':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/ds8VV2l.png';
+          embed["color"] = 0xEA0000;
+          break;
+        case 'Hufflepuff':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/sB4KbDn.png';
+          embed["color"] = 0xFFE500;
+          break;
+        case 'Ravenclaw':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/un87c3p.png';
+          embed["color"] = 0x2362AF;
+          break;
+        case 'Slytherin':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/idnZ3xJ.png';
+          embed["color"] = 0x047A00;
+          break;
+      }
 
-        console.log(text);
-        // args.send(text);
-        args.send({ embed });
-      })
-      .catch( err => {
-        console.log("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
-        args.send("Failed to give " + args_points + " points to " + house.capitalize() );
-        done(err);
-      });
+      console.log(text);
+      // args.send(text);
+      args.send({ embed });
+    })
+    .catch( err => {
+      console.log("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
+      args.send("Failed to give " + args_points + " points to " + house.capitalize() );
+      done(err);
+    });
 
-      // var new_house_points = get_house_points(house.capitalize());
-      // get_house_points(house.capitalize()).then(function(data) {
-      //    new_house_points = data;
-      // })
-      // .catch(function(error) {
-      //   console.log(error);
-      // });
+    // var new_house_points = get_house_points(house.capitalize());
+    // get_house_points(house.capitalize()).then(function(data) {
+    //    new_house_points = data;
+    // })
+    // .catch(function(error) {
+    //   console.log(error);
+    // });
 
-      // db.func('get_house_points', [house.capitalize()])
-      // .then(data => {
-      //   console.log('DATA:', data); // print data
-      //   new_house_points = data;
-      // })
-      // .catch(error => {
-      //   console.log('ERROR:', error); // print the error;
-      // });
+    // db.func('get_house_points', [house.capitalize()])
+    // .then(data => {
+    //   console.log('DATA:', data); // print data
+    //   new_house_points = data;
+    // })
+    // .catch(error => {
+    //   console.log('ERROR:', error); // print the error;
+    // });
 
-      // text = text + '!\n' + house.capitalize() + ' has ' + new_house_points + ' point(s) now!';
+    // text = text + '!\n' + house.capitalize() + ' has ' + new_house_points + ' point(s) now!';
 
-      // args.send('Added ' + args_points + ' point(s) to ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + get_house_points(house.capitalize()) + ' point(s) now!');
-    }
+    // args.send('Added ' + args_points + ' point(s) to ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + get_house_points(house.capitalize()) + ' point(s) now!');
   }
   else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
-    if (isNaN(args_points) || args_points === 'Infinity' || args_points === '-Infinity') {
-      args.send(' ' + args_points + ' is not a number!');
-    }
-    else if (args_points <= 0 || args_points > 1000) {
-      args.send('Point value must be between 1 to 1000.');
-    }
-    else {
-      // Update DB with points
-      db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args_points)])
-      .then( () => {
-        var text = '';
-        let embed = {
-          "color": 0xFFFFFF,
-          "description": "",
-          "author": {},
-          "footer": {"icon_url": 'https://i.imgur.com/jM0Myc5.png'}
-        };
-        embed["author"]["name"] = '-' + args_points + ' points from ' + house.capitalize();
-        embed["footer"]["text"] = `Rewarded by: ${args.displayName}`;
+    // Update DB with points
+    db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args_points)])
+    .then( () => {
+      var text = '';
+      let embed = {
+        "color": 0xFFFFFF,
+        "description": "",
+        "author": {},
+        "footer": {"icon_url": 'https://i.imgur.com/jM0Myc5.png'}
+      };
+      embed["author"]["name"] = '-' + args_points + ' points from ' + house.capitalize();
+      embed["footer"]["text"] = `Rewarded by: ${args.displayName}`;
 
-        if ( targetUser === undefined ) {
-          text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
-        }
-        else {
-          text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
-          embed["description"] = 'Lost by ' + targetUserMention + '.';
-        }
-        if ( args_reason ) {
-          text = text + ' *Reason: ' + args_reason + '*';
-          embed["description"] = [embed["description"], 'Reason: ' + args_reason].join(' ');
-        }
+      if ( targetUser === undefined ) {
+        text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
+      }
+      else {
+        text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
+        embed["description"] = 'Lost by ' + targetUserMention + '.';
+      }
+      if ( args_reason ) {
+        text = text + ' *Reason: ' + args_reason + '*';
+        embed["description"] = [embed["description"], 'Reason: ' + args_reason].join(' ');
+      }
 
-        switch(house.capitalize()) {
-          case 'Gryffindor':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/ds8VV2l.png';
-            embed["color"] = 0xEA0000;
-            break;
-          case 'Hufflepuff':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/sB4KbDn.png';
-            embed["color"] = 0xFFE500;
-            break;
-          case 'Ravenclaw':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/un87c3p.png';
-            embed["color"] = 0x2362AF;
-            break;
-          case 'Slytherin':
-            embed["author"]["icon_url"] = 'https://i.imgur.com/idnZ3xJ.png';
-            embed["color"] = 0x047A00;
-            break;
-        }
+      switch(house.capitalize()) {
+        case 'Gryffindor':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/ds8VV2l.png';
+          embed["color"] = 0xEA0000;
+          break;
+        case 'Hufflepuff':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/sB4KbDn.png';
+          embed["color"] = 0xFFE500;
+          break;
+        case 'Ravenclaw':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/un87c3p.png';
+          embed["color"] = 0x2362AF;
+          break;
+        case 'Slytherin':
+          embed["author"]["icon_url"] = 'https://i.imgur.com/idnZ3xJ.png';
+          embed["color"] = 0x047A00;
+          break;
+      }
 
-        console.log(text);
-        // args.send(text);
-        args.send({ embed });
-      })
-      .catch( err => {
-        console.log("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
-        args.send("Failed to take " + args_points + " points from " + house.capitalize() );
-        done(err);
-      });
+      console.log(text);
+      // args.send(text);
+      args.send({ embed });
+    })
+    .catch( err => {
+      console.log("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
+      args.send("Failed to take " + args_points + " points from " + house.capitalize() );
+      done(err);
+    });
 
-      // args.send('Subtracted ' + args_points + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
-    }
+    // args.send('Subtracted ' + args_points + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
   }
   else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
     // Set points
-    if (isNaN(args_points) || args_points === 'Infinity' || args_points === '-Infinity') {
-      args.send(' ' + args_points + ' is not a number!');
-    }
-    else {
-      var text = '';
-      // Update DB with points
-      db.any('update points set count = $2 where name = $1', [house.capitalize(), Number(args_points)])
-      .then( () => {
-        text = 'Set ' + house.capitalize() + ' to ' + args_points + ' point(s)' + userMention;
-        console.log('LOG: ' + text + '(' + args.userTag + ')');
-        args.send(text);
-      })
-      .catch( error => {
-        console.log("Failed set: " + house.capitalize() + " to " + args_points + " points " + err);
-        args.send("Failed to set" + house.capitalize() + " to " + args_points + " points" );
-        done(err);
-      });
+    var text = '';
+    // Update DB with points
+    db.any('update points set count = $2 where name = $1', [house.capitalize(), Number(args_points)])
+    .then( () => {
+      text = 'Set ' + house.capitalize() + ' to ' + args_points + ' point(s)' + userMention;
+      console.log('LOG: ' + text + '(' + args.userTag + ')');
+      args.send(text);
+    })
+    .catch( error => {
+      console.log("Failed set: " + house.capitalize() + " to " + args_points + " points " + err);
+      args.send("Failed to set" + house.capitalize() + " to " + args_points + " points" );
+      done(err);
+    });
 
-        // args.send('Set ' + house.capitalize() + " house's points to " + args_points + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
-    }
+      // args.send('Set ' + house.capitalize() + " house's points to " + args_points + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
   }
   else {
     args.send(`You might not be able to do that.\nUsage:\n${process.env.PREFIX}housename add points\n${process.env.PREFIX}housename subtract points\n${process.env.PREFIX}housename set points\nWhere housename is the house's name (hufflepuff, slytherin, ravenclaw, gryffindor) and points is a number.`);
