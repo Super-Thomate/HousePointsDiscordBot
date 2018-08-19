@@ -145,9 +145,10 @@ function runCommand(message) {
       send: message.channel.sendMessage.bind(message.channel),
       sendFile: message.channel.sendFile.bind(message.channel),
       user: message.author,
-      nick: message.author.username,
+      nick: message.author.nickanme,
       username: message.author.username,
       userTag: message.author.tag,
+      displayName: message.member.displayName,
       avatar: message.author.avatar,
       avatarURL: message.author.avatarURL,
       isBot: message.author.bot,
@@ -310,19 +311,18 @@ function housePointsFunc(args) {
       args.send('Point value must be between 1 to 1000.');
     }
     else {
-      var text = '';
-      let embed = {
-        "color": 0xFFFFFF,
-        "description": "",
-        "author": {},
-        "footer": {"icon_url": 'https://i.imgur.com/Ur1VL2r.png'}
-      };
-
       // Update DB with points
       db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args_points)])
       .then( () => {
+        var text = '';
+        let embed = {
+          "color": 0xFFFFFF,
+          "description": "",
+          "author": {},
+          "footer": {"icon_url": 'https://i.imgur.com/Ur1VL2r.png'}
+        };
         embed["author"]["name"] =  args_points + ' points for ' + house.capitalize();
-        embed["footer"]["text"] = `Rewarded by: ${args.nick}`;
+        embed["footer"]["text"] = `Rewarded by: ${args.displayName}`;
         // embed["timestamp"] = "2018-08-18T08:46:11.522Z";
 
         if ( targetUser === undefined ) {
@@ -397,19 +397,18 @@ function housePointsFunc(args) {
       args.send('Point value must be between 1 to 1000.');
     }
     else {
-      var text = '';
-      let embed = {
-        "color": 0xFFFFFF,
-        "description": "",
-        "author": {},
-        "footer": {"icon_url": 'https://i.imgur.com/jM0Myc5.png'}
-      };
-
       // Update DB with points
       db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args_points)])
       .then( () => {
+        var text = '';
+        let embed = {
+          "color": 0xFFFFFF,
+          "description": "",
+          "author": {},
+          "footer": {"icon_url": 'https://i.imgur.com/jM0Myc5.png'}
+        };
         embed["author"]["name"] = '-' + args_points + ' points from ' + house.capitalize();
-        embed["footer"]["text"] = `Rewarded by: ${args.nick}`;
+        embed["footer"]["text"] = `Rewarded by: ${args.displayName}`;
 
         if ( targetUser === undefined ) {
           text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
