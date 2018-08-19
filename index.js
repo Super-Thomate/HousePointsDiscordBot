@@ -311,27 +311,55 @@ function housePointsFunc(args) {
     }
     else {
       var text = '';
+      let embed = {
+        "color": 0xFFFFFF,
+        "description": "",
+        "author": {}
+      };
+
       // Update DB with points
       db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args_points)])
       .then( () => {
-        // <:HouseSlytherin:478802570698293260>
-        // <:HouseRavenclaw:478802571071455232>
-        // <:HouseHufflepuff:478802570752688131>
-        // <:HouseGryffindor:478802571046420491>
+        embed["author"]["name"] =  args_points + ' points for ' + house.capitalize();
+        embed["footer"] = { "text": `Rewarded by: ${args.nick}`};
+        // embed["timestamp"] = "2018-08-18T08:46:11.522Z";
+
         if ( targetUser === undefined ) {
-          text = 'Earned ' + args_points + ' point(s) for ' + house.capitalize() + ' from ' + userMention + '.';
+          text = 'Earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
         }
         else {
-          text = targetUserMention + ' earned ' + args_points + ' point(s) for ' + house.capitalize() + ' from ' + userMention + '.';
+          text = targetUserMention + ' earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
+          embed["description"] = 'Earned by ' + targetUserMention + '.';
         }
         if ( args_reason ) {
           text = text + ' *Reason: ' + args_reason + '*';
+          embed["description"] = [embed["description"], 'Reason: ' + args_reason].join(' ');
+        }
+
+        switch(house.capitalize()) {
+          case 'Gryffindor':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/ds8VV2l.png';
+            embed["color"] = 0xEA0000;
+            break;
+          case 'Hufflepuff':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/sB4KbDn.png';
+            embed["color"] = 0xFFE500;
+            break;
+          case 'Ravenclaw':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/un87c3p.png';
+            embed["color"] = 0x2362AF;
+            break;
+          case 'Slytherin':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/idnZ3xJ.png';
+            embed["color"] = 0x047A00;
+            break;
         }
 
         console.log(text);
-        args.send(text);
+        // args.send(text);
+        args.send({ embed });
       })
-      .catch( error => {
+      .catch( err => {
         console.log("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
         args.send("Failed to give " + args_points + " points to " + house.capitalize() );
         done(err);
@@ -369,23 +397,54 @@ function housePointsFunc(args) {
     }
     else {
       var text = '';
+      let embed = {
+        "color": 0xFFFFFF,
+        "description": "",
+        "author": {}
+      };
+
       // Update DB with points
       db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args_points)])
       .then( () => {
+        embed["author"]["name"] = '-' + args_points + ' points from ' + house.capitalize();
+        embed["footer"] = { "text": `Deducted by: ${args.nick}`};
+
         if ( targetUser === undefined ) {
           text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
         }
         else {
           text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
+          embed["description"] = 'Lost by ' + targetUserMention + '.';
         }
         if ( args_reason ) {
           text = text + ' *Reason: ' + args_reason + '*';
+          embed["description"] = [embed["description"], 'Reason: ' + args_reason].join(' ');
+        }
+
+        switch(house.capitalize()) {
+          case 'Gryffindor':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/ds8VV2l.png';
+            embed["color"] = 0xEA0000;
+            break;
+          case 'Hufflepuff':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/sB4KbDn.png';
+            embed["color"] = 0xFFE500;
+            break;
+          case 'Ravenclaw':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/un87c3p.png';
+            embed["color"] = 0x2362AF;
+            break;
+          case 'Slytherin':
+            embed["author"]["icon_url"] = 'https://i.imgur.com/idnZ3xJ.png';
+            embed["color"] = 0x047A00;
+            break;
         }
 
         console.log(text);
-        args.send(text);
+        // args.send(text);
+        args.send({ embed });
       })
-      .catch( error => {
+      .catch( err => {
         console.log("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
         args.send("Failed to take " + args_points + " points from " + house.capitalize() );
         done(err);
