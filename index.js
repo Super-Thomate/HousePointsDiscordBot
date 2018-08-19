@@ -184,11 +184,19 @@ addCommand(['help', 'commands'], function(args) {
 
 addCommand('points', async function(args) {
   var text = '';
+  let embed = {
+    "title": "Points Leaderboard",
+    "description": "",
+    "color": 0xFFFFFF,
+    "footer": {"text": "Leaderboard as of"},
+    "timestamp": new Date().toISOString()
+  };
 
   try {
     const points_rows = await db.any("SELECT * FROM points ORDER BY id");
     points_rows.forEach( function(row) {
       text = text + row.name + ": " + row.count + " points\n";
+      embed["description"] = [embed["description"], row.name + ": " + row.count + " points", '\n'].join('');
     });
     console.log("text: " + text);
   }
@@ -197,9 +205,8 @@ addCommand('points', async function(args) {
     text = 'Could not retrieve points.'
   }
 
-  args.send(
-    text
-  );
+  // args.send(text);
+  args.send({ embed });
   return;
 });
 
