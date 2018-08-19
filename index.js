@@ -421,7 +421,7 @@ function housePointsFunc(args) {
         "footer": {"icon_url": 'https://i.imgur.com/jM0Myc5.png'}
       };
       embed["author"]["name"] = '-' + args_points + ' points from ' + house.capitalize();
-      embed["footer"]["text"] = `Rewarded by: ${args.displayName}`;
+      embed["footer"]["text"] = `Taken by: ${args.displayName}`;
 
       if ( targetUser === undefined ) {
         text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
