@@ -298,6 +298,11 @@ function housePointsFunc(args) {
     console.log(args_points + ' is not a number!');
     return;
   }
+  else if ( !Number.isInteger(args_points) ) {
+    args.send('Point values must be an integer.');
+    console.log('Point values must be an integer.');
+    return;
+  }
   else if (args_points <= 0 || args_points > 1000) {
     args.send('Point value must be between 1 to 1000.');
     return;
