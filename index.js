@@ -292,10 +292,10 @@ function housePointsFunc(args) {
   console.log("Command: " + firstParam + ", Params: " + args.params);
 
   // Check second param is a number
-  let args_points = args.params[1];
+  let args_points = Number(args.params[1]);
   if ( isNaN(args_points) ){
-    args.send(args_points + ' is not a number!');
-    console.log(args_points + ' is not a number!');
+    args.send(args.params[1] + ' is not a number!');
+    console.log(args.params[1] + ' is not a number!');
     return;
   }
   else if ( !Number.isInteger(args_points) ) {
