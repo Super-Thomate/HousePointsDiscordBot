@@ -228,8 +228,8 @@ function get_house_points(house) {
 function housePointsFunc(args) {
   console.log("Begin points manipulation commands");
 
+  // Assign permissions
   var house = this,
-
   user = args.message.member,
   userMention = "<@!" + args.authorID + ">",
   roles = user.roles;
@@ -237,11 +237,6 @@ function housePointsFunc(args) {
   var canGivePoints = false,
   canTakePoints = false,
   canSetPoints = false;
-  var targetUser = args.mentions.first();
-  var targetUserMention;
-  if (targetUser !== undefined) {
-    targetUserMention = "<@!" + targetUser.id + ">";
-  }
 
   roles.map((value, index, arr) => {
     for (let i = 0; i < config_roles.doAllOfTheAbove.length; i++) {
@@ -287,6 +282,7 @@ function housePointsFunc(args) {
     return;
   }
 
+  // Save first param as command name
   var firstParam = args.params[0];
   if (firstParam !== undefined) {
     if (firstParam.toLowerCase !== undefined) {
@@ -294,9 +290,8 @@ function housePointsFunc(args) {
     }
   }
   console.log("Command: " + firstParam + ", Params: " + args.params);
-  console.log("Mentions: " + args.mentions.first());
 
-  // Check second argument is a number
+  // Check second param is a number
   let args_points = args.params[1];
   if ( isNaN(args_points) ){
     args.send(args_points + ' is not a number!');
@@ -311,13 +306,25 @@ function housePointsFunc(args) {
     args_points = Number(args_points);
   }
 
-  let args_reason;
-  if ( targetUser === undefined ) {
-    args_reason = args.params.slice(2).join(" ");
+  // Setup user from param's mention if possible
+  var targetUser = args.mentions.first();
+  var targetUserMention;
+  if (targetUser !== undefined) {
+    targetUserMention = "<@!" + targetUser.id + ">";
   }
-  else { // TODO check args length
+
+  // Save reason param
+  let args_reason;
+  if ( targetUser && args.params[2].startsWith('<@') && args.params[2].endsWith('>') ){
+    // Ignore mentions in reason param
     args_reason = args.params.slice(3).join(" ");
   }
+  else {
+    // Not directed at a particular user
+    targetUser = undefined; // Needs to be set if no user param but there is a mention in reason
+    args_reason = args.params.slice(2).join(" ");
+  }
+  console.log("Mentions: " + targetUser);
   console.log("Reason: " + args_reason);
 
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
