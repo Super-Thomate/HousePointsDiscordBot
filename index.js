@@ -381,6 +381,23 @@ function housePointsFunc(args) {
   console.log("Mentions: " + targetUser);
   console.log("Reason: " + args_reason);
 
+  // Log channel if there is one
+  var logChannel;
+  db.one('SELECT p_log_channel FROM configuration WHERE server_id = $1', args.guildId)
+    .then(logChannelId => {
+      if (logChannelId) {
+        console.log(logChannelId);
+        logChannel = args.message.guild.channels.find("id", logChannelId.p_log_channel);
+        console.log("Found points log channel: " + logChannel);
+      }
+      else {
+        logChannelId = args.message.channel;
+      }
+    })
+    .catch(error => {
+        // error;
+    });
+
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
   }
@@ -433,7 +450,7 @@ function housePointsFunc(args) {
 
       console.log(text);
       // args.send(text);
-      args.send({ embed });
+      logChannel.send({ embed });
     })
     .catch( err => {
       console.log("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
@@ -510,7 +527,7 @@ function housePointsFunc(args) {
 
       console.log(text);
       // args.send(text);
-      args.send({ embed });
+      logChannel.send({ embed });
     })
     .catch( err => {
       console.log("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
