@@ -54,6 +54,14 @@ var Discord = require('discord.js'),
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 
+  db.none('CREATE TABLE IF NOT EXISTS "configuration"("server_id" TExT primary key,"p_log_channel" text, "p_leaderboard_post" text)')
+    .then(() => {
+      console.log("Created configuration table");
+    })
+    .catch(err => {
+       console.log("Failed to created configuration table " + err);
+    });
+
   // TODO create leaderboard in db with new db syntax
   // pg.any('create table if not exists points( \
   //   id serial primary key, \
@@ -155,6 +163,9 @@ function runCommand(message) {
       authorID: message.author.id,
       mentions: message.mentions.members,
       lastMessageID: message.author.lastMessageID,
+      channelID: message.channel.id,
+      messageId: message.id,
+      guildId: message.guild.id,
       dm: message.author.send.bind(message.author),
       dmCode: message.author.sendCode.bind(message.author),
       dmEmbed: message.author.sendEmbed.bind(message.author),
@@ -180,6 +191,36 @@ addCommand(['help', 'commands'], function(args) {
     text += process.env.PREFIX + COMMANDS[cmd].name;
   }
   args.send(text + '.');
+});
+
+addCommand('pointslog', async function(args) {
+  var user = args.message.member,
+  roles = user.roles;
+  var canSetPoints = false;
+
+  roles.map((value, index, arr) => {
+    for (let i = 0; i < config_roles.doAllOfTheAbove.length; i++) {
+      if (roles.find("name", config_roles.doAllOfTheAbove[i])) {
+        canSetPoints = true;
+      }
+    }
+  });
+
+  // Reject if user has no permissions
+  if (!canSetPoints) {
+    args.send('You do not have permission to do that.');
+    return;
+  }
+
+  db.none('INSERT INTO configuration (server_id, p_log_channel) values ($1, $2) \
+    ON CONFLICT (server_id) DO UPDATE SET p_log_channel = $2', [args.guildId, args.channelID])
+    .then(() => {
+      console.log("Set points log channel to " + args.message.channel);
+      args.send("Set points log channel to " + args.message.channel);
+    })
+    .catch(err => {
+       console.log("Failed to set points log channel " + err);
+    });
 });
 
 addCommand('points', async function(args) {
@@ -212,6 +253,9 @@ addCommand('points', async function(args) {
   // args.send(text);
   console.log("text: " + text);
   args.send({ embed });
+  console.log('------channel ' + args.channelID + " " + typeof(args.channelID));
+  console.log('------messageId ' + args.messageId + " " + typeof(args.messageId));
+  console.log('------guildId ' + args.guildId + " " + typeof(args.guildId));
   return;
 });
 
