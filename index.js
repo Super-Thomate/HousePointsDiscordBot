@@ -382,16 +382,13 @@ function housePointsFunc(args) {
   console.log("Reason: " + args_reason);
 
   // Log channel if there is one
-  var logChannel;
+  var logChannel = args.message.channel;
   db.one('SELECT p_log_channel FROM configuration WHERE server_id = $1', args.guildId)
     .then(logChannelId => {
       if (logChannelId) {
         console.log(logChannelId);
         logChannel = args.message.guild.channels.find("id", logChannelId.p_log_channel);
         console.log("Found points log channel: " + logChannel);
-      }
-      else {
-        logChannelId = args.message.channel;
       }
     })
     .catch(error => {
