@@ -193,19 +193,24 @@ addCommand('points', async function(args) {
   };
 
   try {
-    const points_rows = await db.any("SELECT * FROM points ORDER BY id");
-    points_rows.forEach( function(row) {
-      text = text + row.name + ": " + row.count + " points\n";
-      embed["description"] = [embed["description"], row.name + ": " + row.count + " points", '\n'].join('');
-    });
-    console.log("text: " + text);
+    const points_rows = await db.any("SELECT * FROM points ORDER BY count DESC");
+    for (var i = 0; i < points_rows.length; i++) {
+    // points_rows.forEach( function(row) {
+      var row = points_rows[i];
+      var subtext = `${i+1}` + ". " + row.name + ": " + row.count + " points";
+      if (i == 0) {
+        subtext = '**' + subtext + '**';
+      }
+      text = [text, subtext].join('\n');
+    };
   }
   catch(e) {
     console.log("Failed to fetch all points data." + e);
     text = 'Could not retrieve points.'
   }
-
+  embed["description"] = text;
   // args.send(text);
+  console.log("text: " + text);
   args.send({ embed });
   return;
 });
