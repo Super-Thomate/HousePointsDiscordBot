@@ -448,6 +448,7 @@ function housePointsFunc(args) {
       console.log(text);
       // args.send(text);
       logChannel.send({ embed });
+      args.message.delete();
     })
     .catch( err => {
       console.log("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
@@ -525,6 +526,7 @@ function housePointsFunc(args) {
       console.log(text);
       // args.send(text);
       logChannel.send({ embed });
+      args.message.delete();
     })
     .catch( err => {
       console.log("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
