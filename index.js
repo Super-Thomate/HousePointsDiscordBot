@@ -274,7 +274,7 @@ function get_house_points(house) {
   return value;
 };
 
-function housePointsFunc(args) {
+async function housePointsFunc(args) {
   console.log("Begin points manipulation commands");
 
   // Assign permissions
@@ -382,8 +382,8 @@ function housePointsFunc(args) {
   console.log("Reason: " + args_reason);
 
   // Log channel if there is one
-  var logChannel = args.message.channel;
-  db.one('SELECT p_log_channel FROM configuration WHERE server_id = $1', args.guildId)
+  var logChannel;
+  await db.one('SELECT p_log_channel FROM configuration WHERE server_id = $1', args.guildId)
     .then(logChannelId => {
       if (logChannelId) {
         console.log(logChannelId);
@@ -391,8 +391,8 @@ function housePointsFunc(args) {
         console.log("Found points log channel: " + logChannel);
       }
     })
-    .catch(error => {
-        // error;
+    .catch(err => {
+      console.log("Could not find points log channel " + err);
     });
 
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
@@ -447,7 +447,10 @@ function housePointsFunc(args) {
 
       console.log(text);
       // args.send(text);
-      logChannel.send({ embed });
+      if (logChannel) {
+        logChannel.send({ embed });
+      }
+      args.send({ embed });
       args.message.delete();
     })
     .catch( err => {
@@ -525,7 +528,10 @@ function housePointsFunc(args) {
 
       console.log(text);
       // args.send(text);
-      logChannel.send({ embed });
+      if (logChannel) {
+        logChannel.send({ embed });
+      }
+      args.send({ embed });
       args.message.delete();
     })
     .catch( err => {
