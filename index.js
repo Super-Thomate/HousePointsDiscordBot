@@ -292,18 +292,15 @@ addCommand('pointsreset', async function(args) {
 
 addCommand('points', async function(args) {
   var text = '';
-  let embed = {
-    "title": "Points Leaderboard",
-    "description": "",
-    "color": 0xFFFFFF,
-    "footer": {"text": "Leaderboard as of"},
-    "timestamp": new Date().toISOString()
-  };
+  var embed = new Discord.RichEmbed()
+    .setTitle("Points Leaderboard")
+    .setColor(0xFFFFFF)
+    .setFooter("Updated at")
+    .setTimestamp(new Date().toISOString());
 
   try {
     const points_rows = await db.any("SELECT * FROM points ORDER BY count DESC");
     for (var i = 0; i < points_rows.length; i++) {
-    // points_rows.forEach( function(row) {
       var row = points_rows[i];
       var subtext = `${i+1}` + ". " + row.name + ": " + row.count + " points";
       if (i == 0) {
@@ -316,10 +313,53 @@ addCommand('points', async function(args) {
     console.log("Failed to fetch all points data." + e);
     text = 'Could not retrieve points.'
   }
-  embed["description"] = text;
-  // args.send(text);
+  embed.setDescription(text);
   console.log("text: " + text);
-  args.send({ embed });
+
+  var logChannel;
+  await db.one('SELECT p_log_channel FROM configuration WHERE server_id = $1', args.guildId)
+    .then(logChannelId => {
+      if (logChannelId) {
+        logChannel = args.message.guild.channels.find("id", logChannelId.p_log_channel);
+        console.log("Found points log channel: " + logChannel);
+      }
+    })
+    .catch(err => {
+      console.log("Could not find points log channel " + err);
+    });
+
+  logChannel.sendEmbed(embed)
+    .then(sentMessage => {
+      // Remove old leaderboard message
+      db.any('SELECT p_leaderboard_post FROM configuration WHERE server_id = $1', [args.guildId])
+        .then(function(dataOldPostId) {
+          logChannel.fetchMessage(dataOldPostId[0].p_leaderboard_post)
+            .then(message => {
+              if (message) {
+                message.delete();
+                console.log("Deleted old points leaderboard message");
+              }
+            })
+            .catch(console.error);
+        })
+        .catch(err => {
+           console.log("Failed retrieve old p_leaderboard_post " + err);
+        });
+
+      // Update p_leaderboard_post with new messageId
+      var sentMessageId = sentMessage.id;
+      console.log("sentMessageId: " + sentMessageId);
+      db.none("UPDATE configuration SET p_leaderboard_post = $1 WHERE server_id = $2", [sentMessageId, args.guildId])
+        .then(() => {
+          console.log("Saved p_leaderboard_post to " + sentMessageId);
+        })
+        .catch(err => {
+           console.log("Failed to save p_leaderboard_post to " + sentMessageId + err);
+        });
+    })
+    .catch(console.error);
+
+  args.message.delete();
   console.log('------channel ' + args.channelId + " " + typeof(args.channelId));
   console.log('------messageId ' + args.messageId + " " + typeof(args.messageId));
   console.log('------guildId ' + args.guildId + " " + typeof(args.guildId));
