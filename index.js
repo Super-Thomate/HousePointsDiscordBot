@@ -538,13 +538,13 @@ async function housePointsFunc(args) {
           embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
           break;
         case 'Hufflepuff':
-          embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xEA0000);
+          embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
           break;
         case 'Ravenclaw':
-          embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0xEA0000);
+          embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
           break;
         case 'Slytherin':
-          embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0xEA0000);
+          embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
           break;
       }
 
@@ -619,13 +619,13 @@ async function housePointsFunc(args) {
           embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
           break;
         case 'Hufflepuff':
-          embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xEA0000);
+          embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
           break;
         case 'Ravenclaw':
-          embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0xEA0000);
+          embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
           break;
         case 'Slytherin':
-          embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0xEA0000);
+          embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
           break;
       }
 
