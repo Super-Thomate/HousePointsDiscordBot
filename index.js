@@ -378,6 +378,10 @@ async function housePointsFunc(args) {
     targetUser = undefined; // Needs to be set if no user param but there is a mention in reason
     args_reason = args.params.slice(2).join(" ");
   }
+  if (!args_reason) {
+    args.send('Please include a reason.');
+    return;
+  }
   console.log("Mentions: " + targetUser);
   console.log("Reason: " + args_reason);
 
