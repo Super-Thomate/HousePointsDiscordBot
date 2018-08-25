@@ -352,8 +352,8 @@ async function housePointsFunc(args) {
     console.log('Point values must be an integer.');
     return;
   }
-  else if (args_points <= 0 || args_points > 1000) {
-    args.send('Point value must be between 1 to 1000.');
+  else if (args_points <= 0 || args_points > 100) {
+    args.send('Point value must be between 1 to 100.');
     return;
   }
   else {
