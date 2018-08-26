@@ -22,6 +22,35 @@ sequelize
     console.error('Unable to connect to the database:', err);
   });
 
+// Create configuration table
+const Configuration = sequelize.define('configuration', {
+  server_id: { type: Sequelize.STRING },
+  p_log_channel: { type: Sequelize.STRING },
+  p_leaderboard_post: { type: Sequelize.STRING }
+})
+Configuration.sync({alter: true}).then(() => {
+    console.log("TABLE CREATED: configuration");
+  })
+  .catch(err => {
+     console.error("FAILED TABLE CREATE: configuration " + err);
+  });
+
+// Create house_point table
+const HPoints = sequelize.define('house_point', {
+  name: { type: Sequelize.STRING},
+  points: { type: Sequelize.INTEGER, defaultValue: 0 }
+});
+HPoints.sync({ alter: true }).then(() => {
+    console.log("TABLE CREATED: house_points");
+    let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
+    for( var i = 0; i < houses.length; i++ ) {
+      HPoints.findOrCreate({where: {name: houses[i]}}).spread((house, created) => {console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)} );
+    }
+  })
+  .catch(err => {
+     console.error("FAILED TABLE CREATE: house_points " + err);
+  });
+
 // Airbrake config, prod only
 var AirbrakeClient = require('airbrake-js');
 let airbrake;
@@ -65,35 +94,6 @@ var Discord = require('discord.js'),
 
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
-
-  // Create configuration table
-  const Configuration = sequelize.define('configuration', {
-    server_id: { type: Sequelize.STRING },
-    p_log_channel: { type: Sequelize.STRING },
-    p_leaderboard_post: { type: Sequelize.STRING }
-  })
-  Configuration.sync({alter: true}).then(() => {
-      console.log("TABLE CREATED: configuration");
-    })
-    .catch(err => {
-       console.error("FAILED TABLE CREATE: configuration " + err);
-    });
-
-    // Create house_point table
-  const HPoints = sequelize.define('house_point', {
-    name: { type: Sequelize.STRING},
-    points: { type: Sequelize.INTEGER, defaultValue: 0 }
-  });
-  HPoints.sync({ alter: true }).then(() => {
-      console.log("TABLE CREATED: house_points");
-      let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
-      for( var i = 0; i < houses.length; i++ ) {
-        HPoints.findOrCreate({where: {name: houses[i]}}).spread((house, created) => {console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)} );
-      }
-    })
-    .catch(err => {
-       console.error("FAILED TABLE CREATE: house_points " + err);
-    });
 });
 
 client.on("message", message => {
@@ -202,21 +202,21 @@ addCommand('pointslog', async function(args) {
     }
   });
 
-  // Reject if user has no permissions
+  Reject if user has no permissions
   if (!canSetPoints) {
     args.send('You do not have permission to do that.');
     return;
   }
 
-  db.none('INSERT INTO configuration (server_id, p_log_channel) values ($1, $2) \
-    ON CONFLICT (server_id) DO UPDATE SET p_log_channel = $2', [args.guildId, args.channelId])
-    .then(() => {
-      console.log("Set points log channel to " + args.message.channel);
-      args.send("Set points log channel to " + args.message.channel);
-    })
-    .catch(err => {
-       console.log("Failed to set points log channel " + err);
-    });
+  Configuration.findOrCreate({where: {server_id: args.guildId}}).spread((server_configs, created) => {
+    var old_log_channel = server_configs.p_log_channel;
+    server_configs.p_log_channel = args.channelId;
+    server_configs.save().then(() => {console.log("UPDATED configuration: Set points log channel to " + args.message.channel)});
+    args.send("Set points log channel to " + args.message.channel);
+  }).catch(err => {
+    console.error("FAILED to set points log channel to " + args.message.channel);
+    args.send("Unable to set points log channel to " + args.message.channel);
+  });
 });
 
 addCommand('pointsreset', async function(args) {
