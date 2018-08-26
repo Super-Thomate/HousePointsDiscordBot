@@ -199,7 +199,7 @@ addCommand('pointslog', async function(args) {
     }
   });
 
-  Reject if user has no permissions
+  // Reject if user has no permissions
   if (!canSetPoints) {
     args.send('You do not have permission to do that.');
     return;
