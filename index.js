@@ -10,6 +10,18 @@ const pgp = require('pg-promise')();
 pgp.pg.defaults.ssl = true;
 const db = pgp(process.env.DATABASE_URL);
 
+//Sequelize
+const Sequelize = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL);
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('PG connection has been established successfully.');
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
+
 // Airbrake config, prod only
 var AirbrakeClient = require('airbrake-js');
 let airbrake;
@@ -54,51 +66,35 @@ var Discord = require('discord.js'),
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 
-  db.none('CREATE TABLE IF NOT EXISTS "configuration"("server_id" TExT primary key,"p_log_channel" text, "p_leaderboard_post" text)')
-    .then(() => {
-      console.log("Created configuration table");
+  // Create configuration table
+  const Configuration = sequelize.define('configuration', {
+    server_id: { type: Sequelize.STRING },
+    p_log_channel: { type: Sequelize.STRING },
+    p_leaderboard_post: { type: Sequelize.STRING }
+  })
+  Configuration.sync({alter: true}).then(() => {
+      console.log("TABLE CREATED: configuration");
     })
     .catch(err => {
-       console.log("Failed to created configuration table " + err);
+       console.error("FAILED TABLE CREATE: configuration " + err);
     });
 
-  // TODO create leaderboard in db with new db syntax
-  // pg.any('create table if not exists points( \
-  //   id serial primary key, \
-  //   name text, \
-  //   count integer default 0)', function (err, result) {
-  //     done();
-  //     if (err) {
-  //       console.log(err);
-  //       done(err);
-  //     }
-  //     console.log("Created Points table");
-  // });
-  // pg.query("insert into points (id, name, count) select 1, 'Gryffindor', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Gryffindor')",
-  //   function (err, result) {
-  //     done(err);
-  //     console.log('PG Inserted Gryffindor row into Points')
-  // });
-  // pg.query("insert into points (id, name, count) select 2, 'Hufflepuff', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Hufflepuff')",
-  //   function (err, result) {
-  //     done(err);
-  //     console.log('PG Inserted Hufflepuff row into Points')
-  // });
-  // pg.query("insert into points (id, name, count) select 3, 'Ravenclaw', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Ravenclaw')",
-  //   function (err, result) {
-  //     done(err);
-  //     console.log('PG Inserted Ravenclaw row into Points')
-  // });
-  // pg.query("insert into points (id, name, count) select 4, 'Slytherin', 0 WHERE NOT EXISTS (SELECT name FROM points WHERE name = 'Slytherin')",
-  //   function (err, result) {
-  //     done(err);
-  //     console.log('PG Inserted Slytherin row into Points')
-  // });
+    // Create house_point table
+  const HPoints = sequelize.define('house_point', {
+    name: { type: Sequelize.STRING},
+    points: { type: Sequelize.INTEGER, defaultValue: 0 }
+  });
+  HPoints.sync({ alter: true }).then(() => {
+      console.log("TABLE CREATED: house_points");
+      let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
+      for( var i = 0; i < houses.length; i++ ) {
+        HPoints.findOrCreate({where: {name: houses[i]}}).spread((house, created) => {console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)} );
+      }
+    })
+    .catch(err => {
+       console.error("FAILED TABLE CREATE: house_points " + err);
+    });
 });
-
-var errHandler = function(err) {
-    console.log(err);
-}
 
 client.on("message", message => {
   // Ignore bots
