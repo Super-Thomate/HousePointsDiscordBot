@@ -10,17 +10,14 @@ const pgp = require('pg-promise')();
 pgp.pg.defaults.ssl = true;
 const db = pgp(process.env.DATABASE_URL);
 
-//Sequelize
+// Sequelize
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(process.env.DATABASE_URL);
-sequelize
-  .authenticate()
-  .then(() => {
-    console.log('PG connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
+sequelize.authenticate().then(() => {
+  console.log('PG connection has been established successfully.');
+}).catch(err => {
+  console.error('Unable to connect to the database:', err);
+});
 
 // Create configuration table
 const Configuration = sequelize.define('configuration', {
@@ -29,11 +26,10 @@ const Configuration = sequelize.define('configuration', {
   p_leaderboard_post: { type: Sequelize.STRING }
 })
 Configuration.sync({alter: true}).then(() => {
-    console.log("TABLE CREATED: configuration");
-  })
-  .catch(err => {
-     console.error("FAILED TABLE CREATE: configuration " + err);
-  });
+  console.log("TABLE CREATED: configuration");
+}).catch(err => {
+  console.error("FAILED TABLE CREATE: configuration " + err);
+});
 
 // Create house_point table
 const HPoints = sequelize.define('house_point', {
@@ -41,15 +37,16 @@ const HPoints = sequelize.define('house_point', {
   points: { type: Sequelize.INTEGER, defaultValue: 0 }
 });
 HPoints.sync({ alter: true }).then(() => {
-    console.log("TABLE CREATED: house_points");
-    let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
-    for( var i = 0; i < houses.length; i++ ) {
-      HPoints.findOrCreate({where: {name: houses[i]}}).spread((house, created) => {console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)} );
-    }
-  })
-  .catch(err => {
-     console.error("FAILED TABLE CREATE: house_points " + err);
-  });
+  console.log("TABLE CREATED: house_points");
+  let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
+  for( var i = 0; i < houses.length; i++ ) {
+    HPoints.findOrCreate({where: {name: houses[i]}}).spread((house, created) => {
+      console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
+    }).catch(err => { console.error("FAILED to findOrCreate house entry in house_points " + houses[i]) });
+  }
+}).catch(err => {
+   console.error("FAILED TABLE CREATE: house_points " + err);
+});
 
 // Airbrake config, prod only
 var AirbrakeClient = require('airbrake-js');
