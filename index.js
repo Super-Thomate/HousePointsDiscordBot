@@ -238,57 +238,31 @@ addCommand('pointslog', function(args) {
   });
 });
 
-addCommand('pointsreset', async function(args) {
+addCommand('pointsreset', function(args) {
   if (checkPermissions(args, "setPoints") === false) {
     args.send('You do not have permission to do that.');
     return;
   }
 
   // Check for house param
+  let housesList = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
   var houseParam = args.params[0];
   if (houseParam !== undefined) {
     houseParam = houseParam.toLowerCase();
+    housesList = [houseParam];
   }
 
-  if ((houseParam === undefined) || (houseParam == 'gryffindor')) {
-    db.none("UPDATE points SET count = 0 WHERE name = 'Gryffindor'")
-      .then(() => {
-        console.log("Reset Gryffindor points to 0.");
-        args.send("Reset Gryffindor points to 0.");
-      })
-      .catch(err => {
-         console.log("Failed to reset points Gryffindor points to 0 " + err);
+  for (var i = 0; i < housesList.length; i++) {
+    HPoints.findOne( {where: {name: housesList[i]} } )
+    .then((house) => {
+      house.points = 0;
+      house.save().then(() => {
+        console.log(`Reset ${housesList[i]} points to 0.`);
+        args.send(`Reset ${housesList[i]} points to 0.`);
       });
-  }
-  if ((houseParam === undefined) || (houseParam == 'hufflepuff')) {
-    db.none("UPDATE points SET count = 0 WHERE name = 'Hufflepuff'")
-      .then(() => {
-        console.log("Reset Hufflepuff points to 0.");
-        args.send("Reset Hufflepuff points to 0.");
-      })
-      .catch(err => {
-         console.log("Failed to reset points Hufflepuff points to 0" + err);
-      });
-  }
-  if ((houseParam === undefined) || (houseParam == 'ravenclaw')) {
-    db.none("UPDATE points SET count = 0 WHERE name = 'Ravenclaw'")
-      .then(() => {
-        console.log("Reset Ravenclaw points to 0.");
-        args.send("Reset Ravenclaw points to 0.");
-      })
-      .catch(err => {
-         console.log("Failed to reset points Ravenclaw points to 0 " + err);
-      });
-  }
-  if ((houseParam === undefined) || (houseParam == 'slytherin')) {
-    db.none("UPDATE points SET count = 0 WHERE name = 'Slytherin'")
-      .then(() => {
-        console.log("Reset Slytherin points to 0.");
-        args.send("Reset Slytherin points to 0.");
-      })
-      .catch(err => {
-         console.log("Failed to reset points Slytherin points to 0 " + err);
-      });
+    }).catch(err => {
+       console.error(`Failed to reset points ${housesList[i]} points to 0 ` + err);
+    });
   }
 });
 
