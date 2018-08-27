@@ -169,6 +169,41 @@ function runCommand(message) {
   }
 }
 
+function checkPermissions(args, permission) {
+  var user = args.message.member,
+  roles = user.roles;
+  var targetPermission;
+  const perm_list = ['doAllOfTheAbove', 'takePoints', 'givePoints', 'setPoints'];
+  for(var i = 0; i < perm_list.length; i++) {
+    if (permission == perm_list[i]) {
+      targetPermission = perm_list[i];
+    }
+  }
+  if (targetPermission === undefined) {
+    console.log("PERMISSION NOT FOUND: " + permission);
+    return false;
+  }
+
+  var allowedRoles = config_roles[targetPermission];
+  console.log("Allowed roles for permission " + permission + ": " + allowedRoles);
+  roles.map((value, index, arr) => {
+    for (var i = 0; i < allowedRoles.length; i++) {
+      if (roles.find("name", allowedRoles[i])) {
+        targetPermission = true;
+      }
+    }
+  });
+
+  if (targetPermission === true) {
+    console.log("PERMISSION ALLOWED: " + permission);
+    return true;
+  }
+  else {
+    console.log("PERMISSION DENIED: " + permission);
+    return false;
+  }
+}
+
 addCommand(['help', 'commands'], function(args) {
   var text = 'Commands:\n',
     first = true;
@@ -186,21 +221,8 @@ addCommand(['help', 'commands'], function(args) {
   args.send(text + '.');
 });
 
-addCommand('pointslog', async function(args) {
-  var user = args.message.member,
-  roles = user.roles;
-  var canSetPoints = false;
-
-  roles.map((value, index, arr) => {
-    for (let i = 0; i < config_roles.doAllOfTheAbove.length; i++) {
-      if (roles.find("name", config_roles.doAllOfTheAbove[i])) {
-        canSetPoints = true;
-      }
-    }
-  });
-
-  // Reject if user has no permissions
-  if (!canSetPoints) {
+addCommand('pointslog', function(args) {
+  if (checkPermissions(args, "setPoints") === false) {
     args.send('You do not have permission to do that.');
     return;
   }
@@ -217,20 +239,7 @@ addCommand('pointslog', async function(args) {
 });
 
 addCommand('pointsreset', async function(args) {
-  var user = args.message.member,
-  roles = user.roles;
-  var canSetPoints = false;
-
-  roles.map((value, index, arr) => {
-    for (let i = 0; i < config_roles.doAllOfTheAbove.length; i++) {
-      if (roles.find("name", config_roles.doAllOfTheAbove[i])) {
-        canSetPoints = true;
-      }
-    }
-  });
-
-  // Reject if user has no permissions
-  if (!canSetPoints) {
+  if (checkPermissions(args, "setPoints") === false) {
     args.send('You do not have permission to do that.');
     return;
   }
@@ -377,52 +386,14 @@ function get_house_points(house) {
 async function housePointsFunc(args) {
   console.log("Begin points manipulation commands");
 
-  // Assign permissions
   var house = this,
   user = args.message.member,
-  userMention = "<@!" + args.authorID + ">",
-  roles = user.roles;
+  userMention = "<@!" + args.authorID + ">";
 
-  var canGivePoints = false,
-  canTakePoints = false,
-  canSetPoints = false;
-
-  roles.map((value, index, arr) => {
-    for (let i = 0; i < config_roles.doAllOfTheAbove.length; i++) {
-      if (roles.find("name", config_roles.doAllOfTheAbove[i])) {
-        canGivePoints = true;
-        canTakePoints = true;
-        canSetPoints = true;
-      }
-    }
-
-    if (!canTakePoints) {
-      for (let i = 0; i < config_roles.takePoints.length; i++) {
-        if (roles.find("name", config_roles.takePoints[i])) {
-          canTakePoints = true;
-          break;
-        }
-      }
-    }
-
-    if (!canGivePoints) {
-      for (let i = 0; i < config_roles.givePoints.length; i++) {
-        if (roles.find("name", config_roles.givePoints[i])) {
-          canGivePoints = true;
-          break;
-        }
-      }
-    }
-
-    if (!canSetPoints) {
-      for (let i = 0; i < config_roles.setPoints.length; i++) {
-         if (roles.find("name", config_roles.setPoints[i])) {
-          canSetPoints = true;
-          break;
-        }
-      }
-    }
-  });
+  // Assign permissions
+  var canGivePoints = checkPermissions(args, "givePoints"),
+  canTakePoints = checkPermissions(args, "takePoints"),
+  canSetPoints = checkPermissions(args, "setPoints");
   console.log("Verified roles permission");
 
   // Reject if user has no permissions
