@@ -418,19 +418,13 @@ async function housePointsFunc(args) {
   console.log("Mentions: " + targetUser);
   console.log("Reason: " + args_reason);
 
-  // Log channel if there is one
-  var logChannel;
-  await db.one('SELECT p_log_channel FROM configuration WHERE server_id = $1', args.guildId)
-    .then(logChannelId => {
-      if (logChannelId) {
-        console.log(logChannelId);
-        logChannel = args.message.guild.channels.find("id", logChannelId.p_log_channel);
-        console.log("Found points log channel: " + logChannel);
-      }
-    })
-    .catch(err => {
-      console.log("Could not find points log channel " + err);
-    });
+  // Get log channel if there is one
+  let logChannel;
+  let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
+  if (server_config.p_log_channel) {
+    logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
+    console.log("Found points log channel: " + logChannel);
+  }
 
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
@@ -438,83 +432,65 @@ async function housePointsFunc(args) {
   else if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
     // Add points
     // Update DB with points
-    db.any('update points set count = count + $2 where name = $1', [house.capitalize(), Number(args_points)])
+    let housePoints = await HPoints.findOne( {where: {name: house}} );
+    housePoints.points = housePoints.points + args_points;
+    housePoints.save()
     .then( () => {
-      var text = '';
-      var embed = new Discord.RichEmbed()
-        .setFooter(`Rewarded by: ${args.displayName}`, 'https://i.imgur.com/Ur1VL2r.png');
-
-      var description = "";
-      if ( targetUser === undefined ) {
-        text = 'Earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
-      }
-      else {
-        text = targetUserMention + ' earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
-        description = [description, 'Earned by ' + targetUserMention + '.'].join(' ');
-      }
-      if ( args_reason ) {
-        text = text + ' *Reason: ' + args_reason + '*';
-        description = [description, 'Reason: ' + args_reason].join(' ');
-      }
-      embed.setDescription(description);
-
-      var authorName = args_points + ' points for ' + house.capitalize();
-      switch(house.capitalize()) {
-        case 'Gryffindor':
-          embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
-          break;
-        case 'Hufflepuff':
-          embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
-          break;
-        case 'Ravenclaw':
-          embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
-          break;
-        case 'Slytherin':
-          embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
-          break;
-      }
-
-      console.log(text);
-      // args.send(text);
-      args.message.channel.sendEmbed(embed)
-        .then(sentMessage => {
-          var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
-          console.log("sentMessage: " + sentMessageUrl);
-          embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
-          if (logChannel) {
-            logChannel.sendEmbed(embed);
-          }
-        })
-        .catch(console.error);
-
-      args.message.delete();
-    })
-    .catch( err => {
-      console.log("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
+      console.log("Added to " + house + ": " + args_points + " points" );
+    } ).catch(err => {
+      console.error("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
       args.send("Failed to give " + args_points + " points to " + house.capitalize() );
       return;
     });
 
-    // var new_house_points = get_house_points(house.capitalize());
-    // get_house_points(house.capitalize()).then(function(data) {
-    //    new_house_points = data;
-    // })
-    // .catch(function(error) {
-    //   console.log(error);
-    // });
+    var text = '';
+    var embed = new Discord.RichEmbed()
+      .setFooter(`Rewarded by: ${args.displayName}`, 'https://i.imgur.com/Ur1VL2r.png');
 
-    // db.func('get_house_points', [house.capitalize()])
-    // .then(data => {
-    //   console.log('DATA:', data); // print data
-    //   new_house_points = data;
-    // })
-    // .catch(error => {
-    //   console.log('ERROR:', error); // print the error;
-    // });
+    var description = "";
+    if ( targetUser === undefined ) {
+      text = 'Earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
+    }
+    else {
+      text = targetUserMention + ' earned ' + args_points + ' points for ' + house.capitalize() + ' from ' + userMention + '.';
+      description = [description, 'Earned by ' + targetUserMention + '.'].join(' ');
+    }
+    if ( args_reason ) {
+      text = text + ' *Reason: ' + args_reason + '*';
+      description = [description, 'Reason: ' + args_reason].join(' ');
+    }
+    embed.setDescription(description);
 
-    // text = text + '!\n' + house.capitalize() + ' has ' + new_house_points + ' point(s) now!';
+    var authorName = args_points + ' points for ' + house.capitalize();
+    switch(house.capitalize()) {
+      case 'Gryffindor':
+        embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
+        break;
+      case 'Hufflepuff':
+        embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
+        break;
+      case 'Ravenclaw':
+        embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
+        break;
+      case 'Slytherin':
+        embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
+        break;
+    }
 
-    // args.send('Added ' + args_points + ' point(s) to ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + get_house_points(house.capitalize()) + ' point(s) now!');
+    console.log(text);
+    args.message.channel.sendEmbed(embed)
+    .then(sentMessage => {
+      if (logChannel) {
+        var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
+        embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
+        logChannel.sendEmbed(embed);
+      }
+    })
+    .catch(err => {
+      console.error("Failed to send embed: " + err);
+    });
+
+    args.message.delete();
   }
   else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
