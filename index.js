@@ -79,6 +79,12 @@ var Discord = require('discord.js'),
   fs = require('fs'),
   client = new Discord.Client();
 
+var emojis = loadJSON(__dirname + '/JSON/emojis.json');
+//Loads a JSON file
+function loadJSON(dir) {
+    return JSON.parse(fs.readFileSync(dir, 'utf8'));
+}
+
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 });
@@ -209,6 +215,13 @@ addCommand(['help', 'commands'], function(args) {
     text += process.env.PREFIX + COMMANDS[cmd].name;
   }
   args.send(text + '.');
+});
+
+addCommand('st', async function(args) {
+  var embed = new Discord.RichEmbed()
+    .setThumbnail(emojis[args.params[0]]);
+  args.send( "> <@!" + args.authorID + "> :", {embed} );
+  args.message.delete();
 });
 
 addCommand("pointssetup", async function(args) {
