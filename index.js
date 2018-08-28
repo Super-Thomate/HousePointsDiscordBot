@@ -33,17 +33,12 @@ Configuration.sync({alter: true}).then(() => {
 
 // Create house_point table
 const HPoints = sequelize.define('house_point', {
-  name: { type: Sequelize.STRING},
+  name: { type: Sequelize.STRING },
+  server_id: { type: Sequelize.STRING },
   points: { type: Sequelize.INTEGER, defaultValue: 0 }
 });
 HPoints.sync({ alter: true }).then(() => {
   console.log("TABLE CREATED: house_points");
-  let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
-  for( var i = 0; i < houses.length; i++ ) {
-    HPoints.findOrCreate({where: {name: houses[i]}}).spread((house, created) => {
-      console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
-    }).catch(err => { console.error("FAILED to findOrCreate house entry in house_points " + houses[i]) });
-  }
 }).catch(err => {
    console.error("FAILED TABLE CREATE: house_points " + err);
 });
@@ -219,6 +214,18 @@ addCommand(['help', 'commands'], function(args) {
     text += process.env.PREFIX + COMMANDS[cmd].name;
   }
   args.send(text + '.');
+});
+
+addCommand("pointssetup", async function(args) {
+  let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
+  for (var i = 0; i < houses.length; i++) {
+    HPoints.findOrCreate( {where: {name: houses[i], server_id: args.guildId}} ).spread((house, created) => {
+      console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
+      args.send("Created house entry " + house.get({plain: true}).name + " in points table.");
+    }).catch(err => {
+      console.error("FAILED to findOrCreate house entry in house_points " + houses[i])
+    });
+  }
 });
 
 addCommand('pointslog', async function(args) {
