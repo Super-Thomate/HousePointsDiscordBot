@@ -221,7 +221,7 @@ addCommand(['help', 'commands'], function(args) {
   args.send(text + '.');
 });
 
-addCommand('pointslog', function(args) {
+addCommand('pointslog', async function(args) {
   if (checkPermissions(args, "setPoints") === false) {
     args.send('You do not have permission to do that.');
     return;
@@ -238,7 +238,7 @@ addCommand('pointslog', function(args) {
   });
 });
 
-addCommand('pointsreset', function(args) {
+addCommand('pointsreset', async function(args) {
   if (checkPermissions(args, "setPoints") === false) {
     args.send('You do not have permission to do that.');
     return;
