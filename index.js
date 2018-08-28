@@ -500,7 +500,7 @@ async function housePointsFunc(args) {
     // Subtract points
     // Update DB with points
     let housePoints = await HPoints.findOne( {where: {name: house}} );
-    housePoints.points = housePoints.points + args_points;
+    housePoints.points = housePoints.points - args_points;
     housePoints.save()
     .then( () => {
       console.log("Subtracted from " + house + ": " + args_points + " points" );
