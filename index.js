@@ -495,64 +495,67 @@ async function housePointsFunc(args) {
   else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
     // Update DB with points
-    db.any('update points set count = count - $2 where name = $1', [house.capitalize(), Number(args_points)])
+    let housePoints = await HPoints.findOne( {where: {name: house}} );
+    housePoints.points = housePoints.points + args_points;
+    housePoints.save()
     .then( () => {
-      var text = '';
-      var embed = new Discord.RichEmbed()
-        .setFooter(`Taken by: ${args.displayName}`, 'https://i.imgur.com/jM0Myc5.png');
-
-      var description = "";
-      if ( targetUser === undefined ) {
-        text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
-      }
-      else {
-        text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
-        description = [description, 'Lost by ' + targetUserMention + '.'].join(' ');
-      }
-      if ( args_reason ) {
-        text = text + ' *Reason: ' + args_reason + '*';
-        description = [description, 'Reason: ' + args_reason].join(' ');
-      }
-      embed.setDescription(description);
-
-      var authorName = args_points + ' points for ' + house.capitalize();
-      switch(house.capitalize()) {
-        case 'Gryffindor':
-          embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
-          break;
-        case 'Hufflepuff':
-          embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
-          break;
-        case 'Ravenclaw':
-          embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
-          break;
-        case 'Slytherin':
-          embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
-          break;
-      }
-
-      console.log(text);
-      // args.send(text);
-      args.message.channel.sendEmbed(embed)
-        .then(sentMessage => {
-          var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
-          console.log("sentMessage: " + sentMessageUrl);
-          embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
-          if (logChannel) {
-            logChannel.sendEmbed(embed);
-          }
-        })
-        .catch(console.error);
-
-      args.message.delete();
-    })
-    .catch( err => {
-      console.log("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
+      console.log("Subtracted from " + house + ": " + args_points + " points" );
+    } ).catch(err => {
+      console.error("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
       args.send("Failed to take " + args_points + " points from " + house.capitalize() );
       return;
     });
 
-    // args.send('Subtracted ' + args_points + ' point(s) from ' + house.capitalize() + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
+    var text = '';
+    var embed = new Discord.RichEmbed()
+      .setFooter(`Taken by: ${args.displayName}`, 'https://i.imgur.com/jM0Myc5.png');
+
+    var description = "";
+    if ( targetUser === undefined ) {
+      text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
+    }
+    else {
+      text = targetUserMention + ' lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + userMention + '.';
+      description = [description, 'Lost by ' + targetUserMention + '.'].join(' ');
+    }
+    if ( args_reason ) {
+      text = text + ' *Reason: ' + args_reason + '*';
+      description = [description, 'Reason: ' + args_reason].join(' ');
+    }
+    embed.setDescription(description);
+
+    var authorName = args_points + ' points from ' + house.capitalize();
+    switch(house.capitalize()) {
+      case 'Gryffindor':
+        embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
+        break;
+      case 'Hufflepuff':
+        embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
+        break;
+      case 'Ravenclaw':
+        embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
+        break;
+      case 'Slytherin':
+        embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
+        break;
+    }
+
+    console.log(text);
+    // args.send(text);
+    args.message.channel.sendEmbed(embed)
+    .then(sentMessage => {
+      var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
+      console.log("sentMessage: " + sentMessageUrl);
+      embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
+      if (logChannel) {
+        logChannel.sendEmbed(embed);
+      }
+    })
+    .catch(err => {
+    console.error("Failed to send embed: " + err);
+    });
+
+    args.message.delete();
   }
   else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
     // Set points
