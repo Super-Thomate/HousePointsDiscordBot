@@ -334,21 +334,6 @@ async function postLeaderboard(args) {
   .catch(console.error);
 };
 
-function get_house_points(house) {
-  var value = 0;
-  try {
-    result = db.any("SELECT count FROM points WHERE name = $1", [house]);
-    console.log(result);
-    value = result[0].count;
-    console.log("first result: " + result[0] + ", value: " + value);
-  }
-  catch(e) {
-    console.log("Failed to fetch ${house} points." + e);
-  }
-
-  return value;
-};
-
 async function housePointsFunc(args) {
   console.log("Begin points manipulation commands");
 
