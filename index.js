@@ -564,21 +564,7 @@ async function housePointsFunc(args) {
   }
   else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
     // Set points
-    var text = '';
-    // Update DB with points
-    db.any('update points set count = $2 where name = $1', [house.capitalize(), Number(args_points)])
-    .then( () => {
-      text = 'Set ' + house.capitalize() + ' to ' + args_points + ' point(s)' + userMention;
-      console.log('LOG: ' + text + '(' + args.userTag + ')');
-      args.send(text);
-    })
-    .catch( error => {
-      console.log("Failed set: " + house.capitalize() + " to " + args_points + " points " + err);
-      args.send("Failed to set" + house.capitalize() + " to " + args_points + " points" );
-      done(err);
-    });
-
-      // args.send('Set ' + house.capitalize() + " house's points to " + args_points + '!\n' + house.capitalize() + ' has ' + points[house] + ' point(s) now!');
+    args.send("This command is not currently available.");
   }
   else {
     args.send(`You might not be able to do that.\nUsage:\n${process.env.PREFIX}housename add points\n${process.env.PREFIX}housename subtract points\nWhere housename is the house's name (hufflepuff, slytherin, ravenclaw, gryffindor) and points is a number.`);
