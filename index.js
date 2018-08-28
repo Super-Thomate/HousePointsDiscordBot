@@ -266,7 +266,8 @@ addCommand('pointsreset', async function(args) {
   }
 });
 
-addCommand('points', async function(args) {
+addCommand('points', async function(args) { await postLeaderboard(args) });
+async function postLeaderboard(args) {
   // Get log channel
   let logChannel;
   let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
@@ -327,7 +328,7 @@ addCommand('points', async function(args) {
   .catch(console.error);
 
   args.message.delete();
-});
+};
 
 function get_house_points(house) {
   var value = 0;
