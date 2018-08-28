@@ -572,10 +572,10 @@ async function housePointsFunc(args) {
 }
 
 //Adds the commands with different variations.
-addCommand(['gryffindor', 'gryff', 'griff', 'griffin', 'g', 'godric', 'lion', 'sword'], housePointsFunc.bind('gryffindor'));
-addCommand(['ravenclaw', 'raven', 'claw', 'bird', 'rowena', 'r', 'eagle', 'diadem'], housePointsFunc.bind('ravenclaw'));
-addCommand(['slytherin', 'slyther', 'slither', 'snake', 'salazar', 'pureblood', 'basilisk', 's'], housePointsFunc.bind('slytherin'));
-addCommand(['hufflepuff', 'huffle', 'huff', 'badger', 'puff', 'h'], housePointsFunc.bind('hufflepuff'));
+addCommand(['gryffindor', 'g', 'gryff'], housePointsFunc.bind('gryffindor'));
+addCommand(['ravenclaw', 'r', 'raven', 'claw'], housePointsFunc.bind('ravenclaw'));
+addCommand(['slytherin', 's', 'slyther'], housePointsFunc.bind('slytherin'));
+addCommand(['hufflepuff', 'h', 'huffle', 'huff', 'puff'], housePointsFunc.bind('hufflepuff'));
 
 
 //Logs into discord
