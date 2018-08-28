@@ -293,7 +293,7 @@ async function postLeaderboard(args) {
   // Create leaderboard text
   for (var i = 0; i < pointRows.length; i++) {
     var row = pointRows[i];
-    var subtext = `${i+1}` + ". " + row.name + ": " + row.points + " points";
+    var subtext = `${i+1}` + ". " + row.name.capitalize() + ": " + row.points + " points";
     if (i == 0) {
       subtext = '**' + subtext + '**';
     }
