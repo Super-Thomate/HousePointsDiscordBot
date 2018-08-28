@@ -39,15 +39,15 @@ HPoints.sync({ alter: true }).then(() => {
 });
 
 // Airbrake config, prod only
-var AirbrakeClient = require('airbrake-js');
-let airbrake;
-if ( process.env.ENVIRONMENT == 'production') {
-  airbrake = new AirbrakeClient({
-    projectId: Number(process.env.AIRBRAKE_PROJECT_ID),
-    projectKey: process.env.AIRBRAKE_API_KEY
-  });
-  console.log('Initialized Airbrake client');
-}
+// var AirbrakeClient = require('airbrake-js');
+// let airbrake;
+// if ( process.env.ENVIRONMENT == 'production') {
+//   airbrake = new AirbrakeClient({
+//     projectId: Number(process.env.AIRBRAKE_PROJECT_ID),
+//     projectKey: process.env.AIRBRAKE_API_KEY
+//   });
+//   console.log('Initialized Airbrake client');
+// }
 
 const http = require('http');
 const express = require('express');
