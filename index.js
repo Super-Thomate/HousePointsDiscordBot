@@ -245,7 +245,7 @@ addCommand('pointsreset', function(args) {
   }
 
   // Check for house param
-  let housesList = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
+  let housesList = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin']; // Go through all houses unless specified
   var houseParam = args.params[0];
   if (houseParam !== undefined) {
     houseParam = houseParam.toLowerCase();
@@ -261,12 +261,21 @@ addCommand('pointsreset', function(args) {
         args.send(`Reset ${housesList[i]} points to 0.`);
       });
     }).catch(err => {
-       console.error(`Failed to reset points ${housesList[i]} points to 0 ` + err);
+       console.error(`Failed to reset points ${housesList[i]} points to 0: ` + err);
     });
   }
 });
 
 addCommand('points', async function(args) {
+  // Get log channel
+  let logChannel;
+  let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
+  if (server_config.p_log_channel) {
+    logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
+    console.log("Found points log channel: " + logChannel);
+  }
+
+  // Set up embed
   var text = '';
   var embed = new Discord.RichEmbed()
     .setTitle("Points Leaderboard")
@@ -274,72 +283,50 @@ addCommand('points', async function(args) {
     .setFooter("Updated at")
     .setTimestamp(new Date().toISOString());
 
-  try {
-    const points_rows = await db.any("SELECT * FROM points ORDER BY count DESC");
-    for (var i = 0; i < points_rows.length; i++) {
-      var row = points_rows[i];
-      var subtext = `${i+1}` + ". " + row.name + ": " + row.count + " points";
-      if (i == 0) {
-        subtext = '**' + subtext + '**';
-      }
-      text = [text, subtext].join('\n');
-    };
-  }
-  catch(e) {
-    console.log("Failed to fetch all points data." + e);
-    text = 'Could not retrieve points.'
-  }
+  let pointRows = await HPoints.findAll({ order: [ ['points', 'DESC'] ], raw: true });
+
+  // Create leaderboard text
+  for (var i = 0; i < pointRows.length; i++) {
+    var row = pointRows[i];
+    var subtext = `${i+1}` + ". " + row.name + ": " + row.points + " points";
+    if (i == 0) {
+      subtext = '**' + subtext + '**';
+    }
+    text = [text, subtext].join('\n');
+  };
   embed.setDescription(text);
   console.log("text: " + text);
 
-  var logChannel;
-  await db.one('SELECT p_log_channel FROM configuration WHERE server_id = $1', args.guildId)
-    .then(logChannelId => {
-      if (logChannelId) {
-        logChannel = args.message.guild.channels.find("id", logChannelId.p_log_channel);
-        console.log("Found points log channel: " + logChannel);
-      }
-    })
-    .catch(err => {
-      console.log("Could not find points log channel " + err);
+  logChannel.sendEmbed(embed)
+  .then(sentMessage => {
+    // Remove old leaderboard message
+    let oldPostId = server_config.p_leaderboard_post;
+    if (oldPostId) {
+      console.log("Found points old leaderboard post: " + oldPostId);
+      logChannel.fetchMessage(oldPostId)
+      .then(message => {
+        if (message) {
+          message.delete();
+          console.log("Deleted old points leaderboard message");
+        }
+      })
+      .catch(console.error);
+    }
+
+    // Update p_leaderboard_post with new messageId
+    var sentMessageId = sentMessage.id;
+    console.log("sentMessageId: " + sentMessageId);
+    server_config.p_leaderboard_post = sentMessageId;
+    server_config.save().then(() => {
+      console.log("Saved p_leaderboard_post to " + sentMessageId);
+    }).catch(err => {
+      console.log("Failed to save p_leaderboard_post to " + sentMessageId + err);
     });
 
-  logChannel.sendEmbed(embed)
-    .then(sentMessage => {
-      // Remove old leaderboard message
-      db.any('SELECT p_leaderboard_post FROM configuration WHERE server_id = $1', [args.guildId])
-        .then(function(dataOldPostId) {
-          logChannel.fetchMessage(dataOldPostId[0].p_leaderboard_post)
-            .then(message => {
-              if (message) {
-                message.delete();
-                console.log("Deleted old points leaderboard message");
-              }
-            })
-            .catch(console.error);
-        })
-        .catch(err => {
-           console.log("Failed retrieve old p_leaderboard_post " + err);
-        });
-
-      // Update p_leaderboard_post with new messageId
-      var sentMessageId = sentMessage.id;
-      console.log("sentMessageId: " + sentMessageId);
-      db.none("UPDATE configuration SET p_leaderboard_post = $1 WHERE server_id = $2", [sentMessageId, args.guildId])
-        .then(() => {
-          console.log("Saved p_leaderboard_post to " + sentMessageId);
-        })
-        .catch(err => {
-           console.log("Failed to save p_leaderboard_post to " + sentMessageId + err);
-        });
-    })
-    .catch(console.error);
+  })
+  .catch(console.error);
 
   args.message.delete();
-  console.log('------channel ' + args.channelId + " " + typeof(args.channelId));
-  console.log('------messageId ' + args.messageId + " " + typeof(args.messageId));
-  console.log('------guildId ' + args.guildId + " " + typeof(args.guildId));
-  return;
 });
 
 function get_house_points(house) {
