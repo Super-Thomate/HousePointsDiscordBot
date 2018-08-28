@@ -5,11 +5,6 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
 
-//PG Promise
-const pgp = require('pg-promise')();
-pgp.pg.defaults.ssl = true;
-const db = pgp(process.env.DATABASE_URL);
-
 // Sequelize
 const Sequelize = require('sequelize');
 const sequelize = new Sequelize(process.env.DATABASE_URL);
