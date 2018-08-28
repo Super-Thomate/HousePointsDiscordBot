@@ -266,7 +266,11 @@ addCommand('pointsreset', async function(args) {
   }
 });
 
-addCommand('points', async function(args) { await postLeaderboard(args) });
+addCommand('points', async function(args) {
+  await postLeaderboard(args)
+  args.message.delete();
+});
+
 async function postLeaderboard(args) {
   // Get log channel
   let logChannel;
@@ -326,8 +330,6 @@ async function postLeaderboard(args) {
 
   })
   .catch(console.error);
-
-  args.message.delete();
 };
 
 function get_house_points(house) {
@@ -478,7 +480,7 @@ async function housePointsFunc(args) {
     }
 
     console.log(text);
-    args.message.channel.sendEmbed(embed)
+    await args.message.channel.sendEmbed(embed)
     .then(sentMessage => {
       if (logChannel) {
         var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
@@ -491,6 +493,8 @@ async function housePointsFunc(args) {
     });
 
     args.message.delete();
+
+    await postLeaderboard(args);
   }
   else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
@@ -541,8 +545,7 @@ async function housePointsFunc(args) {
     }
 
     console.log(text);
-    // args.send(text);
-    args.message.channel.sendEmbed(embed)
+    await args.message.channel.sendEmbed(embed)
     .then(sentMessage => {
       var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
       console.log("sentMessage: " + sentMessageUrl);
@@ -556,6 +559,8 @@ async function housePointsFunc(args) {
     });
 
     args.message.delete();
+
+    await postLeaderboard(args);
   }
   else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
     // Set points
