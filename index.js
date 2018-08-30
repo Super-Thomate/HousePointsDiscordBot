@@ -212,20 +212,20 @@ addCommand(['help', 'commands'], function(args) {
 });
 
 addCommand("emojilist", async function(args) {
-  if (checkPermissions(args, "setPoints") === false) {
-    args.send('You do not have permission to do that.');
-    return;
-  }
+  // if (checkPermissions(args, "setPoints") === false) {
+  //   args.send('You do not have permission to do that.');
+  //   return;
+  // }
 
   const emojiList = args.message.guild.emojis.sort();
   let text = "**Regular Emojis List**";
   let animated = "**Discord Nitro Emojis List**";
   for (var [emojiId, emoji] of emojiList) {
     if (emoji.animated) {
-      animated = [animated, emoji + " " + emoji.name].join("\n");
+      animated = [animated, emoji + " :" + emoji.name + ":"].join("\n");
     }
     else {
-      text = [text, emoji + " " + emoji.name].join("\n");
+      text = [text, emoji + " :" + emoji.name + ":"].join("\n");
     }
   }
   console.log(text);
