@@ -7,7 +7,10 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Sequelize
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize(process.env.DATABASE_URL);
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+  dialect: 'postgres',
+  dialectOptions: { ssl: true }
+});
 sequelize.authenticate().then(() => {
   console.log('PG connection has been established successfully.');
 }).catch(err => {
