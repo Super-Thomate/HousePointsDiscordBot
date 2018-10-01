@@ -1,21 +1,12 @@
-/* jshint esversion:6*/
+// const Bot = require('./struct/bot')
+
+const Sequelize = exports.Sequelize = require('sequelize');
+const sequelize = require('./struct/db');
 
 //Load env vars
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
-
-// Sequelize
-const Sequelize = require('sequelize');
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  dialectOptions: { ssl: true }
-});
-sequelize.authenticate().then(() => {
-  console.log('PG connection has been established successfully.');
-}).catch(err => {
-  console.error('Unable to connect to the database:', err);
-});
 
 // Create configuration table
 const Configuration = sequelize.define('configuration', {
@@ -64,13 +55,13 @@ app.listen(process.env.PORT);
 // role permissions. TODO move to db
 const config_roles = {
   "takePoints": [
-    "Staff", "Prefect"
+    "Staff", "Moderator"
   ],
   "setPoints": [
     "Headmaster"
   ],
   "givePoints": [
-    "Staff", "Prefect"
+    "Staff", "Prefect", "Moderator"
   ],
   "doAllOfTheAbove": [
     "Headmaster"
