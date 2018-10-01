@@ -68,7 +68,6 @@ app.listen(process.env.PORT);
 const config_roles           = loadJSON ("./JSON/roles.json");
 const Houses                 = loadJSON ("./JSON/houses.json") ;
 
-
 //Loads a JSON file
 function loadJSON (dir) {
     return JSON.parse(fs.readFileSync(dir, 'utf8'));
@@ -158,7 +157,12 @@ function checkPermissions(args, permission) {
   var user = args.message.member,
   roles = user.roles;
   var targetPermission;
-  const perm_list = ['doAllOfTheAbove', 'takePoints', 'givePoints', 'setPoints'];
+  const perm_list = [   'doAllOfTheAbove'
+                      , 'takePoints'
+                      , 'givePoints'
+                      , 'setPoints'
+                      , 'addHouse'
+                    ] ;
   for(var i = 0; i < perm_list.length; i++) {
     if (permission == perm_list[i]) {
       targetPermission = perm_list[i];
@@ -567,7 +571,23 @@ async function housePointsFunc(args) {
 }
 
 addCommand("addhouse", async function(args) {
-  
+  if (! checkPermissions(args, "addHouse")) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  console.log ("addhouse") ;
+  console.log ("args", args.params) ;
+  if (! args.params.length) {
+    args.send ("Missing arg : new house name.") ;
+    return ;
+  }
+  var NewHouse               = args.params [0]
+  HPoints.findOrCreate( {where: {name: NewHouse, server_id: args.guildId}} ).spread((house, created) => {
+    console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
+    args.send("Created house entry " + house.get({plain: true}).name + " in points table.");
+  }).catch(err => {
+    console.error("FAILED to findOrCreate house entry in house_points " + NewHouse)
+  });
 });
 
 

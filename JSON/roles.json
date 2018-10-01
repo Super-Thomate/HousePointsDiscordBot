@@ -1,14 +1,20 @@
 {
-  "takePoints": [
-    "Staff", "Moderator"
-  ],
-  "setPoints": [
-    "Headmaster"
-  ],
-  "givePoints": [
-    "Staff", "Prefect", "Moderator"
-  ],
-  "doAllOfTheAbove": [
-    "Headmaster"
-  ]
+   "takePoints": [
+      "Staff"
+    , "Moderator"
+   ]
+ , "setPoints": [
+      "Headmaster"
+   ]
+ , "givePoints": [
+      "Staff"
+    , "Prefect"
+    , "Moderator"
+   ]
+ , "addHouse": [
+      "Headmaster"
+   ]
+ , "doAllOfTheAbove": [
+      "Headmaster"
+   ]
 }
