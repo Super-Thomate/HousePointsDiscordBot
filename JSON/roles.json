@@ -1,0 +1,14 @@
+{
+  "takePoints": [
+    "Staff", "Moderator"
+  ],
+  "setPoints": [
+    "Headmaster"
+  ],
+  "givePoints": [
+    "Staff", "Prefect", "Moderator"
+  ],
+  "doAllOfTheAbove": [
+    "Headmaster"
+  ]
+}

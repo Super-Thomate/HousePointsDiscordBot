@@ -1,0 +1,42 @@
+{
+   "firebendor": {
+      "aliases": [
+          "firebendor"
+        , "fire"
+        , "f"
+       ]
+    , "icon": "https://i.imgur.com/ds8VV2l.png"
+    , "color": "0xEA0000"
+   }
+ , "airfflepuff": {
+      "aliases": [
+          "airfflepuff"
+        , "air"
+        , "a"
+        , "segpa"
+      ]
+    , "icon": "https://i.imgur.com/sB4KbDn.png"
+    , "color": "0xFFE500"
+   }
+ , "waterclaw": {
+      "aliases": [
+          "waterclaw"
+        , "water"
+        , "w"
+      ]
+    , "icon": "https://i.imgur.com/un87c3p.png"
+    , "color": "0x2362AF"
+   }
+ , "slyterrin": {
+      "aliases": [
+          "slyterrin"
+        , "earth"
+        , "slyt"
+        , "terrin"
+        , "s"
+        , "e"
+      ]
+    , "icon": "https://i.imgur.com/idnZ3xJ.png"
+    , "color": "0x047A00"
+   }
+}
