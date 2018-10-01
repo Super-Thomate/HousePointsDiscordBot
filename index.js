@@ -1,12 +1,24 @@
 // const Bot = require('./struct/bot')
-
-const Sequelize = exports.Sequelize = require('sequelize');
-const sequelize = require('./struct/db');
-
 //Load env vars
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
+const fs = require('fs') ;
+const Sequelize = exports.Sequelize = require('sequelize');
+const sequelize = new Sequelize(process.env.MYSQL_URL);
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
+//For discord
+var Discord = require('discord.js'),
+  client = new Discord.Client();
+
+
 
 // Create configuration table
 const Configuration = sequelize.define('configuration', {
@@ -47,31 +59,20 @@ const http = require('http');
 const express = require('express');
 const app = express();
 app.get("/", (request, response) => {
-  console.log(Date.now() + " Ping Received");
+  console.log(""+Date.now() + " Ping Received");
   response.sendStatus(200);
 });
 app.listen(process.env.PORT);
 
 // role permissions. TODO move to db
-const config_roles = {
-  "takePoints": [
-    "Staff", "Moderator"
-  ],
-  "setPoints": [
-    "Headmaster"
-  ],
-  "givePoints": [
-    "Staff", "Prefect", "Moderator"
-  ],
-  "doAllOfTheAbove": [
-    "Headmaster"
-  ]
-};
+const config_roles           = loadJSON ("./JSON/roles.json");
+const Houses                 = loadJSON ("./JSON/houses.json") ;
 
-//For discord
-var Discord = require('discord.js'),
-  fs = require('fs'),
-  client = new Discord.Client();
+
+//Loads a JSON file
+function loadJSON (dir) {
+    return JSON.parse(fs.readFileSync(dir, 'utf8'));
+}
 
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
@@ -230,7 +231,7 @@ addCommand("emojilist", async function(args) {
 });
 
 addCommand("pointssetup", async function(args) {
-  let houses = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin'];
+  let houses = ['firebendor', 'airfflepuff', 'waterclaw', 'slyterrin'];
   for (var i = 0; i < houses.length; i++) {
     HPoints.findOrCreate( {where: {name: houses[i], server_id: args.guildId}} ).spread((house, created) => {
       console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
@@ -242,7 +243,9 @@ addCommand("pointssetup", async function(args) {
 });
 
 addCommand('pointslog', async function(args) {
-  if (checkPermissions(args, "setPoints") === false) {
+  if (   checkPermissions(args, "setPoints") === false
+      && checkPermissions(args, "doAllOfTheAbove") === false
+     ) {
     args.send('You do not have permission to do that.');
     return;
   }
@@ -259,13 +262,15 @@ addCommand('pointslog', async function(args) {
 });
 
 addCommand('pointsreset', async function(args) {
-  if (checkPermissions(args, "setPoints") === false) {
+  if (   checkPermissions(args, "setPoints") === false
+      && checkPermissions(args, "doAllOfTheAbove") === false
+     ) {
     args.send('You do not have permission to do that.');
     return;
   }
 
   // Check for house param
-  let housesList = ['gryffindor', 'hufflepuff', 'ravenclaw', 'slytherin']; // Go through all houses unless specified
+  let housesList = ['firebendor', 'airfflepuff', 'waterclaw', 'slyterrin']; // Go through all houses unless specified
   var houseParam = args.params[0];
   if (houseParam !== undefined) {
     houseParam = houseParam.toLowerCase();
@@ -354,15 +359,16 @@ async function postLeaderboard(args) {
 
 async function housePointsFunc(args) {
   console.log("Begin points manipulation commands");
-
   var house = this,
   user = args.message.member,
   userMention = "<@!" + args.authorID + ">";
 
   // Assign permissions
-  var canGivePoints = checkPermissions(args, "givePoints"),
-  canTakePoints = checkPermissions(args, "takePoints"),
-  canSetPoints = checkPermissions(args, "setPoints");
+  var 
+        canGivePoints = checkPermissions (args, "givePoints") || checkPermissions (args, "doAllOfTheAbove")
+      , canTakePoints = checkPermissions (args, "takePoints") || checkPermissions (args, "doAllOfTheAbove")
+      , canSetPoints  = checkPermissions  (args, "setPoints") || checkPermissions (args, "doAllOfTheAbove")
+      ;
   console.log("Verified roles permission");
 
   // Reject if user has no permissions
@@ -379,17 +385,17 @@ async function housePointsFunc(args) {
     }
   }
   console.log("Command: " + firstParam + ", Params: " + args.params);
-
+  
   // Check second param is a number
   let args_points = Number(args.params[1]);
   if ( isNaN(args_points) ){
     args.send(args.params[1] + ' is not a number!');
-    console.log(args.params[1] + ' is not a number!');
+    console.log(""+args.params[1] + ' is not a number!');
     return;
   }
   else if ( !Number.isInteger(args_points) ) {
     args.send('Point values must be an integer.');
-    console.log('Point values must be an integer.');
+    console.log(' Point values must be an integer.');
     return;
   }
   else if (args_points <= 0 || args_points > 100) {
@@ -424,31 +430,37 @@ async function housePointsFunc(args) {
   }
   console.log("Mentions: " + targetUser);
   console.log("Reason: " + args_reason);
-
-  // Get log channel if there is one
-  let logChannel;
-  let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
-  if (server_config.p_log_channel) {
-    logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
-    console.log("Found points log channel: " + logChannel);
+  try {
+   // Get log channel if there is one
+   let logChannel;
+   let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
+    if (server_config.p_log_channel) {
+      logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
+      console.log("Found points log channel: " + logChannel);
+    }
+  } catch (e) {
+    console.error ("Error on line 450 : ",e) ;
   }
-
   if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
   }
   else if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
-    // Add points
-    // Update DB with points
-    let housePoints = await HPoints.findOne( {where: {name: house}} );
-    housePoints.points = housePoints.points + args_points;
-    housePoints.save()
-    .then( () => {
-      console.log("Added to " + house + ": " + args_points + " points" );
-    } ).catch(err => {
-      console.error("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
-      args.send("Failed to give " + args_points + " points to " + house.capitalize() );
-      return;
-    });
+    try {
+      // Add points
+      // Update DB with points
+      let housePoints = await HPoints.findOne( {where: {name: house}} );
+      housePoints.points = housePoints.points + args_points;
+      housePoints.save()
+      .then( () => {
+        console.log("Added to " + house + ": " + args_points + " points" );
+      } ).catch(err => {
+        console.error("Failed give: " + args_points + " points to " + house.capitalize() + " " + err);
+        args.send("Failed to give " + args_points + " points to " + house.capitalize() );
+        return;
+      });
+    } catch (e) {
+      console.error ("Error on line 470 : ", e) ;
+    }
 
     var text = '';
     var embed = new Discord.RichEmbed()
@@ -469,21 +481,10 @@ async function housePointsFunc(args) {
     embed.setDescription(description);
 
     var authorName = args_points + ' points for ' + house.capitalize();
-    switch(house.capitalize()) {
-      case 'Gryffindor':
-        embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
-        break;
-      case 'Hufflepuff':
-        embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
-        break;
-      case 'Ravenclaw':
-        embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
-        break;
-      case 'Slytherin':
-        embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
-        break;
+    if (typeof (Houses [house]) != "undefined") {
+     let objHouse            = Houses [house] ;
+      embed.setAuthor(authorName, objHouse.icon).setColor(objHouse.color);
     }
-
     console.log(text);
     await args.message.channel.sendEmbed(embed)
     .then(sentMessage => {
@@ -534,21 +535,10 @@ async function housePointsFunc(args) {
     embed.setDescription(description);
 
     var authorName = args_points + ' points from ' + house.capitalize();
-    switch(house.capitalize()) {
-      case 'Gryffindor':
-        embed.setAuthor(authorName, 'https://i.imgur.com/ds8VV2l.png').setColor(0xEA0000);
-        break;
-      case 'Hufflepuff':
-        embed.setAuthor(authorName, 'https://i.imgur.com/sB4KbDn.png').setColor(0xFFE500);
-        break;
-      case 'Ravenclaw':
-        embed.setAuthor(authorName, 'https://i.imgur.com/un87c3p.png').setColor(0x2362AF);
-        break;
-      case 'Slytherin':
-        embed.setAuthor(authorName, 'https://i.imgur.com/idnZ3xJ.png').setColor(0x047A00);
-        break;
+    if (typeof (Houses [house]) != "undefined") {
+     let objHouse            = Houses [house] ;
+      embed.setAuthor(authorName, objHouse.icon).setColor(objHouse.color);
     }
-
     console.log(text);
     await args.message.channel.sendEmbed(embed)
     .then(sentMessage => {
@@ -572,16 +562,21 @@ async function housePointsFunc(args) {
     args.send("This command is not currently available.");
   }
   else {
-    args.send(`You might not be able to do that.\nUsage:\n${process.env.PREFIX}housename add points\n${process.env.PREFIX}housename subtract points\nWhere housename is the house's name (hufflepuff, slytherin, ravenclaw, gryffindor) and points is a number.`);
+    args.send(`You might not be able to do that.\nUsage:\n${process.env.PREFIX}housename add points\n${process.env.PREFIX}housename subtract points\nWhere housename is the house's name (airfflepuff, slyterrin, waterclaw, firebendor) and points is a number.`);
   }
 }
 
-//Adds the commands with different variations.
-addCommand(['gryffindor', 'g', 'gryff'], housePointsFunc.bind('gryffindor'));
-addCommand(['ravenclaw', 'r', 'raven', 'claw'], housePointsFunc.bind('ravenclaw'));
-addCommand(['slytherin', 's', 'slyther'], housePointsFunc.bind('slytherin'));
-addCommand(['hufflepuff', 'h', 'huffle', 'huff', 'puff'], housePointsFunc.bind('hufflepuff'));
+addCommand("addhouse", async function(args) {
+  
+});
 
+
+
+for (let Nb = 0 ; Nb < Object.entries (Houses).length ; Nb++) {
+  var House                  = Object.entries (Houses) [Nb][0] ;
+  var Options                = Object.entries (Houses) [Nb][1] ;
+  addCommand (Options.aliases, housePointsFunc.bind (House)) ;
+}
 
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
