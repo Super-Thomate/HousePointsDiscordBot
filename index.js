@@ -78,7 +78,14 @@ const Houses                 = loadJSON ("./JSON/houses.json") ;
 function loadJSON (dir) {
     return JSON.parse(fs.readFileSync(dir, 'utf8'));
 }
-
+//Writes to a JSON file
+function writeJSON (dir, data) {
+    return fs.writeFileSync(
+        dir,
+        JSON.stringify(data),
+        'utf8'
+    );
+}
 client.on("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 });
