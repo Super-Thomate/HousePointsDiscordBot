@@ -43,18 +43,8 @@ HPoints.sync({ alter: true }).then(() => {
 }).catch(err => {
    console.error("FAILED TABLE CREATE: house_points " + err);
 });
-
-// Airbrake config, prod only
-// var AirbrakeClient = require('airbrake-js');
-// let airbrake;
-// if ( process.env.ENVIRONMENT == 'production') {
-//   airbrake = new AirbrakeClient({
-//     projectId: Number(process.env.AIRBRAKE_PROJECT_ID),
-//     projectKey: process.env.AIRBRAKE_API_KEY
-//   });
-//   console.log('Initialized Airbrake client');
-// }
-
+// Is this still relevant ?
+/*
 const http = require('http');
 const express = require('express');
 const app = express();
@@ -63,8 +53,10 @@ app.get("/", (request, response) => {
   response.sendStatus(200);
 });
 app.listen(process.env.PORT);
-
-// role permissions. TODO move to db
+*/
+// TODO
+//  |- Move Houses to db
+//  |- Move Roles  to db
 const config_roles           = loadJSON ("./JSON/roles.json");
 const Houses                 = loadJSON ("./JSON/houses.json") ;
 
