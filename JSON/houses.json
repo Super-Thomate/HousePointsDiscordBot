@@ -5,7 +5,7 @@
         , "fire"
         , "f"
        ]
-    , "icon": "firebendor.png"
+    , "icon": "https://media.discordapp.net/attachments/479659765908242432/496402590117134347/firebendor.png"
     , "color": "0xEA0000"
    }
  , "airfflepuff": {
@@ -15,7 +15,7 @@
         , "a"
         , "segpa"
       ]
-    , "icon": "airfflepuff.png"
+    , "icon": "https://media.discordapp.net/attachments/479659765908242432/496402589605298176/Airfflepuff.png"
     , "color": "0xFFE500"
    }
  , "waterclaw": {
@@ -24,7 +24,7 @@
         , "water"
         , "w"
       ]
-    , "icon": "waterclaw.png"
+    , "icon": "https://media.discordapp.net/attachments/479659765908242432/496402586006454292/Waterclaw.png"
     , "color": "0x2362AF"
    }
  , "slyterrin": {
@@ -36,7 +36,7 @@
         , "s"
         , "e"
       ]
-    , "icon": "slyterrin.png"
+    , "icon": "https://media.discordapp.net/attachments/479659765908242432/496402576783310868/Slyterrin.png"
     , "color": "0x047A00"
    }
 }
