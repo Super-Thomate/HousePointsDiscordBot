@@ -265,6 +265,10 @@ addCommand("emojilist", async function(args) {
 
 addCommand("pointssetup", async function(args) {
   let houses = allHouses;
+  if (! houses.length) {
+    args.send ("No house define in base => use /addhouse <housename> to add houses.") ;
+    return ;
+  }
   for (var i = 0; i < houses.length; i++) {
     HPoints.findOrCreate( {where: {name: houses[i], server_id: args.guildId}} ).spread((house, created) => {
       console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
