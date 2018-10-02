@@ -313,7 +313,7 @@ addCommand('points', async function(args) {
   args.message.delete();
 });
 
-async function postLeaderboard(args) {
+async function postLeaderboard (args) {
   // Get log channel
   let logChannel;
   let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
@@ -374,7 +374,7 @@ async function postLeaderboard(args) {
   .catch(console.error);
 };
 
-async function housePointsFunc(args) {
+async function housePointsFunc (args) {
   console.log("Begin points manipulation commands");
   var house = this,
   user = args.message.member,
@@ -447,9 +447,9 @@ async function housePointsFunc(args) {
   }
   console.log("Mentions: " + targetUser);
   console.log("Reason: " + args_reason);
+  let logChannel;
   try {
    // Get log channel if there is one
-   let logChannel;
    let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
     if (server_config.p_log_channel) {
       logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
