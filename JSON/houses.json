@@ -5,7 +5,7 @@
         , "fire"
         , "f"
        ]
-    , "icon": "https://i.imgur.com/ds8VV2l.png"
+    , "icon": "firebendor.png"
     , "color": "0xEA0000"
    }
  , "airfflepuff": {
@@ -15,7 +15,7 @@
         , "a"
         , "segpa"
       ]
-    , "icon": "https://i.imgur.com/sB4KbDn.png"
+    , "icon": "airfflepuff.png"
     , "color": "0xFFE500"
    }
  , "waterclaw": {
@@ -24,7 +24,7 @@
         , "water"
         , "w"
       ]
-    , "icon": "https://i.imgur.com/un87c3p.png"
+    , "icon": "waterclaw.png"
     , "color": "0x2362AF"
    }
  , "slyterrin": {
@@ -36,7 +36,7 @@
         , "s"
         , "e"
       ]
-    , "icon": "https://i.imgur.com/idnZ3xJ.png"
+    , "icon": "slyterrin.png"
     , "color": "0x047A00"
    }
 }
