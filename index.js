@@ -43,6 +43,20 @@ HPoints.sync({ alter: true }).then(() => {
 }).catch(err => {
    console.error("FAILED TABLE CREATE: house_points " + err);
 });
+
+// Create houses table
+const Houses_t = sequelize.define('houses', {
+    name: { type: Sequelize.STRING }
+  , server_id: { type: Sequelize.STRING }
+  , icon: { type: Sequelize.STRING }
+  , color: { type: Sequelize.STRING }
+  , aliases: { type: Sequelize.JSON }
+});
+Houses_t.sync({ alter: true }).then(() => {
+  console.log("TABLE CREATED: houses");
+}).catch(err => {
+   console.error("FAILED TABLE CREATE: houses " + err);
+});
 // Is this still relevant ?
 /*
 const http = require('http');
