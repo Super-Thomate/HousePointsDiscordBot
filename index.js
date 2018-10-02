@@ -1,4 +1,3 @@
-// const Bot = require('./struct/bot')
 //Load env vars
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
@@ -45,14 +44,14 @@ HPoints.sync({ alter: true }).then(() => {
 });
 
 // Create houses table
-const Houses_t = sequelize.define('houses', {
+const Houses = sequelize.define('houses', {
     name: { type: Sequelize.STRING }
   , server_id: { type: Sequelize.STRING }
   , icon: { type: Sequelize.STRING }
   , color: { type: Sequelize.STRING }
-  , aliases: { type: Sequelize.JSON }
+  , aliases: { type: Sequelize.STRING }
 });
-Houses_t.sync({ alter: true }).then(() => {
+Houses.sync({ alter: true }).then(() => {
   console.log("TABLE CREATED: houses");
 }).catch(err => {
    console.error("FAILED TABLE CREATE: houses " + err);
@@ -72,7 +71,24 @@ app.listen(process.env.PORT);
 //  |- Move Houses to db
 //  |- Move Roles  to db
 const config_roles           = loadJSON ("./JSON/roles.json");
-const Houses                 = loadJSON ("./JSON/houses.json") ;
+var allHouses                = new Array () ;
+Houses.findAll ()
+.then ((houses) => {
+  for (let n = 0 ; n < houses.length; n++) {
+    var house                = houses [n] ;
+    let houseName            = house.get ({plain: true}).name.toLowerCase () ;
+    let aliases              = JSON.parse (house.get ().aliases) ;
+    allHouses       [allHouses.length] = houseName ;
+    console.log ("--------------------------------------------------------") ;
+    console.log (houseName, aliases) ;
+    console.log ("--------------------------------------------------------") ;
+    addCommand (aliases, housePointsFunc.bind (houseName))
+  }
+})
+  .catch(err => {
+    console.error("FAILED to load houses " + err)
+  }) ;
+const MyHouses               = loadJSON ("./JSON/houses.json") ;
 
 //Loads a JSON file
 function loadJSON (dir) {
@@ -248,7 +264,7 @@ addCommand("emojilist", async function(args) {
 });
 
 addCommand("pointssetup", async function(args) {
-  let houses = ['firebendor', 'airfflepuff', 'waterclaw', 'slyterrin'];
+  let houses = allHouses;
   for (var i = 0; i < houses.length; i++) {
     HPoints.findOrCreate( {where: {name: houses[i], server_id: args.guildId}} ).spread((house, created) => {
       console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
@@ -287,7 +303,7 @@ addCommand('pointsreset', async function(args) {
   }
 
   // Check for house param
-  let housesList = ['firebendor', 'airfflepuff', 'waterclaw', 'slyterrin']; // Go through all houses unless specified
+  let housesList = allHouses ; // Go through all houses unless specified
   var houseParam = args.params[0];
   if (houseParam !== undefined) {
     houseParam = houseParam.toLowerCase();
@@ -331,7 +347,9 @@ async function postLeaderboard (args) {
     .setTimestamp(new Date().toISOString());
 
   let pointRows = await HPoints.findAll({ order: [ ['points', 'DESC'] ], raw: true });
-
+  console.log ("--------------------------------------------------------") ;
+  console.log (pointRows) ;
+  console.log ("--------------------------------------------------------") ;
   // Create leaderboard text
   for (var i = 0; i < pointRows.length; i++) {
     var row = pointRows[i];
@@ -498,10 +516,14 @@ async function housePointsFunc (args) {
     embed.setDescription(description);
 
     var authorName = args_points + ' points for ' + house.capitalize();
-    if (typeof (Houses [house]) != "undefined") {
-     let objHouse            = Houses [house] ;
-      embed.setAuthor(authorName, objHouse.icon).setColor(objHouse.color);
-    }
+    
+    await Houses.findOne ({where:{name:house.toLowerCase()}})
+    .then ( (house) => {
+      embed.setAuthor(authorName, house.get().icon).setColor(house.get().color);
+    })
+    .catch (err => {
+      console.error("FAILED to findOne house entry in houses " + err)
+    }) ;
     console.log(text);
     await args.message.channel.sendEmbed(embed)
     .then(sentMessage => {
@@ -552,10 +574,13 @@ async function housePointsFunc (args) {
     embed.setDescription(description);
 
     var authorName = args_points + ' points from ' + house.capitalize();
-    if (typeof (Houses [house]) != "undefined") {
-     let objHouse            = Houses [house] ;
-      embed.setAuthor(authorName, objHouse.icon).setColor(objHouse.color);
-    }
+    await Houses.findOne ({where:{name:house.toLowerCase()}})
+    .then ( (house) => {
+      embed.setAuthor(authorName, house.get().icon).setColor(house.get().color);
+    })
+    .catch (err => {
+      console.error("FAILED to findOne house entry in houses " + err)
+    }) ;
     console.log(text);
     await args.message.channel.sendEmbed(embed)
     .then(sentMessage => {
@@ -579,13 +604,19 @@ async function housePointsFunc (args) {
     args.send("This command is not currently available.");
   }
   else {
-    args.send(`You might not be able to do that.\nUsage:\n${process.env.PREFIX}housename add points\n${process.env.PREFIX}housename subtract points\nWhere housename is the house's name (airfflepuff, slyterrin, waterclaw, firebendor) and points is a number.`);
+    let allHouseNames  = allHouses.join(', ') ;
+    args.send(
+    'You might not be able to do that.'+
+    '\nUsage:\n'+process.env.PREFIX+'housename add points\n'+
+    process.env.PREFIX+'housename subtract points\n'+
+    'Where housename is the house\'s name '+
+    '('+allHouseNames+')'+
+    ' and points is a number.'
+    ) ;
   }
 }
 
 addCommand("addhouse", async function(args) {
-  args.send ('This command is not currently available.') ;
-  return ;
   if (! checkPermissions(args, "addHouse")) {
     args.send ('You do not have permission to do that.') ;
     return ;
@@ -593,26 +624,118 @@ addCommand("addhouse", async function(args) {
   console.log ("addhouse") ;
   console.log ("args", args.params) ;
   if (! args.params.length) {
-    args.send ("Missing arg : new house name.") ;
+    args.send ("Missing args. Use /addhouse <housename>") ;
     return ;
   }
-  var NewHouse               = args.params [0]
-  HPoints.findOrCreate( {where: {name: NewHouse, server_id: args.guildId}} ).spread((house, created) => {
+  var HouseName              = args.params [0].trim () ;
+  //color_hexa alias1;alias2;alias3 
+  // add in Houses
+  Houses
+          .findOrCreate ( 
+                         {where: {   name: HouseName.toLowerCase()
+                                   , server_id: args.guildId
+                                   , icon: ""
+                                   , color: "0x000000"
+                                   , aliases: JSON.stringify ([HouseName.toLowerCase()])
+                                  }
+                         }
+                        )
+          .spread ( (house, created) => {
+            console.log("FINDORCREATE houses: " + house.get({plain: true}).name) ;
+            addCommand (HouseName.toLowerCase(), housePointsFunc.bind (HouseName.toLowerCase())) ;
+            allHouses         [allHouses.length] = HouseName ;
+            args.send("Created house entry " + house.get({plain: true}).name + " in houses table.");
+            args.send("Set houses options with /sethouse <name> <attribute> <value>.");
+          })
+          .catch (err => {
+            console.error("FAILED to findOrCreate house entry in house_points " + HouseName)
+          });
+  // add in HPoints
+  HPoints.findOrCreate( {where: {name: HouseName, server_id: args.guildId}} ).spread((house, created) => {
     console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
     args.send("Created house entry " + house.get({plain: true}).name + " in points table.");
   }).catch(err => {
-    console.error("FAILED to findOrCreate house entry in house_points " + NewHouse)
+    console.error("FAILED to findOrCreate house entry in house_points " + HouseName)
   });
 });
 
+addCommand("sethouse", async function(args) {
+  if (! checkPermissions(args, "addHouse")) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  console.log ("update house") ;
+  console.log ("args", args.params) ;
+  if (args.params.length < 3) {
+    args.send ("Missing args. Use /sethouse <name> <attribute> <value>") ;
+    return ;
+  }
+  var HouseName              = args.params [0].trim () ;
+  var attribute              = args.params [1].trim () ;
+  var value                  = args.params [2].trim () ;
+  //color_hexa alias1;alias2;alias3 
+  const allAttr              = [   "color"
+                                 , "icon"
+                                 , "alias"
+                               ] ;
+  if (allAttr.indexOf (attribute) == -1) {
+    args.send ("Invalid attribute {color, icon, alias}") ;
+    return ;
+  }
+  if (! value.length) {
+    args.send ("Can parse empty value") ;
+    return ;
+  }
+  // add in Houses
+  Houses
+          .findOne ({where: {name: HouseName.toLowerCase()} })
+          .then ( (house) => {
+            switch (attribute) {
+              case "alias" :
+                var oldAliases         = JSON.parse (house.get().aliases) ;
+                var newAliases         = value.split(",") ;
+                for (let i = 0 ; i < newAliases.length ; i++)
+                  oldAliases [oldAliases.length] = newAliases [i];
+                house.aliases          = JSON.stringify (oldAliases) ;
+                addCommand (newAliases, housePointsFunc.bind (HouseName.toLowerCase())) ;
+              break ;
+              case "color" :
+                const rex    = /[0-9a-f]{6}/i ;
+                if (rex.test (value)) {
+                  house.color          = "0x"+value ;
+                  args.send ({embed: {
+                      color: parseInt (parseInt (value, 16), 10)
+                    , description: value.toUpperCase()
+                  }})
+                }  
+                else {
+                  args.send ("Invalid value for color "+value+".");
+                  args.send ("Use hexadecimal value (e.g. 00ff00)");
+                  return ;
+                }
+              break ;
+              case "icon" :
+                house.icon   = value ;
+              break ;
+            }
+             house.save()
+               .then(() => {
+                 console.log ("Update house entry " + house.get({plain: true}).name + " in houses table.");
+                 args.send("Update house entry " + house.get({plain: true}).name + " in houses table.");
+               });
+          })
+          .catch(err => {
+            console.error("FAILED to findOne house entry in houses " + err)
+          });
+});
 
-
-for (let Nb = 0 ; Nb < Object.entries (Houses).length ; Nb++) {
-  var House                  = Object.entries (Houses) [Nb][0] ;
-  var Options                = Object.entries (Houses) [Nb][1] ;
+/*
+for (let Nb = 0 ; Nb < Object.entries (MyHouses).length ; Nb++) {
+  var House                  = Object.entries (MyHouses) [Nb][0] ;
+  var Options                = Object.entries (MyHouses) [Nb][1] ;
   addCommand (Options.aliases, housePointsFunc.bind (House)) ;
 }
-
+*/
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
 client.login(botToken);
