@@ -571,6 +571,8 @@ async function housePointsFunc(args) {
 }
 
 addCommand("addhouse", async function(args) {
+  args.send ('This command is not currently available.') ;
+  return ;
   if (! checkPermissions(args, "addHouse")) {
     args.send ('You do not have permission to do that.') ;
     return ;
