@@ -877,7 +877,7 @@ addCommand ("help", function (args) {
                             , "Add a house."
                           ) 
                 .addField (   
-                              "/sethouse <housename> <attribute< <value>"
+                              "/sethouse <housename> <attribute> <value>"
                             , "For house <housename> set <attribute> to <value>."
                           ) 
                 .addField (   
