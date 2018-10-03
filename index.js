@@ -405,26 +405,12 @@ async function housePointsFunc (args) {
   
   // Check second param is a number
   let args_points = Number(args.params[1]);
-  if ( isNaN(args_points) ){
-    args.send(args.params[1] + ' is not a number!');
-    console.log(""+args.params[1] + ' is not a number!');
-    return;
-  }
-  else if ( !Number.isInteger(args_points) ) {
+  if (      isNaN(args_points)
+       && ! Number.isInteger(args_points)
+      ) {
     args.send('Point values must be an integer.');
     console.log(' Point values must be an integer.');
     return;
-  }
-  else if (    args_points < server_config.min_points
-            || args_points > server_config.max_points
-          ) {
-    args.send (   'Point value must be between '+server_config.min_points+
-                  ' to '+server_config.max_points+'.'
-              ) ;
-    return;
-  }
-  else {
-    args_points = Number(args_points);
   }
 
   // Setup user from param's mention if possible
@@ -465,6 +451,14 @@ async function housePointsFunc (args) {
     // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
   }
   else if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
+    if (    args_points < server_config.min_points
+        || args_points > server_config.max_points
+      ) {
+      args.send (   'Point value must be between '+server_config.min_points+
+                    ' to '+server_config.max_points+'.'
+                ) ;
+      return;
+    }
     try {
       // Add points
       // Update DB with points
@@ -529,6 +523,14 @@ async function housePointsFunc (args) {
   else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
     // Update DB with points
+    if (    args_points < server_config.min_points
+         || args_points > server_config.max_points
+       ) {
+      args.send (   'Point value must be between '+server_config.min_points+
+                    ' to '+server_config.max_points+'.'
+                ) ;
+      return;
+    }
     let housePoints = await HPoints.findOne( {where: {name: house}} );
     housePoints.points = housePoints.points - args_points;
     housePoints.save()
@@ -586,7 +588,62 @@ async function housePointsFunc (args) {
   }
   else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
     // Set points
-    args.send("This command is not currently available.");
+    // Set points
+    // Update DB with points
+    let housePoints = await HPoints.findOne( {where: {name: house}} );
+    housePoints.points = args_points;
+    housePoints
+      .save()
+      .then ( () => {
+        console.log("Set " + house + " points to: " + args_points + " points" );
+      } )
+      .catch (err => {
+        console.error("Failed to set "+house.capitalize()+" points to "+args_points+" "+err) ;
+        args.send("Failed to set "+house.capitalize()+" points to "+args_points) ;
+        return;
+      })
+      ;
+
+    var embed = new Discord.RichEmbed()
+      .setFooter(`Set by: ${args.displayName}`, 'https://i.imgur.com/Ur1VL2r.png');
+
+    var description = "";
+    text                     = 
+              "Set points for "+ house.capitalize()+
+              " to "+args_points+
+              "" ;
+    description             += text ;
+    if ( args_reason ) {
+      text = text + ' *Reason: ' + args_reason + '*';
+      description = [description, 'Reason: ' + args_reason].join(' ');
+    }
+    embed.setDescription(description);
+
+    var authorName = 'Set points for ' + house.capitalize();
+    
+    await Houses.findOne ({where:{name:house.toLowerCase()}})
+    .then ( (house) => {
+      embed.setAuthor(authorName, house.get().icon).setColor(house.get().color);
+    })
+    .catch (err => {
+      console.error("FAILED to findOne house entry in houses " + err)
+    }) ;
+    console.log(text);
+    await args.message.channel.send(embed)
+    .then(sentMessage => {
+      if (logChannel) {
+        var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
+        embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
+        logChannel.send(embed);
+      }
+    })
+    .catch(err => {
+      console.error("Failed to send embed: " + err);
+    });
+
+    args.message.delete();
+
+    await postLeaderboard(args);
   }
   else {
     let allHouseNames  = allHouses.join(', ') ;
