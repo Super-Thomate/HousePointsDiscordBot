@@ -675,32 +675,26 @@ addCommand ("addhouse", async function(args) {
   //color_hexa alias1;alias2;alias3 
   // add in Houses
   Houses
-          .findOrCreate ( 
-                         {where: {   name: HouseName.toLowerCase()
-                                   , server_id: args.guildId
-                                   , icon: ""
-                                   , color: "0x000000"
-                                   , aliases: JSON.stringify ([HouseName.toLowerCase()])
-                                  }
-                         }
-                        )
-          .spread ( (house, created) => {
-            console.log("FINDORCREATE houses: " + house.get({plain: true}).name) ;
-            addCommand (HouseName.toLowerCase(), housePointsFunc.bind (HouseName.toLowerCase())) ;
-            allHouses         [allHouses.length] = HouseName ;
-            args.send("Created house entry " + house.get({plain: true}).name + " in houses table.");
-            args.send("Set houses options with /sethouse <name> <attribute> <value>.");
-          })
-          .catch (err => {
-            console.error("FAILED to findOrCreate house entry in house_points " + HouseName)
-          });
-  // add in HPoints
-  HPoints.findOrCreate( {where: {name: HouseName, server_id: args.guildId}} ).spread((house, created) => {
-    console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
-    args.send("Created house entry " + house.get({plain: true}).name + " in points table.");
-  }).catch(err => {
-    console.error("FAILED to findOrCreate house entry in house_points " + HouseName)
-  });
+    .findOrCreate ( 
+                   {where: {   name: HouseName.toLowerCase()
+                             , server_id: args.guildId
+                             , icon: ""
+                             , color: "0x000000"
+                             , aliases: JSON.stringify ([HouseName.toLowerCase()])
+                            }
+                   }
+                  )
+    .spread ( (house, created) => {
+      console.log("FINDORCREATE houses: " + house.get({plain: true}).name) ;
+      addCommand (HouseName.toLowerCase(), housePointsFunc.bind (HouseName.toLowerCase())) ;
+      allHouses     [allHouses.length] = HouseName ;
+      args.send("Created house entry " + house.get({plain: true}).name + " in houses table.");
+      args.send("Set houses options with /sethouse <name> <attribute> <value>.");
+    })
+    .catch (err => {
+      console.error("FAILED to findOrCreate house entry in house_points " + HouseName)
+    })
+    ;
 });
 
 addCommand ("sethouse", async function(args) {
