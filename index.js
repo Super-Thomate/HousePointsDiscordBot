@@ -241,30 +241,6 @@ addCommand ("commands", function (args) {
   args.send(text + '.');
 });
 
-addCommand ("emojilist", async function(args) {
-  // if (checkPermissions(args, "setPoints") === false) {
-  //   args.send('You do not have permission to do that.');
-  //   return;
-  // }
-
-  const emojiList = args.message.guild.emojis.sort();
-  let text = "**Regular Emojis List**";
-  let animated = "**Discord Nitro Emojis List**";
-  for (var [emojiId, emoji] of emojiList) {
-    if (emoji.animated) {
-      animated = [animated, emoji + " :" + emoji.name + ":"].join("\n");
-    }
-    else {
-      text = [text, emoji + " :" + emoji.name + ":"].join("\n");
-    }
-  }
-  console.log(text);
-  console.log(animated);
-  args.send(text);
-  args.send(animated);
-  args.message.delete();
-});
-
 addCommand ("pointssetup", async function(args) {
   if (    ! checkPermissions (args, "doAllOfTheAbove")
      ) {
