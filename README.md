@@ -30,7 +30,7 @@ Press the "Create a Bot User" button. This will make it an actual bot.
 ![Create a Bot User button](http://i.imgur.com/LU9mgMK.png)  
   
 You will see this: ![App Bot User area](http://i.imgur.com/C8SCoed.png).  
-Copy the username, but without anything after the #, and put it in the .env file BOT_NAME property.
+Copy the username, but without anything after the #, and put it in the .env file `BOT_NAME` property.
 Press the click to reveal next to Token.  
 Do not show this token to anyone else because they could do a good amount of damaged if they got it.  
 Copy the token and put it in .env `BOT_TOKEN`.  
