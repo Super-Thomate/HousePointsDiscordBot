@@ -3,8 +3,8 @@ if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
 const fs = require('fs') ;
-const Sequelize = exports.Sequelize = require('sequelize');
-const sequelize = new Sequelize(process.env.MYSQL_URL);
+const Sequelize = exports.Sequelize = require('sequelize') ;
+const sequelize = new Sequelize(process.env.MYSQL_URL) ;
 sequelize
   .authenticate()
   .then(() => {
@@ -12,12 +12,10 @@ sequelize
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
-  });
+  }) ;
 //For discord
-var Discord = require('discord.js'),
-  client = new Discord.Client();
-
-
+var   Discord                = require ('discord.js')
+    , client                 = new Discord.Client () ;
 
 // Create configuration table
 const Configuration = sequelize.define('configuration', {
@@ -31,19 +29,19 @@ Configuration.sync({alter: true}).then(() => {
   console.log("TABLE CREATED: configuration");
 }).catch(err => {
   console.error("FAILED TABLE CREATE: configuration " + err);
-});
+}) ;
 
 // Create house_point table
 const HPoints = sequelize.define('house_point', {
   name: { type: Sequelize.STRING },
   server_id: { type: Sequelize.STRING },
   points: { type: Sequelize.INTEGER, defaultValue: 0 }
-});
+}) ;
 HPoints.sync({ alter: true }).then(() => {
   console.log("TABLE CREATED: house_points");
 }).catch(err => {
    console.error("FAILED TABLE CREATE: house_points " + err);
-});
+}) ;
 
 // Create houses table
 const Houses = sequelize.define('houses', {
@@ -52,12 +50,12 @@ const Houses = sequelize.define('houses', {
   , icon: { type: Sequelize.STRING }
   , color: { type: Sequelize.STRING }
   , aliases: { type: Sequelize.STRING }
-});
+}) ;
 Houses.sync({ alter: true }).then(() => {
   console.log("TABLE CREATED: houses");
 }).catch(err => {
    console.error("FAILED TABLE CREATE: houses " + err);
-});
+}) ;
 // Is this still relevant ?
 /*
 const http = require('http');
@@ -70,7 +68,6 @@ app.get("/", (request, response) => {
 app.listen(process.env.PORT);
 */
 // TODO
-//  |- Move Houses to db
 //  |- Move Roles  to db
 const config_roles           = loadJSON ("./JSON/roles.json");
 var allHouses                = new Array () ;
@@ -109,7 +106,7 @@ client.on ("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 });
 
-client.on("message", message => {
+client.on ("message", message => {
   // Ignore bots
   if(message.author.bot) return;
 
@@ -119,7 +116,7 @@ client.on("message", message => {
   if(message.content.indexOf(process.env.PREFIX) !== 0) return;
 
   runCommand(message);
-});
+}) ;
 
 String.prototype.replaceAll = function (search, replacement) {
   var target = this;
@@ -129,7 +126,7 @@ String.prototype.capitalize = function () {
   return this.slice(0, 1).toUpperCase() + this.slice(1);
 }
 
-var COMMANDS = {};
+var COMMANDS = {} ;
 
 function addCommand (name, func, hide) {
   if (name.constructor === Array) {
