@@ -1,4 +1,4 @@
-# Discord Hogwarts Point Bot  
+# House Points Discord Bot
 ## Requires:  
 * Node.js 6.0 or greater, http://nodejs.org/  
   
@@ -176,3 +176,10 @@ Run `/infos` in order to get informations on all houses.
 
 Run `/infos <housename>` in order to get informations on the house `<housename>`.
 
+
+#### Set max and min points
+Run `/maxpoints <integer>` to set maximum points one can give or take to `<integer>`.
+
+Run `/minpoints <integer>` to set minimum points one can give or take to `<integer>`.
+
+The maximum should always be greater or equal than the minimum.
