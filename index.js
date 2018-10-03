@@ -750,7 +750,7 @@ addCommand ("infos", async function (args) {
         var embed            = 
           new Discord
                 .RichEmbed ()
-                .setColor (0xFFFFFF)
+                .setColor (0x2EB050)
               ;
         var foundHouses      = false ;
         for (let n = 0 ; n < houses.length; n++) {
@@ -795,7 +795,7 @@ addCommand ("infos", async function (args) {
     var embed                     = 
       new Discord
            .RichEmbed ()
-           .setColor (0xFFFFFF)
+           .setColor (0x2EB050)
          ;
     Houses
       .findOne ({where:{name:houseName.toLowerCase()}})
@@ -841,7 +841,7 @@ addCommand ("help", function (args) {
    var embed                 = 
           new Discord
                 .RichEmbed ()
-                .setColor (0xFFFFFF)
+                .setColor (0x2EB050)
                 .setTitle ("Help for "+process.env.BOT_NAME)
                 .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
                                     "Initially created by MinusGix as"+
