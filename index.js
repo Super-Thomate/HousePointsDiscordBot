@@ -224,7 +224,7 @@ function checkPermissions (args, permission) {
   return canDo ;
 }
 
-addCommand (['help', 'commands'], function(args) {
+addCommand ("commands", function (args) {
   var text = 'Commands:\n',
     first = true;
   for (let cmd in COMMANDS) {
@@ -836,6 +836,79 @@ addCommand ("infos", async function (args) {
       }) ;
   }
 }) ;
+
+addCommand ("help", function (args) {
+   var embed                 = 
+          new Discord
+                .RichEmbed ()
+                .setColor (0xFFFFFF)
+                .setTitle ("Help for "+process.env.BOT_NAME)
+                .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
+                                    "Initially created by MinusGix as"+
+                                    " [DiscordModelHogwartsBot](https://github.com/MinusGix/DiscordModelHogwartsBot),"+
+                                    " it was upgraded by rykanrar as"+
+                                    " [HousePointsDiscordBot](https://github.com/rykanrar/HousePointsDiscordBot).\n"+
+                                    "The current version is a work of Super-Thomate build"+
+                                    " on top of the two previous version."+
+                                    ""
+                                )
+                .addField (   
+                              "/help"
+                            , "Display this help page."
+                          )
+                .addField (   
+                              "/commands"
+                            , "Display a list of all available commands."
+                          )
+                .addField (   
+                              "/pointssetup"
+                            , "Starts the competition."
+                          )
+                .addField (   
+                              "/pointslog"
+                            , "Set points log channel to the current channel."
+                          ) 
+                .addField (   
+                              "/pointsreset"
+                            , "Set points to every houses to 0."
+                          ) 
+                .addField (   
+                              "/addhouse <housename>"
+                            , "Add a house."
+                          ) 
+                .addField (   
+                              "/sethouse <housename> <attribute< <value>"
+                            , "For house <housename> set <attribute> to <value>."
+                          ) 
+                .addField (   
+                              "/infos"
+                            , "Display informations for all houses in competition."
+                          ) 
+                .addField (   
+                              "/infos <housename>"
+                            , "Display informations for <housename>."
+                          ) 
+                .addField (   
+                              "/<housename> add <amount> [<@Someone>] <reason>"
+                            , "Add <amount> points to <housename> for the reason <reason>. The points are earned by <@Someone> if specified."
+                          ) 
+                .addField (   
+                              "/<housename> take <amount> [<@Someone>] <reason>"
+                            , "Take <amount> points to <housename> for the reason <reason>. The points are lost by <@Someone> if specified."
+                          ) 
+                .addField (   
+                              "/<housename> set <amount>"
+                            , "Set <housename> points to <amount>."
+                          )
+                ;
+  args.message.channel.send(embed)
+  .then(sentMessage => {
+    console.log ("Message sent.") ;
+  })
+  .catch(err => {
+    console.error("Failed to send embed: " + err);
+  });
+});
 
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
