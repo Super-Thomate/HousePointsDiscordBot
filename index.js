@@ -264,6 +264,11 @@ addCommand("emojilist", async function(args) {
 });
 
 addCommand("pointssetup", async function(args) {
+  if (    ! checkPermissions (args, "doAllOfTheAbove")
+     ) {
+    args.send('You do not have permission to do that.');
+    return;
+  }
   let houses = allHouses;
   if (! houses.length) {
     args.send ("No house define in base => use /addhouse <housename> to add houses.") ;
@@ -351,9 +356,6 @@ async function postLeaderboard (args) {
     .setTimestamp(new Date().toISOString());
 
   let pointRows = await HPoints.findAll({ order: [ ['points', 'DESC'] ], raw: true });
-  console.log ("--------------------------------------------------------") ;
-  console.log (pointRows) ;
-  console.log ("--------------------------------------------------------") ;
   // Create leaderboard text
   for (var i = 0; i < pointRows.length; i++) {
     var row = pointRows[i];
