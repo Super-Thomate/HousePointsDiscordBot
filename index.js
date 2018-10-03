@@ -102,6 +102,7 @@ function writeJSON (dir, data) {
         'utf8'
     );
 }
+
 client.on ("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 });
@@ -739,7 +740,6 @@ addCommand ("sethouse", async function(args) {
           });
 });
 
-
 addCommand ("infos", async function (args) {
   var params                 = args.params ;
   if (! params.length) {
@@ -836,6 +836,7 @@ addCommand ("infos", async function (args) {
       }) ;
   }
 }) ;
+
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
 client.login(botToken);
