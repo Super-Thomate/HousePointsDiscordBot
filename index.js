@@ -991,7 +991,7 @@ addCommand ("minpoints", async function (args) {
     .then ( (config) => {
       let max                = config.get().max_points ;
       if (max < points) {
-        args.send('Point values must be greater or equal than '+max+'.') ;
+        args.send('Point values must be lesser or equal than '+max+'.') ;
         return ;
       }
       config.min_points      = points ;
