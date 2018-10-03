@@ -141,7 +141,7 @@ The role `doAllOfTheAbove` can give, take and set points. If you whish to restri
    ```
    /ravenclaw take 100
    ```
-> This would take 100 points from ravenclaw, points do not go into the negatives.  
+> This would take 100 points from ravenclaw.  
   
    ```
    /hufflepuff set 100
