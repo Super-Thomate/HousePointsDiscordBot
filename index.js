@@ -85,9 +85,9 @@ Houses.findAll ()
     addCommand (aliases, housePointsFunc.bind (houseName))
   }
 })
-  .catch(err => {
-    console.error("FAILED to load houses " + err)
-  }) ;
+.catch(err => {
+  console.error ("FAILED to load houses " + err)
+}) ;
 const MyHouses               = loadJSON ("./JSON/houses.json") ;
 
 //Loads a JSON file
@@ -102,7 +102,7 @@ function writeJSON (dir, data) {
         'utf8'
     );
 }
-client.on("ready", function() {
+client.on ("ready", function() {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 });
 
@@ -118,17 +118,17 @@ client.on("message", message => {
   runCommand(message);
 });
 
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function (search, replacement) {
   var target = this;
   return target.replace(new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'g'), replacement);
 };
-String.prototype.capitalize = function() {
+String.prototype.capitalize = function () {
   return this.slice(0, 1).toUpperCase() + this.slice(1);
 }
 
 var COMMANDS = {};
 
-function addCommand(name, func, hide) {
+function addCommand (name, func, hide) {
   if (name.constructor === Array) {
     for (var i = 0; i < name.length; i++) {
       if (i === 0) {
@@ -146,7 +146,7 @@ function addCommand(name, func, hide) {
   }
 }
 
-function runCommand(message) {
+function runCommand (message) {
   console.log("Verified bot command");
   var firstArg = message.content.split(' ')[0];
   if (firstArg.startsWith(process.env.PREFIX) && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.PREFIX, ''))) {
@@ -182,47 +182,48 @@ function runCommand(message) {
   }
 }
 
-function checkPermissions(args, permission) {
-  var user = args.message.member,
-  roles = user.roles;
-  var targetPermission;
+function checkPermissions (args, permission) {
+  var   user                   = args.message.member
+      , roles                  = user.roles
+      , targetPermission       = ""
+      , canDo                  = false ;
+      ;
   const perm_list = [   'doAllOfTheAbove'
                       , 'takePoints'
                       , 'givePoints'
                       , 'setPoints'
                       , 'addHouse'
                     ] ;
-  for(var i = 0; i < perm_list.length; i++) {
-    if (permission == perm_list[i]) {
-      targetPermission = perm_list[i];
+  for (var i = 0 ; i < perm_list.length ; i++) {
+    if (permission == perm_list [i]) {
+      targetPermission       = perm_list [i] ;
     }
   }
-  if (targetPermission === undefined) {
+  if (! targetPermission.length) {
     console.log("PERMISSION NOT FOUND: " + permission);
-    return false;
+    return canDo;
   }
 
-  var allowedRoles = config_roles[targetPermission];
+  var allowedRoles           = config_roles [targetPermission] ;
   console.log("Allowed roles for permission " + permission + ": " + allowedRoles);
-  roles.map((value, index, arr) => {
+  roles.map ((value, index, arr) => {
     for (var i = 0; i < allowedRoles.length; i++) {
-      if (roles.find("name", allowedRoles[i])) {
-        targetPermission = true;
+      if (roles.find ("name", allowedRoles [i])) {
+        canDo = true;
       }
     }
   });
 
-  if (targetPermission === true) {
+  if (canDo) {
     console.log("PERMISSION ALLOWED: " + permission);
-    return true;
   }
   else {
     console.log("PERMISSION DENIED: " + permission);
-    return false;
   }
+  return canDo ;
 }
 
-addCommand(['help', 'commands'], function(args) {
+addCommand (['help', 'commands'], function(args) {
   var text = 'Commands:\n',
     first = true;
   for (let cmd in COMMANDS) {
@@ -239,7 +240,7 @@ addCommand(['help', 'commands'], function(args) {
   args.send(text + '.');
 });
 
-addCommand("emojilist", async function(args) {
+addCommand ("emojilist", async function(args) {
   // if (checkPermissions(args, "setPoints") === false) {
   //   args.send('You do not have permission to do that.');
   //   return;
@@ -263,7 +264,7 @@ addCommand("emojilist", async function(args) {
   args.message.delete();
 });
 
-addCommand("pointssetup", async function(args) {
+addCommand ("pointssetup", async function(args) {
   if (    ! checkPermissions (args, "doAllOfTheAbove")
      ) {
     args.send('You do not have permission to do that.');
@@ -284,7 +285,7 @@ addCommand("pointssetup", async function(args) {
   }
 });
 
-addCommand('pointslog', async function(args) {
+addCommand ('pointslog', async function(args) {
   if (   ! checkPermissions(args, "doAllOfTheAbove")
      ) {
     args.send('You do not have permission to do that.');
@@ -302,7 +303,7 @@ addCommand('pointslog', async function(args) {
   });
 });
 
-addCommand('pointsreset', async function(args) {
+addCommand ('pointsreset', async function(args) {
   if (   ! checkPermissions(args, "setPoints")
       && ! checkPermissions(args, "doAllOfTheAbove")
      ) {
@@ -332,7 +333,7 @@ addCommand('pointsreset', async function(args) {
   }
 });
 
-addCommand('points', async function(args) {
+addCommand ('points', async function(args) {
   await postLeaderboard(args)
   args.message.delete();
 });
@@ -621,7 +622,7 @@ async function housePointsFunc (args) {
   }
 }
 
-addCommand("addhouse", async function(args) {
+addCommand ("addhouse", async function(args) {
   if (    ! checkPermissions(args, "addHouse")
        && ! checkPermissions(args, "doAllOfTheAbove")
      ) {
@@ -666,7 +667,7 @@ addCommand("addhouse", async function(args) {
   });
 });
 
-addCommand("sethouse", async function(args) {
+addCommand ("sethouse", async function(args) {
    if (   ! checkPermissions(args, "addHouse")
        && ! checkPermissions(args, "doAllOfTheAbove")
      ) {
@@ -738,13 +739,6 @@ addCommand("sethouse", async function(args) {
           });
 });
 
-/*
-for (let Nb = 0 ; Nb < Object.entries (MyHouses).length ; Nb++) {
-  var House                  = Object.entries (MyHouses) [Nb][0] ;
-  var Options                = Object.entries (MyHouses) [Nb][1] ;
-  addCommand (Options.aliases, housePointsFunc.bind (House)) ;
-}
-*/
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
 client.login(botToken);
