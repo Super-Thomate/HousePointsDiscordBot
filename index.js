@@ -285,8 +285,7 @@ addCommand("pointssetup", async function(args) {
 });
 
 addCommand('pointslog', async function(args) {
-  if (   checkPermissions(args, "setPoints") === false
-      && checkPermissions(args, "doAllOfTheAbove") === false
+  if (   ! checkPermissions(args, "doAllOfTheAbove")
      ) {
     args.send('You do not have permission to do that.');
     return;
