@@ -59,7 +59,7 @@ In the currrent version, roles are defined in */JSON/roles.json*.
 ## Commands  
 All the commands listed below are run in the chat.
 
-#### Add house
+### Add house
 You first need to create houses.
 In order to do that you must have a role linked to `addhouse` or `doAllOfTheAbove`.
 
@@ -73,7 +73,7 @@ Run `/addhouse <housename>` in a channel that your bot can access.
 
 Then, you need to run `/sethouse <housename> <attribute> <value>` in order to set your house color, icon and aliases.
 
-#### Set house color
+### Set house color
 When displaying the points earned or lost by a house, the bot will embed them with the house color. By default, this color is black, but you can change it in order to fit your fantasy.
 
 You can set a house color using hexadecimal value (between `000000` and `ffffff`).
@@ -84,7 +84,7 @@ You can set a house color using hexadecimal value (between `000000` and `ffffff`
    ```
 > This will set the color of house Gryffindor to FF0000 (100% red).
 
-#### Set house icon
+### Set house icon
 When displaying the points earned or lost by a house, the bot will also display an icon to represent your house. By default, this icon is empty, but you can change it in order to fit your fantasy.
 
 You can set a house icon using an url to your assets.
@@ -95,7 +95,7 @@ You can set a house icon using an url to your assets.
    ```
 > This will set the icon of house Gryffindor to whatever image are at this adress (nothing in my case).
 
-#### Set house aliases
+### Set house aliases
 When you want to give or take points from a house, you need to call the house by one of this aliases. By default, you have one alias, the name of the house itself.
 
 Note : If you wish to set multiple aliases, you may separate them with a comma.
@@ -112,7 +112,7 @@ Note : If you wish to set multiple aliases, you may separate them with a comma.
 > * g
 > * red
 
-#### Setting up the competition
+### Setting up the competition
 When you are happy with your houses, you may start the points counting.
 
 Run `/pointssetup` to initialize the bot. It will take all houses define on your server and start the competition between them.
@@ -127,7 +127,7 @@ In order to do that you must have a role linked to `doAllOfTheAbove`.
 >
 > If no house is defined, the competition will not start, and you will be remembered to add house.
 
-#### Manage points
+### Manage points
 You can give, take or set points (according to your role) to any of the houses defined in your competition.
 
 The role `doAllOfTheAbove` can give, take and set points. If you whish to restrict actions you can use `givePoints`, `takePoints` and `setPoints`.
@@ -156,7 +156,7 @@ The role `doAllOfTheAbove` can give, take and set points. If you whish to restri
    ```
    /s give 100
    ``` 
-#### Points leaderboard
+### Points leaderboard
 The points leaderboard recaps the points of every house in competition and rank them from the highest score to the lowest.
 
 In order to display it, you must run `/pointslog` in the channel you want (you must have a role linked to `doAllOfTheAbove`).
@@ -164,20 +164,20 @@ From now on, every time someone give, take or set points from a house, the leade
 
 At any time, you can run the `/points` command to show the leaderboard.
 
-#### Reset all the points
+### Reset all the points
 You can reset all the houses to 0 points using `/pointsreset`.
 In order to do that you must have a role linked to `setPoints` or `doAllOfTheAbove`.
 
 All the houses will have their points number back to 0.
 
 
-#### Infos on houses
+### Infos on houses
 Run `/infos` in order to get informations on all houses.
 
 Run `/infos <housename>` in order to get informations on the house `<housename>`.
 
 
-#### Set max and min points
+### Set max and min points
 Run `/maxpoints <integer>` to set maximum points one can give or take to `<integer>`.
 
 Run `/minpoints <integer>` to set minimum points one can give or take to `<integer>`.
