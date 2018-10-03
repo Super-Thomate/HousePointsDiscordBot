@@ -303,8 +303,8 @@ addCommand('pointslog', async function(args) {
 });
 
 addCommand('pointsreset', async function(args) {
-  if (   checkPermissions(args, "setPoints") === false
-      && checkPermissions(args, "doAllOfTheAbove") === false
+  if (   ! checkPermissions(args, "setPoints")
+      && ! checkPermissions(args, "doAllOfTheAbove")
      ) {
     args.send('You do not have permission to do that.');
     return;
@@ -622,7 +622,9 @@ async function housePointsFunc (args) {
 }
 
 addCommand("addhouse", async function(args) {
-  if (! checkPermissions(args, "addHouse")) {
+  if (    ! checkPermissions(args, "addHouse")
+       && ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
     args.send ('You do not have permission to do that.') ;
     return ;
   }
@@ -665,7 +667,9 @@ addCommand("addhouse", async function(args) {
 });
 
 addCommand("sethouse", async function(args) {
-  if (! checkPermissions(args, "addHouse")) {
+   if (   ! checkPermissions(args, "addHouse")
+       && ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
     args.send ('You do not have permission to do that.') ;
     return ;
   }
