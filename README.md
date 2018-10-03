@@ -73,7 +73,7 @@ Run `/addhouse <housename>` in a channel that your bot can access.
 
 Then, you need to run `/sethouse <housename> <attribute> <value>` in order to set your house color, icon and aliases.
 
-### Set house color
+#### Set house color
 When displaying the points earned or lost by a house, the bot will embed them with the house color. By default, this color is black, but you can change it in order to fit your fantasy.
 
 You can set a house color using hexadecimal value (between `000000` and `ffffff`).
@@ -84,7 +84,7 @@ You can set a house color using hexadecimal value (between `000000` and `ffffff`
    ```
 > This will set the color of house Gryffindor to FF0000 (100% red).
 
-### Set house icon
+#### Set house icon
 When displaying the points earned or lost by a house, the bot will also display an icon to represent your house. By default, this icon is empty, but you can change it in order to fit your fantasy.
 
 You can set a house icon using an url to your assets.
@@ -95,7 +95,7 @@ You can set a house icon using an url to your assets.
    ```
 > This will set the icon of house Gryffindor to whatever image are at this adress (nothing in my case).
 
-### Set house aliases
+#### Set house aliases
 When you want to give or take points from a house, you need to call the house by one of this aliases. By default, you have one alias, the name of the house itself.
 
 Note : If you wish to set multiple aliases, you may separate them with a comma.
