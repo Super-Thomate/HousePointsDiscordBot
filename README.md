@@ -168,3 +168,10 @@ You can reset all the houses to 0 points using `/pointsreset`.
 In order to do that you must have a role linked to `setPoints` or `doAllOfTheAbove`.
 
 All the houses will have their points number back to 0.
+
+
+#### Infos on houses
+Run `/infos` in order to get informations on all houses.
+
+Run `/infos <housename>` in order to get informations on the house `<housename>`.
+

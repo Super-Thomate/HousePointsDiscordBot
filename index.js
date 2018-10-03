@@ -174,7 +174,7 @@ function runCommand (message) {
       guildId: message.guild.id,
       dm: message.author.send.bind(message.author),
       dmCode: message.author.sendCode.bind(message.author),
-      dmEmbed: message.author.sendEmbed.bind(message.author),
+      dmEmbed: message.author.send.bind(message.author),
       dmFile: message.author.sendFile.bind(message.author),
       dmMessage: message.author.sendMessage.bind(message.author),
     };
@@ -368,7 +368,7 @@ async function postLeaderboard (args) {
   embed.setDescription(text);
   console.log("text: " + text);
 
-  logChannel.sendEmbed(embed)
+  logChannel.send(embed)
   .then(sentMessage => {
     // Remove old leaderboard message
     let oldPostId = server_config.p_leaderboard_post;
@@ -531,12 +531,12 @@ async function housePointsFunc (args) {
       console.error("FAILED to findOne house entry in houses " + err)
     }) ;
     console.log(text);
-    await args.message.channel.sendEmbed(embed)
+    await args.message.channel.send(embed)
     .then(sentMessage => {
       if (logChannel) {
         var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
         embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
-        logChannel.sendEmbed(embed);
+        logChannel.send(embed);
       }
     })
     .catch(err => {
@@ -588,13 +588,13 @@ async function housePointsFunc (args) {
       console.error("FAILED to findOne house entry in houses " + err)
     }) ;
     console.log(text);
-    await args.message.channel.sendEmbed(embed)
+    await args.message.channel.send(embed)
     .then(sentMessage => {
       var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
       console.log("sentMessage: " + sentMessageUrl);
       embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
       if (logChannel) {
-        logChannel.sendEmbed(embed);
+        logChannel.send(embed);
       }
     })
     .catch(err => {
@@ -739,6 +739,103 @@ addCommand ("sethouse", async function(args) {
           });
 });
 
+
+addCommand ("infos", async function (args) {
+  var params                 = args.params ;
+  if (! params.length) {
+    // Infos on all houses
+    Houses
+      .findAll ()
+      .then ((houses) => {
+        var embed            = 
+          new Discord
+                .RichEmbed ()
+                .setColor (0xFFFFFF)
+              ;
+        var foundHouses      = false ;
+        for (let n = 0 ; n < houses.length; n++) {
+          if (! foundHouses)
+            foundHouses      = true ;
+          var house          = houses [n] ;
+          let houseName      = house.get ({plain: true}).name.capitalize () ;
+          let color          = house.get ().color ;
+          let aliases        = JSON.parse (house.get ().aliases) ;
+          embed
+            .setTitle ("Infos on all houses")
+            .addField
+                       (
+                           houseName
+                         , "> **Color  :** "+color+"\n"+
+                           "> **Aliases:** "+aliases.join (", ")+
+                           "\n"+
+                           ""
+                       )
+            ;
+        }
+        if (! foundHouses) {
+          embed.addField (   "No house found !"
+                           , "Use /addhouse <housename> to add a house."
+                         ) ;
+        }
+        
+        args.message.channel.send(embed)
+        .then(sentMessage => {
+          console.log ("Message sent.") ;
+        })
+        .catch(err => {
+          console.error("Failed to send embed: " + err);
+        });
+      })
+      .catch(err => {
+        console.error ("FAILED to load houses " + err)
+      }) ;
+  } else {
+    // Infos on one house
+    var houseName                 = params [0].capitalize () ;
+    var embed                     = 
+      new Discord
+           .RichEmbed ()
+           .setColor (0xFFFFFF)
+         ;
+    Houses
+      .findOne ({where:{name:houseName.toLowerCase()}})
+      .then ((houses) => {
+        let color            = houses.get ().color ;
+        let aliases          = JSON.parse (houses.get ().aliases) ;
+        embed
+          .setTitle ("Infos on house "+houseName)
+          .addField
+                     (
+                         houseName
+                       , "> **Color  :** "+color+"\n"+
+                         "> **Aliases:** "+aliases.join (", ")+
+                         "\n"+
+                         ""
+                     )
+          ;
+        args.message.channel.send(embed)
+        .then(sentMessage => {
+          console.log ("Message sent.") ;
+        })
+        .catch(err => {
+          console.error("Failed to send embed: " + err);
+        });
+      })
+      .catch(err => {
+        embed.addField (   "No house found with name "+houseName+" !"
+                         , "Use /addhouse "+houseName+" to add the house."
+                       ) ;
+        args.message.channel.send(embed)
+        .then(sentMessage => {
+          console.log ("Message sent.") ;
+        })
+        .catch(err => {
+          console.error("Failed to send embed: " + err);
+        });
+        console.error ("FAILED to load houses " + err)
+      }) ;
+  }
+}) ;
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
 client.login(botToken);
