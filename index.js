@@ -21,9 +21,11 @@ var Discord = require('discord.js'),
 
 // Create configuration table
 const Configuration = sequelize.define('configuration', {
-  server_id: { type: Sequelize.STRING },
-  p_log_channel: { type: Sequelize.STRING },
-  p_leaderboard_post: { type: Sequelize.STRING }
+             server_id: {type: Sequelize.STRING}
+  ,      p_log_channel: {type: Sequelize.STRING}
+  , p_leaderboard_post: {type: Sequelize.STRING}
+  ,         max_points: {type: Sequelize.INTEGER, defaultValue: 100}
+  ,         min_points: {type: Sequelize.INTEGER, defaultValue: 1}
 })
 Configuration.sync({alter: true}).then(() => {
   console.log("TABLE CREATED: configuration");
@@ -394,7 +396,7 @@ async function housePointsFunc (args) {
     args.send('You do not have permission to do that.');
     return;
   }
-
+  var server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
   // Save first param as command name
   var firstParam = args.params[0];
   if (firstParam !== undefined) {
@@ -416,8 +418,12 @@ async function housePointsFunc (args) {
     console.log(' Point values must be an integer.');
     return;
   }
-  else if (args_points <= 0 || args_points > 100) {
-    args.send('Point value must be between 1 to 100.');
+  else if (    args_points < server_config.min_points
+            || args_points > server_config.max_points
+          ) {
+    args.send (   'Point value must be between '+server_config.min_points+
+                  ' to '+server_config.max_points+'.'
+              ) ;
     return;
   }
   else {
@@ -451,7 +457,6 @@ async function housePointsFunc (args) {
   let logChannel;
   try {
    // Get log channel if there is one
-   let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
     if (server_config.p_log_channel) {
       logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
       console.log("Found points log channel: " + logChannel);
@@ -857,6 +862,14 @@ addCommand ("help", function (args) {
                             , "For house <housename> set <attribute> to <value>."
                           ) 
                 .addField (   
+                              "/maxpoints <integer>"
+                            , "Set the maximum of points one can give or take at <integer>."
+                          ) 
+                .addField (   
+                              "/minpoints <integer>"
+                            , "Set the minimum of points one can give or take at <integer>."
+                          )  
+                .addField (   
                               "/infos"
                             , "Display informations for all houses in competition."
                           ) 
@@ -884,6 +897,90 @@ addCommand ("help", function (args) {
   .catch(err => {
     console.error("Failed to send embed: " + err);
   });
+});
+
+addCommand ("maxpoints", async function (args) {
+   if (   ! checkPermissions(args, "doAllOfTheAbove")
+      ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  var params                 = args.params ;
+  if (! params.length) {
+    args.send ("Missing args. Use /maxpoints <integer>") ;
+    return ;
+  }
+  var points                 = params [0] ;
+  if (      isNaN (points) 
+       && ! Number.isInteger (points)
+       && points < 0
+     ) {
+    args.send('Point values must be a positive integer.') ;
+    console.log(' Point values must be positive integer.') ;
+    return;
+  }
+  // add in Configuration
+  Configuration
+    .findOne ({where: {server_id: args.guildId} })
+    .then ( (config) => {
+      let min                = config.get().min_points ;
+      if (min > points) {
+        args.send('Point values must be greater or equal than '+min+'.') ;
+        return ;
+      }
+      config.max_points      = points ;
+      config.save()
+        .then(() => {
+          console.log ("Set maxpoints to "+points+".");
+          args.send("Set maxpoints to "+points+".");
+        })
+        ;
+    })
+    .catch(err => {
+      console.error("FAILED to findOne house entry in houses " + err)
+    });
+});
+
+addCommand ("minpoints", async function (args) {
+   if (   ! checkPermissions(args, "doAllOfTheAbove")
+      ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  var params                 = args.params ;
+  if (! params.length) {
+    args.send ("Missing args. Use /minpoints <integer>") ;
+    return ;
+  }
+  var points                 = params [0] ;
+  if (      isNaN (points) 
+       && ! Number.isInteger (points)
+       && points < 0
+     ) {
+    args.send('Point values must be positive integer.') ;
+    console.log(' Point values must be positive integer.') ;
+    return;
+  }
+  // add in Configuration
+  Configuration
+    .findOne ({where: {server_id: args.guildId} })
+    .then ( (config) => {
+      let max                = config.get().max_points ;
+      if (max < points) {
+        args.send('Point values must be greater or equal than '+max+'.') ;
+        return ;
+      }
+      config.min_points      = points ;
+      config.save()
+        .then(() => {
+          console.log ("Set maxpoints to "+points+".");
+          args.send("Set maxpoints to "+points+".");
+        })
+        ;
+    })
+    .catch(err => {
+      console.error("FAILED to findOne house entry in houses " + err)
+    });
 });
 
 //Logs into discord
