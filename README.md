@@ -161,6 +161,8 @@ The points leaderboard recaps the points of every house in competition and rank 
 In order to display it, you must run `/pointslog` in the channel you want (you must have a role linked to `doAllOfTheAbove`).
 From now on, every time someone give, take or set points from a house, the leaderboard will be updated in this channel, and a log of the action on the points will be display in it too.
 
+At any time, you can run the `/points` command to show the leaderboard.
+
 #### Reset all the points
 You can reset all the houses to 0 points using `/pointsreset`.
 In order to do that you must have a role linked to `setPoints` or `doAllOfTheAbove`.
