@@ -109,13 +109,16 @@ client.on ("ready", function() {
 client.on ("message", message => {
   // Ignore bots
   if(message.author.bot) return;
-
   console.log(message.author.username + ' : ' + message.content);
 
   // Ignore messages that don't start with prefix
   if(message.content.indexOf(process.env.PREFIX) !== 0) return;
 
   runCommand(message);
+}) ;
+
+client.on ("error", (err) => {
+  console.error("An error occurred. The error was: "+err) ;
 }) ;
 
 String.prototype.replaceAll = function (search, replacement) {
