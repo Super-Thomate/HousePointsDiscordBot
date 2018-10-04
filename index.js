@@ -219,94 +219,101 @@ function checkPermissions (args, permission) {
 }
 
 addCommand ("commands", function (args) {
-  var text = 'Commands:\n',
-    first = true;
+  var   text                 = 'Commands:\n'
+      , first                = true
+      ;
   for (let cmd in COMMANDS) {
     if (COMMANDS[cmd].hide) {
-      continue;
+      continue ;
     }
-    if (!first) {
-      text += ', ';
+    if (! first) {
+      text                  += ', ' ;
     } else {
-      first = false;
+      first                  = false ;
     }
-    text += process.env.PREFIX + COMMANDS[cmd].name;
+    text                    += process.env.PREFIX + COMMANDS[cmd].name ;
   }
-  args.send(text + '.');
+  args.send(text + '.') ;
 });
 
-addCommand ("pointssetup", async function(args) {
+addCommand ("pointssetup", async function (args) {
   if (    ! checkPermissions (args, "doAllOfTheAbove")
      ) {
     args.send('You do not have permission to do that.');
     return;
   }
-  let houses = allHouses;
-  if (! houses.length) {
+  if (! allHouses.length) {
     args.send ("No house define in base => use /addhouse <housename> to add houses.") ;
     return ;
   }
-  for (var i = 0; i < houses.length; i++) {
-    HPoints.findOrCreate( {where: {name: houses[i], server_id: args.guildId}} ).spread((house, created) => {
-      console.log("FINDORCREATE house_points: " + house.get({plain: true}).name)
-      args.send("Created house entry " + house.get({plain: true}).name + " in points table.");
-    }).catch(err => {
-      console.error("FAILED to findOrCreate house entry in house_points " + houses[i])
-    });
+  for (var i = 0; i < allHouses.length; i++) {
+    HPoints
+      .findOrCreate ( {where: {name: allHouses [i], server_id: args.guildId}} )
+      .spread ((house, created) => {
+        console.log ("FINDORCREATE house_points: " + house.get({plain: true}).name)
+        args.send ("Created house entry " + house.get({plain: true}).name + " in points table.");
+      })
+      .catch (err => {
+        console.error("FAILED to findOrCreate house entry in house_points " + allHouses [i])
+      })
   }
 });
 
-addCommand ('pointslog', async function(args) {
+addCommand ('pointslog', async function (args) {
   if (   ! checkPermissions(args, "doAllOfTheAbove")
      ) {
     args.send('You do not have permission to do that.');
-    return;
+    return ;
   }
 
-  Configuration.findOrCreate({where: {server_id: args.guildId}}).spread((server_configs, created) => {
-    var old_log_channel = server_configs.p_log_channel;
-    server_configs.p_log_channel = args.channelId;
-    server_configs.save().then(() => {console.log("UPDATED configuration: Set points log channel to " + args.message.channel)});
+  Configuration
+  .findOrCreate ({where: {server_id: args.guildId}})
+  .spread ((server_configs, created) => {
+    var old_log_channel      = server_configs.p_log_channel;
+    server_configs.p_log_channel       = args.channelId ;
+    server_configs
+      .save()
+      .then( () => {console.log("UPDATED configuration: Set points log channel to " + args.message.channel)})
+    ;
     args.send("Set points log channel to " + args.message.channel);
-  }).catch(err => {
+  })
+  .catch(err => {
     console.error("FAILED to set points log channel to " + args.message.channel);
     args.send("Unable to set points log channel to " + args.message.channel);
-  });
+  })
+  ;
 });
 
-addCommand ('pointsreset', async function(args) {
+addCommand ('pointsreset', async function (args) {
   if (   ! checkPermissions(args, "setPoints")
       && ! checkPermissions(args, "doAllOfTheAbove")
      ) {
     args.send('You do not have permission to do that.');
     return;
   }
-
-  // Check for house param
-  let housesList = allHouses ; // Go through all houses unless specified
-  var houseParam = args.params[0];
-  if (houseParam !== undefined) {
-    houseParam = houseParam.toLowerCase();
-    housesList = [houseParam];
-  }
-
-  for (var i = 0; i < housesList.length; i++) {
-    HPoints.findOne( {where: {name: housesList[i]} } )
-    .then((house) => {
-      house.points = 0;
-      house.save().then(() => {
-        console.log(`Reset ${housesList[i]} points to 0.`);
-        args.send(`Reset ${housesList[i]} points to 0.`);
-      });
-    }).catch(err => {
-       console.error(`Failed to reset points ${housesList[i]} points to 0: ` + err);
-    });
+  for (var i = 0; i < allHouses.length; i++) {
+    HPoints
+     .findOne ( {where: {name: allHouses [i]} } )
+     .then ((house) => {
+       house.points          = 0;
+       house
+         .save ()
+         .then (() => {
+           console.log (`Reset ${allHouses [i]} points to 0.`) ;
+           args.send (`Reset ${allHouses [i]} points to 0.`) ;
+         })
+         ;
+     })
+     .catch (err => {
+        console.error(`Failed to reset points ${allHouses [i]} points to 0: ` + err);
+     })
+     ;
   }
 });
 
 addCommand ('points', async function(args) {
-  await postLeaderboard(args)
-  args.message.delete();
+  await postLeaderboard (args) ;
+  args.message.delete () ;
 });
 
 async function postLeaderboard (args) {
