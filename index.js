@@ -319,19 +319,20 @@ addCommand ('points', async function(args) {
 async function postLeaderboard (args) {
   // Get log channel
   let logChannel;
-  let server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
+  let server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} );
   if (server_config.p_log_channel) {
-    logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
+    logChannel              = args.message.guild.channels.find("id", server_config.p_log_channel);
     console.log("Found points log channel: " + logChannel);
   }
 
   // Set up embed
-  var text = '';
-  var embed = new Discord.RichEmbed()
-    .setTitle("Points Leaderboard")
-    .setColor(0xFFFFFF)
-    .setFooter("Updated at")
-    .setTimestamp(new Date().toISOString());
+  var text                   = '';
+  var embed                  =
+    new Discord.RichEmbed()
+      .setTitle("Points Leaderboard")
+      .setColor(0xFFFFFF)
+      .setFooter("Updated at")
+      .setTimestamp(new Date().toISOString());
 
   let pointRows = await HPoints.findAll({ order: [ ['points', 'DESC'] ], raw: true });
   // Create leaderboard text
