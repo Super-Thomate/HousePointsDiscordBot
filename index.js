@@ -2,9 +2,9 @@
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').load();
 }
-const fs = require('fs') ;
-const Sequelize = exports.Sequelize = require('sequelize') ;
-const sequelize = new Sequelize(process.env.MYSQL_URL) ;
+const fs                     = require('fs') ;
+const Sequelize              = exports.Sequelize = require ('sequelize') ;
+const sequelize              = new Sequelize(process.env.MYSQL_URL) ;
 sequelize
   .authenticate()
   .then(() => {
@@ -33,9 +33,9 @@ Configuration.sync({alter: true}).then(() => {
 
 // Create house_point table
 const HPoints = sequelize.define('house_point', {
-  name: { type: Sequelize.STRING },
-  server_id: { type: Sequelize.STRING },
-  points: { type: Sequelize.INTEGER, defaultValue: 0 }
+         name: { type: Sequelize.STRING }
+  , server_id: { type: Sequelize.STRING }
+  ,    points: { type: Sequelize.INTEGER, defaultValue: 0 }
 }) ;
 HPoints.sync({ alter: true }).then(() => {
   console.log("TABLE CREATED: house_points");
@@ -45,16 +45,16 @@ HPoints.sync({ alter: true }).then(() => {
 
 // Create houses table
 const Houses = sequelize.define('houses', {
-    name: { type: Sequelize.STRING }
+         name: { type: Sequelize.STRING }
   , server_id: { type: Sequelize.STRING }
-  , icon: { type: Sequelize.STRING }
-  , color: { type: Sequelize.STRING }
-  , aliases: { type: Sequelize.STRING }
+  ,      icon: { type: Sequelize.STRING }
+  ,     color: { type: Sequelize.STRING }
+  ,   aliases: { type: Sequelize.STRING }
 }) ;
 Houses.sync({ alter: true }).then(() => {
   console.log("TABLE CREATED: houses");
 }).catch(err => {
-   console.error("FAILED TABLE CREATE: houses " + err);
+  console.error("FAILED TABLE CREATE: houses " + err);
 }) ;
 // Is this still relevant ?
 /*
@@ -81,13 +81,13 @@ Houses.findAll ()
     console.log ("--------------------------------------------------------") ;
     console.log (houseName, aliases) ;
     console.log ("--------------------------------------------------------") ;
-    addCommand (aliases, housePointsFunc.bind (houseName))
+    addCommand (aliases, housePointsFunc.bind (houseName)) ;
   }
 })
 .catch(err => {
   console.error ("FAILED to load houses " + err)
 }) ;
-const MyHouses               = loadJSON ("./JSON/houses.json") ;
+// const MyHouses               = loadJSON ("./JSON/houses.json") ;
 
 //Loads a JSON file
 function loadJSON (dir) {
@@ -95,18 +95,18 @@ function loadJSON (dir) {
 }
 //Writes to a JSON file
 function writeJSON (dir, data) {
-    return fs.writeFileSync(
-        dir,
-        JSON.stringify(data),
-        'utf8'
-    );
+    return fs.writeFileSync (
+                                dir
+                              , JSON.stringify (data)
+                              , 'utf8'
+                            ) ;
 }
 
-client.on ("ready", function() {
+client.on ("ready", () => {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
 });
 
-client.on ("message", message => {
+client.on ("message", (message) => {
   // Ignore bots
   if(message.author.bot) return;
   console.log(message.author.username + ' : ' + message.content);
@@ -122,7 +122,7 @@ client.on ("error", (err) => {
 }) ;
 
 String.prototype.replaceAll = function (search, replacement) {
-  var target = this;
+  var target                 = this;
   return target.replace(new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'g'), replacement);
 };
 String.prototype.capitalize = function () {
@@ -154,42 +154,42 @@ function runCommand (message) {
   var firstArg = message.content.split(' ')[0];
   if (firstArg.startsWith(process.env.PREFIX) && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.PREFIX, ''))) {
     //probably don't need most of these, but it's for simplicity if I ever do need them.
-    processed_content = message.content.trim().replace(/\s{2,}/g, ' ');
-    var args = {
-      message,
-      text: processed_content,
-      params: processed_content.split(' ').slice(1),
-      send: message.channel.sendMessage.bind(message.channel),
-      sendFile: message.channel.sendFile.bind(message.channel),
-      user: message.author,
-      nick: message.author.nickanme,
-      username: message.author.username,
-      userTag: message.author.tag,
-      displayName: message.member.displayName,
-      avatar: message.author.avatar,
-      avatarURL: message.author.avatarURL,
-      isBot: message.author.bot,
-      authorID: message.author.id,
-      mentions: message.mentions.members,
-      lastMessageID: message.author.lastMessageID,
-      channelId: message.channel.id,
-      messageId: message.id,
-      guildId: message.guild.id,
-      dm: message.author.send.bind(message.author),
-      dmCode: message.author.sendCode.bind(message.author),
-      dmEmbed: message.author.send.bind(message.author),
-      dmFile: message.author.sendFile.bind(message.author),
-      dmMessage: message.author.sendMessage.bind(message.author),
-    };
-    COMMANDS['cmd_' + firstArg.replace(process.env.PREFIX, '')].func(args);
+    var processed_content = message.content.trim().replace(/\s{2,}/g, ' ');
+    var args                 = 
+      {
+                message
+        ,          text: processed_content
+        ,        params: processed_content.split(' ').slice(1)
+        ,          send: message.channel.sendMessage.bind(message.channel)
+        ,      sendFile: message.channel.sendFile.bind(message.channel)
+        ,          user: message.author
+        ,          nick: message.author.nickanme
+        ,      username: message.author.username
+        ,       userTag: message.author.tag
+        ,   displayName: message.member.displayName
+        ,        avatar: message.author.avatar
+        ,     avatarURL: message.author.avatarURL
+        ,         isBot: message.author.bot
+        ,      authorID: message.author.id
+        ,      mentions: message.mentions.members
+        , lastMessageID: message.author.lastMessageID
+        ,     channelId: message.channel.id
+        ,     messageId: message.id
+        ,       guildId: message.guild.id
+        ,            dm: message.author.send.bind(message.author)
+        ,        dmCode: message.author.sendCode.bind(message.author)
+        ,       dmEmbed: message.author.send.bind(message.author)
+        ,        dmFile: message.author.sendFile.bind(message.author)
+        ,     dmMessage: message.author.sendMessage.bind(message.author)
+      } ;
+    COMMANDS ['cmd_' + firstArg.replace(process.env.PREFIX, '')].func(args);
   }
 }
 
 function checkPermissions (args, permission) {
-  var   user                   = args.message.member
-      , roles                  = user.roles
-      , targetPermission       = ""
-      , canDo                  = false ;
+  var   user                 = args.message.member
+      , roles                = user.roles
+      , targetPermission     = ""
       ;
   const perm_list = [   'doAllOfTheAbove'
                       , 'takePoints'
@@ -204,26 +204,18 @@ function checkPermissions (args, permission) {
   }
   if (! targetPermission.length) {
     console.log("PERMISSION NOT FOUND: " + permission);
-    return canDo;
+    return false;
   }
-
   var allowedRoles           = config_roles [targetPermission] ;
   console.log("Allowed roles for permission " + permission + ": " + allowedRoles);
-  roles.map ((value, index, arr) => {
-    for (var i = 0; i < allowedRoles.length; i++) {
-      if (roles.find ("name", allowedRoles [i])) {
-        canDo = true;
-      }
+  for (var [key, value] of roles) {
+    if (allowedRoles.includes(value.name)) {
+      console.log("PERMISSION ALLOWED: " + permission);
+      return true ;
     }
-  });
-
-  if (canDo) {
-    console.log("PERMISSION ALLOWED: " + permission);
   }
-  else {
-    console.log("PERMISSION DENIED: " + permission);
-  }
-  return canDo ;
+  console.log("PERMISSION DENIED: " + permission);
+  return false ;
 }
 
 addCommand ("commands", function (args) {
