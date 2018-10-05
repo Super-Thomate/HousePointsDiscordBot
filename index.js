@@ -58,20 +58,6 @@ Houses.sync({ alter: true }).then(() => {
 }).catch(err => {
   console.error("FAILED TABLE CREATE: houses " + err);
 }) ;
-// Is this still relevant ?
-/*
-const http = require('http');
-const express = require('express');
-const app = express();
-app.get("/", (request, response) => {
-  console.log(""+Date.now() + " Ping Received");
-  response.sendStatus(200);
-});
-app.listen(process.env.PORT);
-*/
-// TODO
-//  |- Move Roles  to db
-const config_roles           = loadJSON ("./JSON/roles.json");
 var allHouses                = new Array () ;
 Houses.findAll ()
 .then ((houses) => {
@@ -89,8 +75,57 @@ Houses.findAll ()
 .catch(err => {
   console.error ("FAILED to load houses " + err)
 }) ;
-// const MyHouses               = loadJSON ("./JSON/houses.json") ;
 
+// Is this still relevant ?
+/*
+const http = require('http');
+const express = require('express');
+const app = express();
+app.get("/", (request, response) => {
+  console.log(""+Date.now() + " Ping Received");
+  response.sendStatus(200);
+});
+app.listen(process.env.PORT);
+*/
+
+//Create roles table
+const Roles                  = sequelize.define ('roles', {
+    permission: { type: Sequelize.STRING }
+  ,       role: { type: Sequelize.STRING }
+}) ;
+Roles.sync({ alter: true }).then(() => {
+  console.log("TABLE CREATED: roles");
+}).catch(err => {
+  console.error("FAILED TABLE CREATE: roles " + err);
+}) ;
+
+// Get all permission
+const perm_list              = [   'setPoints'
+                                 , 'givePoints'
+                                 , 'takePoints'
+                                 , 'addHouse'
+                                 , 'doAllOfTheAbove'
+                               ] ;
+
+// Get all (perm,role)
+var config_roles             = new Object () ;
+for (let i = 0 ; i < perm_list.length ; i++) {
+  config_roles       [perm_list [i]] = new Array () ;
+}
+Roles
+  .findAll ()
+  .then ( (roles) => {
+    for (let i = 0 ; i < roles.length ; i ++) {
+      let perm             = roles[i].get().permission ;
+      let role             = roles[i].get().role ;
+      config_roles   [perm] [config_roles [perm].length] = role ;
+    }
+  })
+  .catch ( (err) => {
+    console.log ("FAIL findOrCreate Roles "+err) ;
+  })
+  ;
+    
 //Loads a JSON file
 function loadJSON (dir) {
     return JSON.parse(fs.readFileSync(dir, 'utf8'));
@@ -125,6 +160,21 @@ client.on ("message", (message) => {
 
 client.on ("error", (err) => {
   console.error("An error occurred. The error was: "+err) ;
+}) ;
+
+client.on ("guildCreate", (guild) => {
+   console.log (guild) ;
+    Roles
+      .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster" } })
+      .spread ((roles, created) => {
+        console.log ("State "+(created?"created":"found")+".") ;
+      })
+      ;
+}) ;
+//removed from a server
+client.on ("guildDelete", (guild) => {
+    console.log("NOOOOOOOOOOOOOOOOOOO !",) ;
+    //remove from guildArray
 }) ;
 
 String.prototype.replaceAll = function (search, replacement) {
@@ -201,12 +251,6 @@ function checkPermissions (args, permission) {
       , roles                = user.roles
       , targetPermission     = ""
       ;
-  const perm_list = [   'doAllOfTheAbove'
-                      , 'takePoints'
-                      , 'givePoints'
-                      , 'setPoints'
-                      , 'addHouse'
-                    ] ;
   for (var i = 0 ; i < perm_list.length ; i++) {
     if (permission == perm_list [i]) {
       targetPermission       = perm_list [i] ;
@@ -909,7 +953,7 @@ addCommand ("infos", async function (args) {
 }) ;
 
 addCommand ("help", function (args) {
-   var embed                 = 
+  var embed                  = 
           new Discord
                 .RichEmbed ()
                 .setColor (0x2EB050)
@@ -982,6 +1026,18 @@ addCommand ("help", function (args) {
                 .addField (   
                               "/<housename> set <amount>"
                             , "Set <housename> points to <amount>."
+                          )
+                .addField (   
+                              "/setpermission <permission> <role>"
+                            , "Add the permission <permission> to the role <role>."
+                          )
+                .addField (   
+                              "/listpermissions"
+                            , "List all permissions for the bot."
+                          )
+                .addField (   
+                              "/showpermissions"
+                            , "Show for every permissions the role sets for the bot."
                           )
                 ;
   args.message.channel.send(embed)
@@ -1186,6 +1242,133 @@ addCommand ("displayleaderboard", async function (args) {
       console.error ("FAIL findOne Configuration on displayleaderboard "+err) ;
     })
     ;
+}) ;
+
+addCommand ("setpermission", async function (args) {
+   if (   ! checkPermissions(args, "doAllOfTheAbove")
+      ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  var params                 = args.params ;
+  if (! params.length) {
+    args.send ("Missing args. Use /addRole <permission> <role>") ;
+    return ;
+  }
+  var perm                   = params [0] ;
+  var role                   = params [1] ;
+  if (! perm_list.includes(perm)) {
+    args.send ("The permission "+perm+" is not defined. Use /listpermission for more infos.") ;
+    return ;
+  }
+  Roles
+    .findOrCreate ({where: {permission:perm, role: role}})
+    .spread ( (roles, created) => {
+      if (created) {
+         config_roles  [perm] [config_roles [perm].length] = role ;
+        args.send ("Created permission "+perm+" for "+role+".") ;
+        console.log ("Created permission "+perm+" for "+role+".") ;
+      } else {
+        args.send (role+" already has the permission "+perm+".") ;
+        console.log (role+" already has the permission "+perm+".") ;
+      }
+    })
+    .catch ( (err) => {
+      console.log ("FAIL findOrCreate Roles "+err) ;
+    })
+    ;
+}) ;
+
+addCommand ("listpermissions", function (args) {
+  var embed                  = 
+    new Discord
+          .RichEmbed ()
+          .setColor (0x2EB050)
+          .setTitle ("List all permissions for "+process.env.BOT_NAME)
+          //.setDescription ()
+          .addField (   
+                        "setPoints"
+                      , "Can set points to a house or reset all points."
+                    )
+          .addField (   
+                        "givePoints"
+                      , "Can give points to a house."
+                    )
+          .addField (   
+                        "takePoints"
+                      , "Can take points to a house."
+                    )
+          .addField (   
+                        "addHouse"
+                      , "Can add a house and modify its attribute."
+                    )
+          .addField (   
+                        "doAllOfTheAbove"
+                      , "Can do everything listed above, and more."
+                    )
+          ;
+  args.message.channel.send(embed)
+  .then(sentMessage => {
+    console.log ("Message sent.") ;
+  })
+  .catch(err => {
+    console.error("Failed to send embed: " + err);
+  });
+
+}) ;
+
+addCommand ("showpermissions", async function (args) {
+
+  var allPermRoles           = new Object () ;
+  for (let i = 0 ; i < perm_list.length ; i++) {
+    allPermRoles       [perm_list [i]] = new Array () ;
+  }
+  await Roles
+    .findAll ()
+    .then ( (roles) => {
+      for (let i = 0 ; i < roles.length ; i ++) {
+        let perm             = roles[i].get().permission ;
+        let role             = roles[i].get().role ;
+        allPermRoles   [perm] [allPermRoles [perm].length] = role ;
+      }
+    })
+    .catch ( (err) => {
+      console.log ("FAIL findOrCreate Roles "+err) ;
+    })
+    ;
+  var embed                  = 
+    new Discord
+          .RichEmbed ()
+          .setColor (0x2EB050)
+          .setTitle ("Show for every permissions the role sets for "+process.env.BOT_NAME)
+          //.setDescription ()
+         ;
+  Object
+    .keys(allPermRoles)
+    .map( (perm) => {
+      var text               = "" ;
+      for (let i = 0; i < allPermRoles [perm].length; i++) {
+        text                 +=
+              "* "+allPermRoles [perm][i]+"\n"+
+              "" ;
+      }
+      if (! text.length) {
+        text                 +=
+              "No role sets for this permission."+
+              "" ;
+      }
+      embed.addField (   
+                         perm
+                       , text
+                     )
+    }) ;
+  args.message.channel.send(embed)
+    .then(sentMessage => {
+      console.log ("Message sent.") ;
+    })
+    .catch(err => {
+      console.error("Failed to send embed: " + err);
+    });
 }) ;
 
 //Logs into discord

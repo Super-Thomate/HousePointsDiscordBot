@@ -49,15 +49,39 @@ To stop it (If on your actual computer) press CTRL+C
 That will run the bot, and it should join.  
 
 ## Roles
-In the currrent version, roles are defined in */JSON/roles.json*.
-* takePoints 
-* givePoints 
-* setPoints 
-* addHouse
-* doAllOfTheAbove
+Roles are required to perfom some actions (adding a house, giving points, etc.).
+* takePoints :
+Users with this permission can take points away to any house in competition.
+* givePoints :
+Users with this permission can give points away to any house in competition.
+* setPoints :
+Users with this permission can set any value to points of any house in competition. They also can reset all points to 0.
+* addHouse :
+Users with this permission can add houses, and modify their attribute.
+* doAllOfTheAbove :
+Users with this permission can do everything listed above, but also can change settings of the competition and set permissions to any roles.
 
 ## Commands  
 All the commands listed below are run in the chat.
+
+### Set a permission
+Permissions are linked to role on your Discord server.
+To add a specific permission to a specific role, run `/setpermission <permission> <role>`.
+
+In order to do that you must have a role linked to  `doAllOfTheAbove`.
+
+> When initializing the bot, it will create the default entry (doAllOfTheAbove, Headmaster).
+> You need to give yourself the role Headmaster to be able to set other permissions.
+
+> Note : for one permission you can have as many roles as you want.
+
+### List all available permissions
+If you wish to know every permissions needed in the bot, you may run `/listpermissions`.
+This will display a list of all permissions currently available, and a short description on its scope.
+
+### List all permissions entry
+If you wish to know for every permissions the roles that are set, you may run `/showpermissions`.
+This will display a list of all permissions currently available, and the role that are associated with it.
 
 ### Add house
 You first need to create houses.
