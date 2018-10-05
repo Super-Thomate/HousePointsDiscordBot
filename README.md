@@ -168,6 +168,8 @@ From now on, every time someone give, take or set points from a house, the leade
 
 At any time, you can run the `/points` command to show the leaderboard.
 
+By default the points leaderboard is shown, but you can toggle it with `displayleaderboard <true|false>` (it will either display or not the leaderboard).
+
 ### Reset all the points
 You can reset all the houses to 0 points using `/pointsreset`.
 In order to do that you must have a role linked to `setPoints` or `doAllOfTheAbove`.

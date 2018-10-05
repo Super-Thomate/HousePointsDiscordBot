@@ -23,6 +23,7 @@ const Configuration = sequelize.define('configuration', {
               server_id: {type: Sequelize.STRING}
   ,       p_log_channel: {type: Sequelize.STRING}
   ,  p_leaderboard_post: {type: Sequelize.STRING}
+  , leaderboard_display: {type: Sequelize.BOOLEAN, defaultValue: 1}
   ,          max_points: {type: Sequelize.INTEGER, defaultValue: 100}
   ,          min_points: {type: Sequelize.INTEGER, defaultValue: 1}
 })
@@ -321,7 +322,9 @@ addCommand ('pointsreset', async function (args) {
 });
 
 addCommand ('points', async function(args) {
-  await postLeaderboard (args) ;
+  var server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
+    if (server_config.leaderboard_display)
+      await postLeaderboard(args);
   args.message.delete () ;
 });
 
@@ -333,30 +336,32 @@ async function postLeaderboard (args) {
     logChannel              = args.message.guild.channels.find("id", server_config.p_log_channel);
     console.log("Found points log channel: " + logChannel);
   }
+  if (    logChannel
+       && server_config.leaderboard_display
+     ) {
+    // Set up embed
+    var text                 = '';
+    var embed                =
+      new Discord.RichEmbed()
+        .setTitle("Points Leaderboard")
+        .setColor(0xFFFFFF)
+        .setFooter("Updated at")
+        .setTimestamp(new Date().toISOString());
+  
+    let pointRows = await HPoints.findAll({ order: [ ['points', 'DESC'] ], raw: true });
+    // Create leaderboard text
+    for (var i = 0; i < pointRows.length; i++) {
+      var row = pointRows[i];
+      var subtext = `${i+1}` + ". " + row.name.capitalize() + ": " + row.points + " points";
+      if (i == 0) {
+        subtext = '**' + subtext + '**';
+      }
+      text                   = [text, subtext].join('\n');
+    };
+    embed.setDescription(text);
+    console.log("text: " + text);
 
-  // Set up embed
-  var text                   = '';
-  var embed                  =
-    new Discord.RichEmbed()
-      .setTitle("Points Leaderboard")
-      .setColor(0xFFFFFF)
-      .setFooter("Updated at")
-      .setTimestamp(new Date().toISOString());
 
-  let pointRows = await HPoints.findAll({ order: [ ['points', 'DESC'] ], raw: true });
-  // Create leaderboard text
-  for (var i = 0; i < pointRows.length; i++) {
-    var row = pointRows[i];
-    var subtext = `${i+1}` + ". " + row.name.capitalize() + ": " + row.points + " points";
-    if (i == 0) {
-      subtext = '**' + subtext + '**';
-    }
-    text = [text, subtext].join('\n');
-  };
-  embed.setDescription(text);
-  console.log("text: " + text);
-
-  if (logChannel) {
      logChannel.send(embed)
      .then(sentMessage => {
        // Remove old leaderboard message
@@ -374,9 +379,9 @@ async function postLeaderboard (args) {
        }
    
        // Update p_leaderboard_post with new messageId
-       var sentMessageId = sentMessage.id;
+       var sentMessageId     = sentMessage.id;
        console.log("sentMessageId: " + sentMessageId);
-       server_config.p_leaderboard_post = sentMessageId;
+       server_config.p_leaderboard_post          = sentMessageId;
        server_config.save().then(() => {
          console.log("Saved p_leaderboard_post to " + sentMessageId);
        }).catch(err => {
@@ -390,24 +395,23 @@ async function postLeaderboard (args) {
 
 async function housePointsFunc (args) {
   console.log("Begin points manipulation commands");
-  var house = this,
-  user = args.message.member,
-  userMention = "<@!" + args.authorID + ">";
-
-  // Assign permissions
-  var 
-        canGivePoints = checkPermissions (args, "givePoints") || checkPermissions (args, "doAllOfTheAbove")
-      , canTakePoints = checkPermissions (args, "takePoints") || checkPermissions (args, "doAllOfTheAbove")
-      , canSetPoints  = checkPermissions  (args, "setPoints") || checkPermissions (args, "doAllOfTheAbove")
+  var   house                = this
+      , user                 = args.message.member
+      , userMention          = "<@!" + args.authorID + ">"
       ;
-  console.log("Verified roles permission");
+  // Assign permissions
+  var   canGivePoints        = checkPermissions (args, "givePoints") || checkPermissions (args, "doAllOfTheAbove")
+      , canTakePoints        = checkPermissions (args, "takePoints") || checkPermissions (args, "doAllOfTheAbove")
+      , canSetPoints         = checkPermissions  (args, "setPoints") || checkPermissions (args, "doAllOfTheAbove")
+      ;
+  console.log("Verified roles permission") ;
 
   // Reject if user has no permissions
   if (!(canGivePoints || canTakePoints || canSetPoints)) {
-    args.send('You do not have permission to do that.');
+    args.send('You do not have permission to do that.') ;
     return;
   }
-  var server_config = await Configuration.findOne( {where: {server_id: args.guildId}} );
+  var server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
   // Save first param as command name
   var firstParam = args.params[0];
   if (firstParam !== undefined) {
@@ -418,17 +422,17 @@ async function housePointsFunc (args) {
   console.log("Command: " + firstParam + ", Params: " + args.params);
   
   // Check second param is a number
-  let args_points = Number(args.params[1]);
-  if (      isNaN(args_points)
-       && ! Number.isInteger(args_points)
+  let args_points           = Number(args.params [1]) ;
+  if (      isNaN (args_points)
+       && ! Number.isInteger (args_points)
       ) {
     args.send('Point values must be an integer.');
     console.log(' Point values must be an integer.');
-    return;
+    return ;
   }
 
   // Setup user from param's mention if possible
-  var targetUser = args.mentions.first();
+  var targetUser             = args.mentions.first();
   var targetUserMention;
   if (targetUser !== undefined) {
     targetUserMention = "<@!" + targetUser.id + ">";
@@ -438,12 +442,12 @@ async function housePointsFunc (args) {
   let args_reason;
   if ( targetUser && args.params[2].startsWith('<@') && args.params[2].endsWith('>') ){
     // Ignore mentions in reason param
-    args_reason = args.params.slice(3).join(" ");
+    args_reason              = args.params.slice(3).join(" ");
   }
   else {
     // Not directed at a particular user
-    targetUser = undefined; // Needs to be set if no user param but there is a mention in reason
-    args_reason = args.params.slice(2).join(" ");
+    targetUser               = undefined ; // Needs to be set if no user param but there is a mention in reason
+    args_reason              = args.params.slice(2).join(" ");
   }
   if (!args_reason) {
     args.send('Please include a reason.');
@@ -451,20 +455,15 @@ async function housePointsFunc (args) {
   }
   console.log("Mentions: " + targetUser);
   console.log("Reason: " + args_reason);
-  let logChannel;
-  try {
-   // Get log channel if there is one
-    if (server_config.p_log_channel) {
-      logChannel = args.message.guild.channels.find("id", server_config.p_log_channel);
-      console.log("Found points log channel: " + logChannel);
-    }
-  } catch (e) {
-    console.error ("Error on line 450 : ",e) ;
+  let logChannel             = false ;
+  
+ // Get log channel if there is one
+  if (server_config.p_log_channel) {
+    logChannel               = args.message.guild.channels.find("id", server_config.p_log_channel);
+    console.log("Found points log channel: " + logChannel);
   }
-  if ( ['points', 'point', 'p'].includes(firstParam) || firstParam === undefined ) {
-    // args.send(house.capitalize() + ' has ' + points[house] + ' point(s)!');
-  }
-  else if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
+  
+  if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
     if (    args_points < server_config.min_points
         || args_points > server_config.max_points
       ) {
@@ -531,8 +530,8 @@ async function housePointsFunc (args) {
     });
 
     args.message.delete();
-
-    await postLeaderboard(args);
+    if (server_config.leaderboard_display)
+      await postLeaderboard(args);
   }
   else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
@@ -598,7 +597,8 @@ async function housePointsFunc (args) {
 
     args.message.delete();
 
-    await postLeaderboard(args);
+    if (server_config.leaderboard_display)
+      await postLeaderboard(args);
   }
   else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
     // Set points
@@ -657,17 +657,16 @@ async function housePointsFunc (args) {
 
     args.message.delete();
 
-    await postLeaderboard(args);
+    if (server_config.leaderboard_display)
+      await postLeaderboard(args);
   }
   else {
     let allHouseNames  = allHouses.join(', ') ;
     args.send(
     'You might not be able to do that.'+
-    '\nUsage:\n'+process.env.PREFIX+'housename add points\n'+
-    process.env.PREFIX+'housename subtract points\n'+
-    'Where housename is the house\'s name '+
-    '('+allHouseNames+')'+
-    ' and points is a number.'
+    '\nUsage:\n'+process.env.PREFIX+'<housename> add <integer>\n'+
+    process.env.PREFIX+'<housename> subtract <integer>'+
+    ''
     ) ;
   }
 }
@@ -941,6 +940,10 @@ addCommand ("help", function (args) {
                             , "Set points log channel to the current channel."
                           ) 
                 .addField (   
+                              "/displayleaderboard <true|false>"
+                            , "Set if you want to display or not the points leaderboard."
+                          ) 
+                .addField (   
                               "/pointsreset"
                             , "Set points to every houses to 0."
                           ) 
@@ -1147,6 +1150,43 @@ async function aliasExists (alias) {
     });
   return canDo ;
 }
+
+addCommand ("displayleaderboard", async function (args) {
+   if (   ! checkPermissions(args, "doAllOfTheAbove")
+      ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  var params                 = args.params ;
+  if (! params.length) {
+    args.send ("Missing args. Use /displayleaderboard <true|false>") ;
+    return ;
+  }
+  var bool                   = params [0] ;
+  if (    bool != "true"
+       && bool != "false"
+     ) {
+    args.send ("Wrong args. Use /displayleaderboard <true|false>") ;
+    return ;
+  }
+  bool                       = bool == "true" ;
+  await Configuration
+    .findOne( {where: {server_id: args.guildId}} )
+    .then ( (config) => {
+      config.leaderboard_display       = bool ;
+      config
+        .save ()
+        .then(() => {
+          console.log ("Set leaderboard_display to "+bool+".");
+          args.send("Leaderboard will "+(bool?"":"not ")+"be shown.");
+        })
+        .catch ()
+    })
+    .catch ( (err) => {
+      console.error ("FAIL findOne Configuration on displayleaderboard "+err) ;
+    })
+    ;
+}) ;
 
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
