@@ -20,11 +20,11 @@ var   Discord                = require ('discord.js')
 
 // Create configuration table
 const Configuration = sequelize.define('configuration', {
-             server_id: {type: Sequelize.STRING}
-  ,      p_log_channel: {type: Sequelize.STRING}
-  , p_leaderboard_post: {type: Sequelize.STRING}
-  ,         max_points: {type: Sequelize.INTEGER, defaultValue: 100}
-  ,         min_points: {type: Sequelize.INTEGER, defaultValue: 1}
+              server_id: {type: Sequelize.STRING}
+  ,       p_log_channel: {type: Sequelize.STRING}
+  ,  p_leaderboard_post: {type: Sequelize.STRING}
+  ,          max_points: {type: Sequelize.INTEGER, defaultValue: 100}
+  ,          min_points: {type: Sequelize.INTEGER, defaultValue: 1}
 })
 Configuration.sync({alter: true}).then(() => {
   console.log("TABLE CREATED: configuration");
@@ -327,7 +327,7 @@ addCommand ('points', async function(args) {
 
 async function postLeaderboard (args) {
   // Get log channel
-  let logChannel;
+  let logChannel             = false ;
   let server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} );
   if (server_config.p_log_channel) {
     logChannel              = args.message.guild.channels.find("id", server_config.p_log_channel);
@@ -356,34 +356,36 @@ async function postLeaderboard (args) {
   embed.setDescription(text);
   console.log("text: " + text);
 
-  logChannel.send(embed)
-  .then(sentMessage => {
-    // Remove old leaderboard message
-    let oldPostId = server_config.p_leaderboard_post;
-    if (oldPostId) {
-      console.log("Found points old leaderboard post: " + oldPostId);
-      logChannel.fetchMessage(oldPostId)
-      .then(message => {
-        if (message) {
-          message.delete();
-          console.log("Deleted old points leaderboard message");
-        }
-      })
-      .catch(console.error);
-    }
-
-    // Update p_leaderboard_post with new messageId
-    var sentMessageId = sentMessage.id;
-    console.log("sentMessageId: " + sentMessageId);
-    server_config.p_leaderboard_post = sentMessageId;
-    server_config.save().then(() => {
-      console.log("Saved p_leaderboard_post to " + sentMessageId);
-    }).catch(err => {
-      console.log("Failed to save p_leaderboard_post to " + sentMessageId + err);
-    });
-
-  })
-  .catch(console.error);
+  if (logChannel) {
+     logChannel.send(embed)
+     .then(sentMessage => {
+       // Remove old leaderboard message
+       let oldPostId = server_config.p_leaderboard_post;
+       if (oldPostId) {
+         console.log("Found points old leaderboard post: " + oldPostId);
+         logChannel.fetchMessage(oldPostId)
+         .then(message => {
+           if (message) {
+             message.delete();
+             console.log("Deleted old points leaderboard message");
+           }
+         })
+         .catch(console.error);
+       }
+   
+       // Update p_leaderboard_post with new messageId
+       var sentMessageId = sentMessage.id;
+       console.log("sentMessageId: " + sentMessageId);
+       server_config.p_leaderboard_post = sentMessageId;
+       server_config.save().then(() => {
+         console.log("Saved p_leaderboard_post to " + sentMessageId);
+       }).catch(err => {
+         console.log("Failed to save p_leaderboard_post to " + sentMessageId + err);
+       });
+   
+     })
+     .catch(console.error);
+  }
 };
 
 async function housePointsFunc (args) {
