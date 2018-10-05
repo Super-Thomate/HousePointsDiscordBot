@@ -70,6 +70,8 @@ Run `/addhouse <housename>` in a channel that your bot can access.
    /addhouse Gryffindor
    ```
 > This will create house Gryffindor.
+>
+> Note: House names are not case sensistive.
 
 Then, you need to run `/sethouse <housename> <attribute> <value>` in order to set your house color, icon and aliases.
 
@@ -98,19 +100,21 @@ You can set a house icon using an url to your assets.
 ### Set house aliases
 When you want to give or take points from a house, you need to call the house by one of this aliases. By default, you have one alias, the name of the house itself.
 
-Note : If you wish to set multiple aliases, you may separate them with a comma.
+Note: If you wish to set multiple aliases, you may separate them with a comma.
 
 **Example** 
    ```
    /sethouse alias gryff,g,red
    ```
-> This will add gryff, g and red to the aliases of a house (**TODO** show aliases list ^^).
+> This will add gryff, g and red to the aliases of a house.
 >
 > Its aliases are now :
 > * gryffindor (default value)
 > * gryff
 > * g
 > * red
+>
+> Note: Aliases are case sensistive.
 
 ### Setting up the competition
 When you are happy with your houses, you may start the points counting.

@@ -4,6 +4,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 const fs                     = require('fs') ;
 const Sequelize              = exports.Sequelize = require ('sequelize') ;
+const Op                     = Sequelize.Op ;
 const sequelize              = new Sequelize(process.env.MYSQL_URL) ;
 sequelize
   .authenticate()
@@ -47,9 +48,9 @@ HPoints.sync({ alter: true }).then(() => {
 const Houses = sequelize.define('houses', {
          name: { type: Sequelize.STRING }
   , server_id: { type: Sequelize.STRING }
-  ,      icon: { type: Sequelize.STRING }
-  ,     color: { type: Sequelize.STRING }
-  ,   aliases: { type: Sequelize.STRING }
+  ,      icon: { type: Sequelize.STRING, defaultValue: "" }
+  ,     color: { type: Sequelize.STRING, defaultValue: "0x000000" }
+  ,   aliases: { type: Sequelize.STRING, defaultValue: "[]" }
 }) ;
 Houses.sync({ alter: true }).then(() => {
   console.log("TABLE CREATED: houses");
@@ -108,13 +109,17 @@ client.on ("ready", () => {
 
 client.on ("message", (message) => {
   // Ignore bots
-  if(message.author.bot) return;
+  if(message.author.bot)
+    return ;
   console.log(message.author.username + ' : ' + message.content);
-
+  var galt = /bendor/i ;
+  if (galt.test(message.content))
+    message.content = "bendor" ;
   // Ignore messages that don't start with prefix
-  if(message.content.indexOf(process.env.PREFIX) !== 0) return;
+  if(message.content.indexOf(process.env.PREFIX) !== 0 && message.content != "bendor")
+    return ;
 
-  runCommand(message);
+  runCommand (message) ;
 }) ;
 
 client.on ("error", (err) => {
@@ -152,7 +157,11 @@ function addCommand (name, func, hide) {
 function runCommand (message) {
   console.log("Verified bot command");
   var firstArg = message.content.split(' ')[0];
-  if (firstArg.startsWith(process.env.PREFIX) && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.PREFIX, ''))) {
+  if (   (   firstArg.startsWith(process.env.PREFIX)
+          && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.PREFIX, ''))
+         )
+      || firstArg == "bendor"
+     ) {
     //probably don't need most of these, but it's for simplicity if I ever do need them.
     var processed_content = message.content.trim().replace(/\s{2,}/g, ' ');
     var args                 = 
@@ -675,24 +684,37 @@ addCommand ("addhouse", async function(args) {
     return ;
   }
   var HouseName              = args.params [0].trim () ;
-  //color_hexa alias1;alias2;alias3 
+
+  //name is already an alias ?
+  var canDo                  = await aliasExists (HouseName.toLocaleLowerCase()) ;
+  if (! canDo) {
+    args.send ("Alias "+HouseName.toLocaleLowerCase()+" is already in use.") ;
+    args.send ("Failed to create house "+HouseName+".") ;
+    console.error ("ADDHOUSE : Alias "+HouseName.toLocaleLowerCase()+" is already in use.") ;
+    return ;
+  }
   // add in Houses
   Houses
     .findOrCreate ( 
                    {where: {   name: HouseName.toLowerCase()
                              , server_id: args.guildId
-                             , icon: ""
-                             , color: "0x000000"
-                             , aliases: JSON.stringify ([HouseName.toLowerCase()])
                             }
                    }
                   )
     .spread ( (house, created) => {
-      console.log("FINDORCREATE houses: " + house.get({plain: true}).name) ;
-      addCommand (HouseName.toLowerCase(), housePointsFunc.bind (HouseName.toLowerCase())) ;
-      allHouses     [allHouses.length] = HouseName ;
-      args.send("Created house entry " + house.get({plain: true}).name + " in houses table.");
-      args.send("Set houses options with /sethouse <name> <attribute> <value>.");
+      if (created) {
+        house.aliasescolor   = JSON.stringify ([house.get({plain: true}).name]) ;
+        house.save () ;
+        console.log("CREATE houses: " + house.get({plain: true}).name) ;
+        addCommand (HouseName.toLowerCase(), housePointsFunc.bind (HouseName.toLowerCase())) ;
+        allHouses   [allHouses.length] = HouseName ;
+        args.send("Created house entry " + house.get({plain: true}).name.capitalize() + " in houses table.");
+        args.send("Set houses options with /sethouse <name> <attribute> <value>.");
+      } else {
+        console.log("FIND houses: " + HouseName) ;
+        args.send("House " + HouseName + " already exists.");
+      }
+      
     })
     .catch (err => {
       console.error("FAILED to findOrCreate house entry in house_points " + HouseName)
@@ -729,16 +751,31 @@ addCommand ("sethouse", async function(args) {
     args.send ("Can parse empty value") ;
     return ;
   }
+  if (attribute=="alias") {
+    var newAliases           = value.split(",") ;
+    var canDo                = true  ;
+    for (let n=0 ; n < newAliases.length ; n++) {
+      canDo                  = await aliasExists (newAliases [n]) ;
+      if (! canDo) {
+        args.send ("Alias "+newAliases [n]+" is already in use") ;
+        args.send ("Failed to update "+HouseName+" entry in houses table.") ;
+        console.error ("SETHOUSE : Alias "+newAliases [n]+" is already in use") ;
+        return ;
+      }
+    }
+  }
   // add in Houses
   Houses
-          .findOne ({where: {name: HouseName.toLowerCase()} })
+          .findOne ({where: {name: HouseName.toLowerCase() } })
           .then ( (house) => {
             switch (attribute) {
               case "alias" :
                 var oldAliases         = JSON.parse (house.get().aliases) ;
-                var newAliases         = value.split(",") ;
-                for (let i = 0 ; i < newAliases.length ; i++)
-                  oldAliases [oldAliases.length] = newAliases [i];
+                for (let i = 0 ; i < newAliases.length ; i++) {
+                  if (    ! oldAliases.includes (newAliases [i])
+                     )
+                    oldAliases [oldAliases.length] = newAliases [i];
+                }
                 house.aliases          = JSON.stringify (oldAliases) ;
                 addCommand (newAliases, housePointsFunc.bind (HouseName.toLowerCase())) ;
               break ;
@@ -768,6 +805,7 @@ addCommand ("sethouse", async function(args) {
                });
           })
           .catch(err => {
+            args.send("Failed to update "+HouseName+" entry in houses table.");
             console.error("FAILED to findOne house entry in houses " + err)
           });
 });
@@ -1033,6 +1071,80 @@ addCommand ("minpoints", async function (args) {
       console.error("FAILED to findOne house entry in houses " + err)
     });
 });
+
+addCommand ("bendor", async function (args) {
+ var house = "Firebendor"
+     , args_points = 10
+     , args_reason = "Bendor"
+     ;
+ 
+  let logChannel;
+  let server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} );
+  if (server_config.p_log_channel) {
+    logChannel              = args.message.guild.channels.find("id", server_config.p_log_channel);
+    console.log("Found points log channel: " + logChannel);
+  }
+ let housePoints = await HPoints.findOne( {where: {name: house}} );
+    housePoints.points = housePoints.points - args_points;
+    housePoints.save()
+    .then( () => {
+      console.log("Subtracted from " + house + ": " + args_points + " points" );
+    } ).catch(err => {
+      console.error("Failed take: " + args_points + " points from " + house.capitalize() + " " + err);
+      args.send("Failed to take " + args_points + " points from " + house.capitalize() );
+      return;
+    });
+  var text = '';
+    var embed = new Discord.RichEmbed()
+      .setFooter(`Lost by: ${args.displayName}`, 'https://i.imgur.com/jM0Myc5.png');
+
+    var description = "";
+    text = 'Lost ' + args_points + ' point(s) from ' + house.capitalize() + ' from ' + args.displayName + '.';
+    
+    if ( args_reason ) {
+      text = text + ' *Reason: ' + args_reason + '*';
+      description = [description, 'Reason: ' + args_reason].join(' ');
+    }
+    embed.setDescription(description);
+
+    var authorName = args_points + ' points from ' + house.capitalize();
+    await Houses.findOne ({where:{name:house.toLowerCase()}})
+    .then ( (house) => {
+      embed.setAuthor(authorName, house.get().icon).setColor(house.get().color);
+    })
+    .catch (err => {
+      console.error("FAILED to findOne house entry in houses " + err)
+    }) ;
+    console.log(text);
+    await args.message.channel.send(embed)
+    .then(sentMessage => {
+      var sentMessageUrl = `https://discordapp.com/channels/${args.guildId}/${args.channelId}/${sentMessage.id}`;
+      console.log("sentMessage: " + sentMessageUrl);
+      embed.setDescription(embed.description + ` [#${args.message.channel.name}](${sentMessageUrl})`);
+      if (logChannel) {
+        logChannel.send(embed);
+      }
+    })
+    .catch(err => {
+    console.error("Failed to send embed: " + err);
+    });
+}) ;
+
+async function aliasExists (alias) {
+  var canDo                  = "pasteque" ;
+  await Houses
+    .findOne ({ where: { aliases: { [Op.like]:'%'+alias+'%' } } } )
+    .then ( (house) => {
+      var allAliases         = JSON.parse (house.get().aliases) ;
+      console.log ('allAliases', allAliases) ;
+      canDo                  = ! allAliases.includes (alias) ;
+    })
+    .catch(err => {
+      console.error("No houses with aliases "+alias+".\nErr : "+ err) ;
+      canDo                  =  true ;
+    });
+  return canDo ;
+}
 
 //Logs into discord
 var botToken = process.env.BOT_TOKEN;
