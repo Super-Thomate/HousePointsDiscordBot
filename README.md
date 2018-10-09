@@ -213,3 +213,25 @@ Run `/maxpoints <integer>` to set maximum points one can give or take to `<integ
 Run `/minpoints <integer>` to set minimum points one can give or take to `<integer>`.
 
 The maximum should always be greater or equal than the minimum.
+
+### Delete house
+Run `/deletehouse <housename>` to delete house `<housename>`.
+
+In order to do that you must have a role linked to `addHouse` or `doAllOfTheAbove`.
+
+### Delete alias
+Run `/deletealias <housename> <alias>` to delete alias `<alias>` for house `<housename>`.
+
+In order to do that you must have a role linked to `addHouse` or `doAllOfTheAbove`.
+
+Note: If you wish to delete multiple aliases, you may separate them with a comma.
+
+### Delete permission
+Run `/deletehouse <housename>` to delete house `<housename>`.
+
+In order to do that you must have a role linked to `addHouse` or `doAllOfTheAbove`.
+
+### Reboot
+Run `/reboot` to reboot the bot.
+
+In order to do that you must have a role linked to `doAllOfTheAbove`.

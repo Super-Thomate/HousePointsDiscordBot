@@ -159,9 +159,9 @@ client.on ("message", (message) => {
 }) ;
 
 client.on ("error", (err) => {
-  console.error("An error occurred. The error was: "+err) ;
+  console.error("An error occurred. The error was: ", err) ;
 }) ;
-
+//added to a server
 client.on ("guildCreate", (guild) => {
    console.log (guild) ;
     Roles
@@ -185,7 +185,7 @@ String.prototype.capitalize = function () {
   return this.slice(0, 1).toUpperCase() + this.slice(1);
 }
 
-var COMMANDS = {} ;
+var COMMANDS = new Object () ;
 
 function addCommand (name, func, hide) {
   if (name.constructor === Array) {
@@ -1039,6 +1039,22 @@ addCommand ("help", function (args) {
                               "/showpermissions"
                             , "Show for every permissions the role sets for the bot."
                           )
+                .addField (   
+                              "/deletehouse <housename>"
+                            , "Delete the house <houseName> then reboot the bot."
+                          )
+                .addField (   
+                              "/deletealias <housename> <alias>"
+                            , "Delete the aliases <alias> from <housename> then reboot the bot."
+                          )
+                .addField (   
+                              "/deletepermission <permission> <role>"
+                            , "Delete the permission <permission> for the role <role> then reboot the bot."
+                          )
+                .addField (   
+                              "/reboot"
+                            , "Reboot the bot."
+                          )
                 ;
   args.message.channel.send(embed)
   .then(sentMessage => {
@@ -1371,8 +1387,131 @@ addCommand ("showpermissions", async function (args) {
     });
 }) ;
 
+addCommand ("deletehouse", async function (args) {
+  // delete myObject['regex'] ;
+  if (    ! checkPermissions(args, "addHouse")
+       && ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  if (! args.params.length) {
+    args.send ("Missing args. Use /deletehouse <housename>") ;
+    return ;
+  }
+  var HouseName              = args.params [0].trim () ;
+  Houses
+    .destroy ({where: {name: HouseName.toLowerCase() } })
+    .then ( (val) => {
+      if (val > 0) {
+        HPoints.destroy ({where: {name: HouseName.toLowerCase() } })
+        .then ( (val) => {
+          if (val > 0) {
+            args.send ("Successfully delete "+HouseName) ;
+            resetBot (args) ;
+          } else
+            args.send ("Something went wrong") ;
+        })
+        .catch ( (err) => {
+          console.log ("Cannot find house "+err) ;
+        })
+      }
+    })
+    .catch ( (err) => {
+      console.log ("Cannot find house "+err) ;
+    })
+    ;
+}) ; 
+
+addCommand ("deletealias", async function (args) {
+  if (    ! checkPermissions(args, "addHouse")
+       && ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  if (args.params.length < 2) {
+    args.send ("Missing args. Use /deletealias <housename> <alias>") ;
+    return ;
+  }
+  var HouseName            = args.params [0] ;
+  var alias                = args.params [1] ;
+  var newAliases           = alias.split(",") ;
+  Houses
+    .findOne ({where: {name: HouseName.toLowerCase() } })
+    .then ( (house) => {
+      var oldAliases         = JSON.parse (house.get().aliases) ;
+      oldAliases             = oldAliases.filter ( (alias) => {
+                                                return ! newAliases.includes (alias)
+                                              }) ;
+      house.aliases          = JSON.stringify (oldAliases) ;
+      house.save () ;
+      args.send ("Deleted alias") ;
+      resetBot (args) ;
+    })
+    .catch ( (err) => {
+      args.send ("No house found for name "+HouseName) ;
+      console.err ("FAIL findOne house "+HouseName+" on deletealias "+alias+" : ",err) ;
+    })
+    ;
+}) ;
+
+addCommand ("deletepermission", async function (args) {
+  if (    ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  if (args.params.length < 2) {
+    args.send ("Missing args. Use /deletepermission <permission> <role>") ;
+    return ;
+  } 
+  var perm                   = args.params [0] ;
+  var role                   = args.params [1] ;
+  if (! perm_list.includes (perm)) {
+    args.send ("The permission "+perm+" is not defined. Use /listpermission for more infos.") ;
+    return ;
+  }
+  Roles
+    .destroy ({where: {permission:perm, role: role}})
+    .then ( (val) => {
+      if (val) {
+        args.send ("The role "+role+" does not have the permission "+perm+" anymore.") ;
+        console.log ("The role "+role+" does not have the permission "+perm+" anymore.") ;
+        resetBot (args) ;
+      } else {
+        args.send ("The role "+role+" may not have the permission "+perm+".") ;
+        args.send ("Use /showpermissions for more infos.") ;
+        console.log ("The role "+role+" may not have the permission "+perm+".") ;
+      }
+    })
+    .catch ( (err) => {
+      console.log ("FAIL destroy Roles "+err) ;
+    })
+    ;
+}) ;
+
+addCommand ("reboot", function (args) {
+  if (    ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  resetBot (args) ;
+}) ;
+
+// Turn bot off (args), then turn it back on
+function resetBot (args) {
+    // send channel a message that you're resetting bot [optional]
+    args
+      .send('Rebooting ...')
+      .then (msg => client.destroy ())
+      .then (() => client.login (process.env.BOT_TOKEN))
+      .then (() => args.send ("I'm back !") )
+      ;
+}
+
 //Logs into discord
-var botToken = process.env.BOT_TOKEN;
-client.login(botToken);
+client.login (process.env.BOT_TOKEN);
 
 console.log("Starting...");
