@@ -1500,6 +1500,10 @@ addCommand ("reboot", function (args) {
   resetBot (args) ;
 }) ;
 
+addCommand ("housebot?", function (args) {
+  args.send ("Non.")
+}) ;
+
 // Turn bot off (args), then turn it back on
 function resetBot (args) {
     // send channel a message that you're resetting bot [optional]
