@@ -235,3 +235,13 @@ In order to do that you must have a role linked to `addHouse` or `doAllOfTheAbov
 Run `/reboot` to reboot the bot.
 
 In order to do that you must have a role linked to `doAllOfTheAbove`.
+
+### Add Role
+Run `/addrole <role>` to add the role `<role>` to the server.
+
+In order to do that you must have a role linked to `doAllOfTheAbove`.
+
+### Give Role
+Run `/giverole <role> <@someone>` to give the role `<role>` to `<@someone>`.
+
+In order to do that you must have a role linked to `doAllOfTheAbove`.

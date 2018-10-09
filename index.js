@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const fs                     = require('fs') ;
 const Sequelize              = exports.Sequelize = require ('sequelize') ;
 const Op                     = Sequelize.Op ;
-const sequelize              = new Sequelize(process.env.MYSQL_URL) ;
+const sequelize              = new Sequelize (process.env.MYSQL_URL) ;
 sequelize
   .authenticate()
   .then(() => {
@@ -163,14 +163,27 @@ client.on ("error", (err) => {
 }) ;
 //added to a server
 client.on ("guildCreate", (guild) => {
-   console.log (guild) ;
-    Roles
-      .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster" } })
-      .spread ((roles, created) => {
-        console.log ("State "+(created?"created":"found")+".") ;
-      })
+  console.log (guild) ;
+  Roles
+    .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster" } })
+    .spread ((roles, created) => {
+      console.log ("State "+(created?"created":"found")+".") ;
+    })
+    ;
+  var canCreate              = true ;
+  for (var [key, value] of guild.roles) {
+    if (value.name == "Headmaster") {
+      canCreate              = false ;
+      break ;
+    }
+  }
+  if (canCreate)
+    guild
+      .createRole ({name:'Headmaster', permissions:[]})
+      .catch(error => console.log(error))
       ;
 }) ;
+
 //removed from a server
 client.on ("guildDelete", (guild) => {
     console.log("NOOOOOOOOOOOOOOOOOOO !",) ;
@@ -220,7 +233,7 @@ function runCommand (message) {
                 message
         ,          text: processed_content
         ,        params: processed_content.split(' ').slice(1)
-        ,          send: message.channel.sendMessage.bind(message.channel)
+        ,          send: message.channel.send.bind(message.channel)
         ,      sendFile: message.channel.sendFile.bind(message.channel)
         ,          user: message.author
         ,          nick: message.author.nickanme
@@ -240,7 +253,8 @@ function runCommand (message) {
         ,        dmCode: message.author.sendCode.bind(message.author)
         ,       dmEmbed: message.author.send.bind(message.author)
         ,        dmFile: message.author.sendFile.bind(message.author)
-        ,     dmMessage: message.author.sendMessage.bind(message.author)
+        ,     dmMessage: message.author.send.bind(message.author)
+        ,         guild: message.guild
       } ;
     COMMANDS ['cmd_' + firstArg.replace(process.env.PREFIX, '')].func(args);
   }
@@ -1055,6 +1069,14 @@ addCommand ("help", function (args) {
                               "/reboot"
                             , "Reboot the bot."
                           )
+                .addField (   
+                              "/addrole <role>"
+                            , "Add the role <role> to the server."
+                          )
+                .addField (   
+                              "/giverole <role> <@someone>"
+                            , "Give the role <role> to <@someone>."
+                          )
                 ;
   args.message.channel.send(embed)
   .then(sentMessage => {
@@ -1504,6 +1526,79 @@ addCommand ("housebot?", function (args) {
   args.send ("Non.")
 }) ;
 
+addCommand ("addrole", function (args) {
+  if (    ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  if (! args.params.length) {
+    args.send ("Missing args. Use /addrole <role>") ;
+    return ;
+  }
+  var guild                  = args.guild ;
+  var roleInput              = args.params [0] ;
+  for (var [key, value] of guild.roles) {
+    if (value.name == roleInput) {
+      args.send ("Role "+roleInput+" already exists.") ;
+      return null ;
+    }
+  }
+  guild
+    .createRole ({name:roleInput, permissions:[]})
+    .then ( (roles) => {
+      args.send ("Created role "+roleInput+".") ;
+    })
+    .catch(error => console.log(error))
+    ;
+}) ;
+
+addCommand ("giverole", function (args) {
+  if (    ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  if (args.params.length < 2) {
+    args.send ("Missing args. Use /giverole <role> <@someone>") ;
+    return ;
+  }
+  var roleInput              = args.params [0] ;
+  Roles
+    .findOne ({where: {role:roleInput}})
+    .then ( (LeRole) => {
+      //console.log ("roles", LeRole) ;
+      var member             = args.mentions.first();
+      var memberMention;
+      if (member !== undefined) {
+        memberMention        = "<@!" + member.id + ">";
+        //console.log ("In args : \n", args) ;
+        var role             = args.guild.roles.find("name", roleInput) ;
+        member
+          .addRole (role)
+          .then ( () => {
+            args.send ("Successfully added role "+roleInput+" to "+memberMention) ;
+            if (! LeRole) {
+              args.send ("WARNING : "+roleInput+" does not have any permission yet.") ;
+              args.send ("Run /setpermission <permission> "+roleInput+" to give it one.") ;
+            }
+          })
+          .catch ( (err) => {
+            console.error(err) ;
+            args.send ("WARNING : role "+roleInput+" does not exist on this server.") ;
+          })
+          ;
+          ; // https://anidiotsguide_old.gitbooks.io/discord-js-bot-guide/content/information/understanding-roles.html
+      } else {
+        args.send ("Wrong args. Use /giverole <role> <@someone>") ;
+      }
+      
+    })
+    .catch ( (err) => {
+      console.log ("FAIL findOne Roles where role: "+roleInput+" => ", err) ;
+    }) ;
+}) ;
+
 // Turn bot off (args), then turn it back on
 function resetBot (args) {
     // send channel a message that you're resetting bot [optional]
@@ -1516,6 +1611,6 @@ function resetBot (args) {
 }
 
 //Logs into discord
-client.login (process.env.BOT_TOKEN);
+client.login (process.env.BOT_TOKEN) ;
 
-console.log("Starting...");
+console.log ("Starting...") ;
