@@ -48,6 +48,15 @@ Go to your terminal in the folder and type `node index.js` then press enter.
 To stop it (If on your actual computer) press CTRL+C  
 That will run the bot, and it should join.  
 
+## Database
+This version of the bot uses a database to store all the information (house, points, roles, etc.). All the parameters for the database connexion are define in `.env`.
+* `DB_NAME` name of the database used by the bot
+* `DB_USER` username (must have read and write right ont the database `DB_NAME`)
+* `DB_PASS` password for `DB_USER`
+* `DB_HOST` host of the base
+* `DB_DIALECT` dialect of your base (mysql, sqlite, postgres or mssql)
+* `DB_STORAGE` path to the database (for sqlite only)
+
 ## Roles
 Roles are required to perfom some actions (adding a house, giving points, etc.).
 * takePoints :
@@ -204,9 +213,9 @@ All the houses will have their points number back to 0.
 
 
 ### Infos on houses
-Run `/infos` in order to get informations on all houses.
+Run `/infos` in order to get information on all houses.
 
-Run `/infos <housename>` in order to get informations on the house `<housename>`.
+Run `/infos <housename>` in order to get information on the house `<housename>`.
 
 
 ### Set max and min points
