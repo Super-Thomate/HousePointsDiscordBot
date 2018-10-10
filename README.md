@@ -211,6 +211,10 @@ In order to do that you must have a role linked to `setPoints` or `doAllOfTheAbo
 
 All the houses will have their points number back to 0.
 
+### Allowing negative points
+Run `/negativehouses <true|false>` if you want to allow or not the houses to have negative points. In order to do that you must have a role linked to `doAllOfTheAbove`.
+
+By default, houses can have negative points.
 
 ### Infos on houses
 Run `/infos` in order to get information on all houses.

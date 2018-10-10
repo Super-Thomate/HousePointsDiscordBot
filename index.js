@@ -546,6 +546,11 @@ async function housePointsFunc (args) {
     // Set points
     // Set points
     // Update DB with points
+    let negative             = await canDrop (args) ;
+    if (! negative && args_points < 0) {
+      args_points            = 0 ;
+      args.send ("WARNING : Houses' points can not be negative.") ;
+    }
     let housePoints = await HPoints.findOne( {where: {name: house}} );
     housePoints.points = args_points;
     housePoints
@@ -605,7 +610,7 @@ async function housePointsFunc (args) {
   else {
     let allHouseNames  = allHouses.join(', ') ;
     args.send(
-    'You might not be able to do that.'+
+    'Unknown argument: '+firstParam+'.'+
     '\nUsage:\n'+process.env.PREFIX+'<housename> add <integer>\n'+
     process.env.PREFIX+'<housename> subtract <integer>'+
     ''
@@ -1158,7 +1163,11 @@ addCommand ("help", function (args) {
                 .addField (   
                               "/housebot? <question>"
                             , "Sometimes it's good to let the bot decide, sometimes it's not."
-                          )
+                          ) 
+                .addField (   
+                              "/negativehouses <true|false>"
+                            , "Set if you want to allow or not the houses to have negative points."
+                          ) 
                 ;
   args.message.channel.send(embed)
   .then(sentMessage => {
