@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const fs                     = require('fs') ;
 const Sequelize              = exports.Sequelize = require ('sequelize') ;
 const Op                     = Sequelize.Op ;
-const sequelize              = new Sequelize (process.env.MYSQL_URL) ;
+const sequelize              = new Sequelize (process.env.DB_URL) ;
 sequelize
   .authenticate()
   .then(() => {
