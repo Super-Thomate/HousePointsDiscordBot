@@ -64,6 +64,8 @@ Users with this permission can do everything listed above, but also can change s
 ## Commands  
 All the commands listed below are run in the chat.
 
+The command's prefix is defined in the .env file `PREFIX` property, in all of this file, we will use `/` as the prefix.
+
 ### Set a permission
 Permissions are linked to role on your Discord server.
 To add a specific permission to a specific role, run `/setpermission <permission> <role>`.
