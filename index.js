@@ -14,9 +14,12 @@ sequelize
   .catch(err => {
     console.error('Unable to connect to the database:', err);
   }) ;
+
 //For discord
 var   Discord                = require ('discord.js')
     , client                 = new Discord.Client () ;
+// For commands
+var COMMANDS                 = new Object () ;
 
 // Create configuration table
 const Configuration = sequelize.define('configuration', {
@@ -27,11 +30,14 @@ const Configuration = sequelize.define('configuration', {
   ,          max_points: {type: Sequelize.INTEGER, defaultValue: 100}
   ,          min_points: {type: Sequelize.INTEGER, defaultValue: 1}
 })
-Configuration.sync({alter: true}).then(() => {
-  console.log("TABLE CREATED: configuration");
-}).catch(err => {
-  console.error("FAILED TABLE CREATE: configuration " + err);
-}) ;
+Configuration
+  .sync({alter: true})
+  .then(() => {
+    console.log("TABLE CREATED: configuration");
+  })
+  .catch((err)=> {
+    console.error("FAILED TABLE CREATE: configuration " + err);
+  }) ;
 
 // Create house_point table
 const HPoints = sequelize.define('house_point', {
@@ -39,11 +45,14 @@ const HPoints = sequelize.define('house_point', {
   , server_id: { type: Sequelize.STRING }
   ,    points: { type: Sequelize.INTEGER, defaultValue: 0 }
 }) ;
-HPoints.sync({ alter: true }).then(() => {
-  console.log("TABLE CREATED: house_points");
-}).catch(err => {
-   console.error("FAILED TABLE CREATE: house_points " + err);
-}) ;
+HPoints
+  .sync({ alter: true })
+  .then(() => {
+    console.log("TABLE CREATED: house_points");
+  })
+  .catch((err) => {
+     console.error("FAILED TABLE CREATE: house_points " + err);
+  }) ;
 
 // Create houses table
 const Houses = sequelize.define('houses', {
@@ -53,51 +62,47 @@ const Houses = sequelize.define('houses', {
   ,     color: { type: Sequelize.STRING, defaultValue: "0x000000" }
   ,   aliases: { type: Sequelize.STRING, defaultValue: "[]" }
 }) ;
-Houses.sync({ alter: true }).then(() => {
-  console.log("TABLE CREATED: houses");
-}).catch(err => {
-  console.error("FAILED TABLE CREATE: houses " + err);
-}) ;
+Houses
+  .sync({ alter: true })
+  .then(() => {
+    console.log("TABLE CREATED: houses");
+  })
+  .catch((err) => {
+    console.error("FAILED TABLE CREATE: houses " + err);
+  }) ;
+  
+// Find allHouses
 var allHouses                = new Array () ;
 Houses.findAll ()
-.then ((houses) => {
-  for (let n = 0 ; n < houses.length; n++) {
-    var house                = houses [n] ;
-    let houseName            = house.get ({plain: true}).name.toLowerCase () ;
-    let aliases              = JSON.parse (house.get ().aliases) ;
-    allHouses       [allHouses.length] = houseName ;
-    console.log ("--------------------------------------------------------") ;
-    console.log (houseName, aliases) ;
-    console.log ("--------------------------------------------------------") ;
-    addCommand (aliases, housePointsFunc.bind (houseName)) ;
-  }
-})
-.catch(err => {
-  console.error ("FAILED to load houses " + err)
-}) ;
-
-// Is this still relevant ?
-/*
-const http = require('http');
-const express = require('express');
-const app = express();
-app.get("/", (request, response) => {
-  console.log(""+Date.now() + " Ping Received");
-  response.sendStatus(200);
-});
-app.listen(process.env.PORT);
-*/
+  .then ((houses) => {
+    for (let n = 0 ; n < houses.length; n++) {
+      var house                = houses [n] ;
+      let houseName            = house.get ({plain: true}).name.toLowerCase () ;
+      let aliases              = JSON.parse (house.get ().aliases) ;
+      allHouses       [allHouses.length] = houseName ;
+      console.log ("--------------------------------------------------------") ;
+      console.log (houseName, aliases) ;
+      console.log ("--------------------------------------------------------") ;
+      addCommand (aliases, housePointsFunc.bind (houseName)) ;
+    }
+  })
+  .catch((err) => {
+    console.error ("FAILED to load houses " + err)
+  }) ;
 
 //Create roles table
 const Roles                  = sequelize.define ('roles', {
     permission: { type: Sequelize.STRING }
   ,       role: { type: Sequelize.STRING }
 }) ;
-Roles.sync({ alter: true }).then(() => {
-  console.log("TABLE CREATED: roles");
-}).catch(err => {
-  console.error("FAILED TABLE CREATE: roles " + err);
-}) ;
+Roles
+  .sync({ alter: true })
+  .then(() => {
+    console.log("TABLE CREATED: roles");
+  })
+  .catch((err) => {
+    console.error("FAILED TABLE CREATE: roles " + err);
+  }) ;
 
 // Get all permission
 const perm_list              = [   'setPoints'
@@ -125,7 +130,24 @@ Roles
     console.log ("FAIL findOrCreate Roles "+err) ;
   })
   ;
-    
+
+// 
+
+// Is this still relevant ?
+/*
+const http = require('http');
+const express = require('express');
+const app = express();
+app.get("/", (request, response) => {
+  console.log(""+Date.now() + " Ping Received");
+  response.sendStatus(200);
+});
+app.listen(process.env.PORT);
+*/
+
+
+// All functions needed
+
 //Loads a JSON file
 function loadJSON (dir) {
     return JSON.parse(fs.readFileSync(dir, 'utf8'));
@@ -138,67 +160,16 @@ function writeJSON (dir, data) {
                               , 'utf8'
                             ) ;
 }
-
-client.on ("ready", () => {
-  console.log("logged in serving in " + client.guilds.array().length + " servers");
-});
-
-client.on ("message", (message) => {
-  // Ignore bots
-  if(message.author.bot)
-    return ;
-  console.log(message.author.username + ' : ' + message.content);
-  var galt = /bendor/i ;
-  if (galt.test(message.content))
-    message.content = "bendor" ;
-  // Ignore messages that don't start with prefix
-  if(message.content.indexOf(process.env.PREFIX) !== 0 && message.content != "bendor")
-    return ;
-
-  runCommand (message) ;
-}) ;
-
-client.on ("error", (err) => {
-  console.error("An error occurred. The error was: ", err) ;
-}) ;
-//added to a server
-client.on ("guildCreate", (guild) => {
-  console.log (guild) ;
-  Roles
-    .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster" } })
-    .spread ((roles, created) => {
-      console.log ("State "+(created?"created":"found")+".") ;
-    })
-    ;
-  var canCreate              = true ;
-  for (var [key, value] of guild.roles) {
-    if (value.name == "Headmaster") {
-      canCreate              = false ;
-      break ;
-    }
-  }
-  if (canCreate)
-    guild
-      .createRole ({name:'Headmaster', permissions:[]})
-      .catch(error => console.log(error))
+// Turn bot off (args), then turn it back on
+function resetBot (args) {
+    // send channel a message that you're resetting bot [optional]
+    args
+      .send('Rebooting ...')
+      .then (msg => client.destroy ())
+      .then (() => client.login (process.env.BOT_TOKEN))
+      .then (() => args.send ("I'm back !") )
       ;
-}) ;
-
-//removed from a server
-client.on ("guildDelete", (guild) => {
-    console.log("NOOOOOOOOOOOOOOOOOOO !",) ;
-    //remove from guildArray
-}) ;
-
-String.prototype.replaceAll = function (search, replacement) {
-  var target                 = this;
-  return target.replace(new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'g'), replacement);
-};
-String.prototype.capitalize = function () {
-  return this.slice(0, 1).toUpperCase() + this.slice(1);
 }
-
-var COMMANDS = new Object () ;
 
 function addCommand (name, func, hide) {
   if (name.constructor === Array) {
@@ -285,106 +256,6 @@ function checkPermissions (args, permission) {
   console.log("PERMISSION DENIED: " + permission);
   return false ;
 }
-
-addCommand ("commands", function (args) {
-  var   text                 = 'Commands:\n'
-      , first                = true
-      ;
-  for (let cmd in COMMANDS) {
-    if (COMMANDS[cmd].hide) {
-      continue ;
-    }
-    if (! first) {
-      text                  += ', ' ;
-    } else {
-      first                  = false ;
-    }
-    text                    += process.env.PREFIX + COMMANDS[cmd].name ;
-  }
-  args.send(text + '.') ;
-});
-
-addCommand ("pointssetup", async function (args) {
-  if (    ! checkPermissions (args, "doAllOfTheAbove")
-     ) {
-    args.send('You do not have permission to do that.');
-    return;
-  }
-  if (! allHouses.length) {
-    args.send ("No house define in base => use /addhouse <housename> to add houses.") ;
-    return ;
-  }
-  for (var i = 0; i < allHouses.length; i++) {
-    HPoints
-      .findOrCreate ( {where: {name: allHouses [i], server_id: args.guildId}} )
-      .spread ((house, created) => {
-        console.log ("FINDORCREATE house_points: " + house.get({plain: true}).name)
-        args.send ("Created house entry " + house.get({plain: true}).name + " in points table.");
-      })
-      .catch (err => {
-        console.error("FAILED to findOrCreate house entry in house_points " + allHouses [i])
-      })
-  }
-});
-
-addCommand ('pointslog', async function (args) {
-  if (   ! checkPermissions(args, "doAllOfTheAbove")
-     ) {
-    args.send('You do not have permission to do that.');
-    return ;
-  }
-
-  Configuration
-  .findOrCreate ({where: {server_id: args.guildId}})
-  .spread ((server_configs, created) => {
-    var old_log_channel      = server_configs.p_log_channel;
-    server_configs.p_log_channel       = args.channelId ;
-    server_configs
-      .save()
-      .then( () => {console.log("UPDATED configuration: Set points log channel to " + args.message.channel)})
-    ;
-    args.send("Set points log channel to " + args.message.channel);
-  })
-  .catch(err => {
-    console.error("FAILED to set points log channel to " + args.message.channel);
-    args.send("Unable to set points log channel to " + args.message.channel);
-  })
-  ;
-});
-
-addCommand ('pointsreset', async function (args) {
-  if (   ! checkPermissions(args, "setPoints")
-      && ! checkPermissions(args, "doAllOfTheAbove")
-     ) {
-    args.send('You do not have permission to do that.');
-    return;
-  }
-  for (var i = 0; i < allHouses.length; i++) {
-    HPoints
-     .findOne ( {where: {name: allHouses [i]} } )
-     .then ((house) => {
-       house.points          = 0;
-       house
-         .save ()
-         .then (() => {
-           console.log (`Reset ${allHouses [i]} points to 0.`) ;
-           args.send (`Reset ${allHouses [i]} points to 0.`) ;
-         })
-         ;
-     })
-     .catch (err => {
-        console.error(`Failed to reset points ${allHouses [i]} points to 0: ` + err);
-     })
-     ;
-  }
-});
-
-addCommand ('points', async function(args) {
-  var server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
-    if (server_config.leaderboard_display)
-      await postLeaderboard(args);
-  args.message.delete () ;
-});
 
 async function postLeaderboard (args) {
   // Get log channel
@@ -728,6 +599,195 @@ async function housePointsFunc (args) {
     ) ;
   }
 }
+
+async function aliasExists (alias) {
+  var canDo                  = "pasteque" ;
+  await Houses
+    .findOne ({ where: { aliases: { [Op.like]:'%'+alias+'%' } } } )
+    .then ( (house) => {
+      var allAliases         = JSON.parse (house.get().aliases) ;
+      console.log ('allAliases', allAliases) ;
+      canDo                  = ! allAliases.includes (alias) ;
+    })
+    .catch(err => {
+      console.error("No houses with aliases "+alias+".\nErr : "+ err) ;
+      canDo                  =  true ;
+    });
+  return canDo ;
+}
+
+// Prototype definition
+
+String.prototype.replaceAll = function (search, replacement) {
+  var target                 = this;
+  return target.replace(new RegExp(search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), 'g'), replacement);
+};
+
+String.prototype.capitalize = function () {
+  return this.slice(0, 1).toUpperCase() + this.slice(1);
+} ;
+
+// Discord events
+// Go !
+client.on ("ready", () => {
+  console.log("logged in serving in " + client.guilds.array().length + " servers");
+});
+// catch message
+client.on ("message", (message) => {
+  // Ignore bots
+  if(message.author.bot)
+    return ;
+  console.log(message.author.username + ' : ' + message.content);
+  var galt = /bendor/i ;
+  if (galt.test(message.content))
+    message.content = "bendor" ;
+  // Ignore messages that don't start with prefix
+  if(message.content.indexOf(process.env.PREFIX) !== 0 && message.content != "bendor")
+    return ;
+
+  runCommand (message) ;
+}) ;
+// catch error
+client.on ("error", (err) => {
+  console.error("An error occurred. The error was: ", err) ;
+}) ;
+//added to a server
+client.on ("guildCreate", (guild) => {
+  console.log (guild) ;
+  Roles
+    .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster" } })
+    .spread ((roles, created) => {
+      console.log ("State "+(created?"created":"found")+".") ;
+    })
+    ;
+  var canCreate              = true ;
+  for (var [key, value] of guild.roles) {
+    if (value.name == "Headmaster") {
+      canCreate              = false ;
+      break ;
+    }
+  }
+  if (canCreate)
+    guild
+      .createRole ({name:'Headmaster', permissions:[]})
+      .catch(error => console.log(error))
+      ;
+}) ;
+//removed from a server
+client.on ("guildDelete", (guild) => {
+    console.log("NOOOOOOOOOOOOOOOOOOO !",) ;
+    //remove from guildArray
+}) ;
+
+
+
+//   _____                                          _     
+//  / ____|                                        | |    
+// | |     ___  _ __ ___  _ __ ___   __ _ _ __   __| |___ 
+// | |    / _ \| '_ ` _ \| '_ ` _ \ / _` | '_ \ / _` / __|
+// | |___| (_) | | | | | | | | | | | (_| | | | | (_| \__ \
+//  \_____\___/|_| |_| |_|_| |_| |_|\__,_|_| |_|\__,_|___/
+//                                                        
+
+addCommand ("commands", function (args) {
+  var   text                 = 'Commands:\n'
+      , first                = true
+      ;
+  for (let cmd in COMMANDS) {
+    if (COMMANDS[cmd].hide) {
+      continue ;
+    }
+    if (! first) {
+      text                  += ', ' ;
+    } else {
+      first                  = false ;
+    }
+    text                    += process.env.PREFIX + COMMANDS[cmd].name ;
+  }
+  args.send(text + '.') ;
+});
+
+addCommand ("pointssetup", async function (args) {
+  if (    ! checkPermissions (args, "doAllOfTheAbove")
+     ) {
+    args.send('You do not have permission to do that.');
+    return;
+  }
+  if (! allHouses.length) {
+    args.send ("No house define in base => use /addhouse <housename> to add houses.") ;
+    return ;
+  }
+  for (var i = 0; i < allHouses.length; i++) {
+    HPoints
+      .findOrCreate ( {where: {name: allHouses [i], server_id: args.guildId}} )
+      .spread ((house, created) => {
+        console.log ("FINDORCREATE house_points: " + house.get({plain: true}).name)
+        args.send ("Created house entry " + house.get({plain: true}).name + " in points table.");
+      })
+      .catch (err => {
+        console.error("FAILED to findOrCreate house entry in house_points " + allHouses [i])
+      })
+  }
+});
+
+addCommand ('pointslog', async function (args) {
+  if (   ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send('You do not have permission to do that.');
+    return ;
+  }
+
+  Configuration
+  .findOrCreate ({where: {server_id: args.guildId}})
+  .spread ((server_configs, created) => {
+    var old_log_channel      = server_configs.p_log_channel;
+    server_configs.p_log_channel       = args.channelId ;
+    server_configs
+      .save()
+      .then( () => {console.log("UPDATED configuration: Set points log channel to " + args.message.channel)})
+    ;
+    args.send("Set points log channel to " + args.message.channel);
+  })
+  .catch(err => {
+    console.error("FAILED to set points log channel to " + args.message.channel);
+    args.send("Unable to set points log channel to " + args.message.channel);
+  })
+  ;
+});
+
+addCommand ('pointsreset', async function (args) {
+  if (   ! checkPermissions(args, "setPoints")
+      && ! checkPermissions(args, "doAllOfTheAbove")
+     ) {
+    args.send('You do not have permission to do that.');
+    return;
+  }
+  for (var i = 0; i < allHouses.length; i++) {
+    HPoints
+     .findOne ( {where: {name: allHouses [i]} } )
+     .then ((house) => {
+       house.points          = 0;
+       house
+         .save ()
+         .then (() => {
+           console.log (`Reset ${allHouses [i]} points to 0.`) ;
+           args.send (`Reset ${allHouses [i]} points to 0.`) ;
+         })
+         ;
+     })
+     .catch (err => {
+        console.error(`Failed to reset points ${allHouses [i]} points to 0: ` + err);
+     })
+     ;
+  }
+});
+
+addCommand ('points', async function(args) {
+  var server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
+    if (server_config.leaderboard_display)
+      await postLeaderboard(args);
+  args.message.delete () ;
+});
 
 addCommand ("addhouse", async function(args) {
   if (    ! checkPermissions(args, "addHouse")
@@ -1229,22 +1289,6 @@ addCommand ("bendor", async function (args) {
     });
 }) ;
 
-async function aliasExists (alias) {
-  var canDo                  = "pasteque" ;
-  await Houses
-    .findOne ({ where: { aliases: { [Op.like]:'%'+alias+'%' } } } )
-    .then ( (house) => {
-      var allAliases         = JSON.parse (house.get().aliases) ;
-      console.log ('allAliases', allAliases) ;
-      canDo                  = ! allAliases.includes (alias) ;
-    })
-    .catch(err => {
-      console.error("No houses with aliases "+alias+".\nErr : "+ err) ;
-      canDo                  =  true ;
-    });
-  return canDo ;
-}
-
 addCommand ("displayleaderboard", async function (args) {
    if (   ! checkPermissions(args, "doAllOfTheAbove")
       ) {
@@ -1599,16 +1643,6 @@ addCommand ("giverole", function (args) {
     }) ;
 }) ;
 
-// Turn bot off (args), then turn it back on
-function resetBot (args) {
-    // send channel a message that you're resetting bot [optional]
-    args
-      .send('Rebooting ...')
-      .then (msg => client.destroy ())
-      .then (() => client.login (process.env.BOT_TOKEN))
-      .then (() => args.send ("I'm back !") )
-      ;
-}
 
 //Logs into discord
 client.login (process.env.BOT_TOKEN) ;
