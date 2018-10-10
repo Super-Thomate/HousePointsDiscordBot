@@ -1146,6 +1146,10 @@ addCommand ("help", function (args) {
                               "/giverole <role> <@someone>"
                             , "Give the role <role> to <@someone>."
                           )
+                .addField (   
+                              "/housebot? <question>"
+                            , "Sometimes it's good to let the bot decide, sometimes it's not."
+                          )
                 ;
   args.message.channel.send(embed)
   .then(sentMessage => {
