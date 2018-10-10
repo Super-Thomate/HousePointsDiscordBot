@@ -1,6 +1,6 @@
 # House Points Discord Bot
 ## Requires:  
-* Node.js 6.0 or greater, http://nodejs.org/  
+* Node.js v8 or greater, http://nodejs.org/  
   
 ## Upon downloading, or cloning  
 Search up a tutorial on how to open a terminal in your Operating System.  
