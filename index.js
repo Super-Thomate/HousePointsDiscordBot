@@ -1049,7 +1049,15 @@ addCommand ("infos", async function (args) {
 }) ;
 
 addCommand ("help", function (args) {
-  var embed                  = 
+  let page                   = args.params [0] ;
+  if (      isNaN (page)
+       && ! Number.isInteger (page)
+     ) {
+    page                     = 1 ;
+  } else {
+    page                     = parseInt (page) ;
+  }
+  let embed1                 = 
           new Discord
                 .RichEmbed ()
                 .setColor (0x2EB050)
@@ -1064,117 +1072,161 @@ addCommand ("help", function (args) {
                                     ""
                                 )
                 .addField (   
-                              ""+process.env.PREFIX+"help"
-                            , "Display this help page."
-                          )
+                              ""+process.env.PREFIX+"help [<page>]"
+                            , "Display this help page. If <page> is set, display the page <page>"
+                          ) // 1
                 .addField (   
                               ""+process.env.PREFIX+"commands"
                             , "Display a list of all available commands."
-                          )
+                          ) // 2
                 .addField (   
                               ""+process.env.PREFIX+"pointssetup"
                             , "Starts the competition."
-                          )
+                          ) // 3
                 .addField (   
                               ""+process.env.PREFIX+"pointslog"
                             , "Set points log channel to the current channel."
-                          ) 
+                          ) // 4
                 .addField (   
                               ""+process.env.PREFIX+"displayleaderboard <true|false>"
                             , "Set if you want to display or not the points leaderboard."
-                          ) 
+                          ) // 5
                 .addField (   
                               ""+process.env.PREFIX+"pointsreset"
                             , "Set points to every houses to 0."
-                          ) 
+                          ) // 6
                 .addField (   
                               ""+process.env.PREFIX+"addhouse <housename>"
                             , "Add a house."
-                          ) 
+                          ) // 7
                 .addField (   
                               ""+process.env.PREFIX+"sethouse <housename> <attribute> <value>"
                             , "For house <housename> set <attribute> to <value>."
-                          ) 
+                          ) // 8 
                 .addField (   
                               ""+process.env.PREFIX+"maxpoints <integer>"
                             , "Set the maximum of points one can give or take at <integer>."
-                          ) 
+                          ) // 9
                 .addField (   
                               ""+process.env.PREFIX+"minpoints <integer>"
                             , "Set the minimum of points one can give or take at <integer>."
-                          )  
+                          ) // 10
+                .setFooter ("1/3")
+                ;
+  let embed2                 = 
+          new Discord
+                .RichEmbed ()
+                .setColor (0x2EB050)
+                .setTitle ("Help for "+process.env.BOT_NAME)
+                .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
+                                    "Initially created by MinusGix as"+
+                                    " [DiscordModelHogwartsBot](https://github.com/MinusGix/DiscordModelHogwartsBot),"+
+                                    " it was upgraded by rykanrar as"+
+                                    " [HousePointsDiscordBot](https://github.com/rykanrar/HousePointsDiscordBot).\n"+
+                                    "The current version is a work of Super-Thomate build"+
+                                    " on top of the two previous version."+
+                                    ""
+                                )
                 .addField (   
                               ""+process.env.PREFIX+"infos"
                             , "Display informations for all houses in competition."
-                          ) 
+                          ) // 1
                 .addField (   
                               ""+process.env.PREFIX+"infos <housename>"
                             , "Display informations for <housename>."
-                          ) 
+                          ) // 2
                 .addField (   
                               ""+process.env.PREFIX+"<housename> add <amount> [<@Someone>] <reason>"
                             , "Add <amount> points to <housename> for the reason <reason>. The points are earned by <@Someone> if specified."
-                          ) 
+                          ) // 3
                 .addField (   
                               ""+process.env.PREFIX+"<housename> take <amount> [<@Someone>] <reason>"
                             , "Take <amount> points to <housename> for the reason <reason>. The points are lost by <@Someone> if specified."
-                          ) 
+                          ) // 4
                 .addField (   
                               ""+process.env.PREFIX+"<housename> set <amount>"
                             , "Set <housename> points to <amount>."
-                          )
+                          ) // 5
                 .addField (   
                               ""+process.env.PREFIX+"setpermission <permission> <role>"
                             , "Add the permission <permission> to the role <role>."
-                          )
+                          ) // 6
                 .addField (   
                               ""+process.env.PREFIX+"listpermissions"
                             , "List all permissions for the bot."
-                          )
+                          ) // 7
                 .addField (   
                               ""+process.env.PREFIX+"showpermissions"
                             , "Show for every permissions the role sets for the bot."
-                          )
+                          ) // 8
                 .addField (   
                               ""+process.env.PREFIX+"deletehouse <housename>"
                             , "Delete the house <houseName> then reboot the bot."
-                          )
+                          ) // 9
                 .addField (   
                               ""+process.env.PREFIX+"deletealias <housename> <alias>"
                             , "Delete the aliases <alias> from <housename> then reboot the bot."
-                          )
+                          ) // 10
+                .setFooter ("2/3")
+                ;
+  let embed3                 = 
+          new Discord
+                .RichEmbed ()
+                .setColor (0x2EB050)
+                .setTitle ("Help for "+process.env.BOT_NAME)
+                .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
+                                    "Initially created by MinusGix as"+
+                                    " [DiscordModelHogwartsBot](https://github.com/MinusGix/DiscordModelHogwartsBot),"+
+                                    " it was upgraded by rykanrar as"+
+                                    " [HousePointsDiscordBot](https://github.com/rykanrar/HousePointsDiscordBot).\n"+
+                                    "The current version is a work of Super-Thomate build"+
+                                    " on top of the two previous version."+
+                                    ""
+                                )
                 .addField (   
                               ""+process.env.PREFIX+"deletepermission <permission> <role>"
                             , "Delete the permission <permission> for the role <role> then reboot the bot."
-                          )
+                          ) // 1
                 .addField (   
                               ""+process.env.PREFIX+"reboot"
                             , "Reboot the bot."
-                          )
+                          ) // 2
                 .addField (   
                               ""+process.env.PREFIX+"addrole <role>"
                             , "Add the role <role> to the server."
-                          )
+                          ) // 3
                 .addField (   
                               ""+process.env.PREFIX+"giverole <role> <@someone>"
                             , "Give the role <role> to <@someone>."
-                          )
+                          ) // 4
                 .addField (   
                               ""+process.env.PREFIX+"housebot? <question>"
                             , "Sometimes it's good to let the bot decide, sometimes it's not."
-                          ) 
+                          ) // 5
                 .addField (   
                               ""+process.env.PREFIX+"negativehouses <true|false>"
                             , "Set if you want to allow or not the houses to have negative points."
-                          ) 
+                          ) // 6
+                .setFooter ("3/3")
                 ;
+  let embed                  = "" ;
+  switch (page) {
+    case 2:
+     embed                   = embed2 ;
+    break ;
+    case 3:
+      embed                  = embed3 ;
+    break ;
+    default:
+      embed                  = embed1 ;
+  }
   args.message.channel.send(embed)
-  .then(sentMessage => {
-    console.log ("Message sent.") ;
-  })
-  .catch(err => {
-    console.error("Failed to send embed: " + err);
-  });
+    .then(sentMessage => {
+      console.log ("Message sent.") ;
+    })
+    .catch(err => {
+      console.error("Failed to send embed: " + err);
+    });
 });
 
 addCommand ("maxpoints", async function (args) {
