@@ -737,7 +737,7 @@ addCommand ("pointssetup", async function (args) {
     return;
   }
   if (! allHouses.length) {
-    args.send ("No house define in base => use /addhouse <housename> to add houses.") ;
+    args.send ("No house define in base => use "+process.env.PREFIX+"addhouse <housename> to add houses.") ;
     return ;
   }
   for (var i = 0; i < allHouses.length; i++) {
@@ -822,7 +822,7 @@ addCommand ("addhouse", async function(args) {
   console.log ("addhouse") ;
   console.log ("args", args.params) ;
   if (! args.params.length) {
-    args.send ("Missing args. Use /addhouse <housename>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"addhouse <housename>") ;
     return ;
   }
   var HouseName              = args.params [0].trim () ;
@@ -851,7 +851,7 @@ addCommand ("addhouse", async function(args) {
         addCommand (HouseName.toLowerCase(), housePointsFunc.bind (HouseName.toLowerCase())) ;
         allHouses   [allHouses.length] = HouseName ;
         args.send("Created house entry " + house.get({plain: true}).name.capitalize() + " in houses table.");
-        args.send("Set houses options with /sethouse <name> <attribute> <value>.");
+        args.send("Set houses options with "+process.env.PREFIX+"sethouse <name> <attribute> <value>.");
       } else {
         console.log("FIND houses: " + HouseName) ;
         args.send("House " + HouseName + " already exists.");
@@ -874,13 +874,12 @@ addCommand ("sethouse", async function(args) {
   console.log ("update house") ;
   console.log ("args", args.params) ;
   if (args.params.length < 3) {
-    args.send ("Missing args. Use /sethouse <name> <attribute> <value>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"sethouse <name> <attribute> <value>") ;
     return ;
   }
   var HouseName              = args.params [0].trim () ;
   var attribute              = args.params [1].trim () ;
   var value                  = args.params [2].trim () ;
-  //color_hexa alias1;alias2;alias3 
   const allAttr              = [   "color"
                                  , "icon"
                                  , "alias"
@@ -986,7 +985,7 @@ addCommand ("infos", async function (args) {
         }
         if (! foundHouses) {
           embed.addField (   "No house found !"
-                           , "Use /addhouse <housename> to add a house."
+                           , "Use "+process.env.PREFIX+"addhouse <housename> to add a house."
                          ) ;
         }
         
@@ -1035,7 +1034,7 @@ addCommand ("infos", async function (args) {
       })
       .catch(err => {
         embed.addField (   "No house found with name "+houseName+" !"
-                         , "Use /addhouse "+houseName+" to add the house."
+                         , "Use "+process.env.PREFIX+"addhouse "+houseName+" to add the house."
                        ) ;
         args.message.channel.send(embed)
         .then(sentMessage => {
@@ -1065,107 +1064,107 @@ addCommand ("help", function (args) {
                                     ""
                                 )
                 .addField (   
-                              "/help"
+                              ""+process.env.PREFIX+"help"
                             , "Display this help page."
                           )
                 .addField (   
-                              "/commands"
+                              ""+process.env.PREFIX+"commands"
                             , "Display a list of all available commands."
                           )
                 .addField (   
-                              "/pointssetup"
+                              ""+process.env.PREFIX+"pointssetup"
                             , "Starts the competition."
                           )
                 .addField (   
-                              "/pointslog"
+                              ""+process.env.PREFIX+"pointslog"
                             , "Set points log channel to the current channel."
                           ) 
                 .addField (   
-                              "/displayleaderboard <true|false>"
+                              ""+process.env.PREFIX+"displayleaderboard <true|false>"
                             , "Set if you want to display or not the points leaderboard."
                           ) 
                 .addField (   
-                              "/pointsreset"
+                              ""+process.env.PREFIX+"pointsreset"
                             , "Set points to every houses to 0."
                           ) 
                 .addField (   
-                              "/addhouse <housename>"
+                              ""+process.env.PREFIX+"addhouse <housename>"
                             , "Add a house."
                           ) 
                 .addField (   
-                              "/sethouse <housename> <attribute> <value>"
+                              ""+process.env.PREFIX+"sethouse <housename> <attribute> <value>"
                             , "For house <housename> set <attribute> to <value>."
                           ) 
                 .addField (   
-                              "/maxpoints <integer>"
+                              ""+process.env.PREFIX+"maxpoints <integer>"
                             , "Set the maximum of points one can give or take at <integer>."
                           ) 
                 .addField (   
-                              "/minpoints <integer>"
+                              ""+process.env.PREFIX+"minpoints <integer>"
                             , "Set the minimum of points one can give or take at <integer>."
                           )  
                 .addField (   
-                              "/infos"
+                              ""+process.env.PREFIX+"infos"
                             , "Display informations for all houses in competition."
                           ) 
                 .addField (   
-                              "/infos <housename>"
+                              ""+process.env.PREFIX+"infos <housename>"
                             , "Display informations for <housename>."
                           ) 
                 .addField (   
-                              "/<housename> add <amount> [<@Someone>] <reason>"
+                              ""+process.env.PREFIX+"<housename> add <amount> [<@Someone>] <reason>"
                             , "Add <amount> points to <housename> for the reason <reason>. The points are earned by <@Someone> if specified."
                           ) 
                 .addField (   
-                              "/<housename> take <amount> [<@Someone>] <reason>"
+                              ""+process.env.PREFIX+"<housename> take <amount> [<@Someone>] <reason>"
                             , "Take <amount> points to <housename> for the reason <reason>. The points are lost by <@Someone> if specified."
                           ) 
                 .addField (   
-                              "/<housename> set <amount>"
+                              ""+process.env.PREFIX+"<housename> set <amount>"
                             , "Set <housename> points to <amount>."
                           )
                 .addField (   
-                              "/setpermission <permission> <role>"
+                              ""+process.env.PREFIX+"setpermission <permission> <role>"
                             , "Add the permission <permission> to the role <role>."
                           )
                 .addField (   
-                              "/listpermissions"
+                              ""+process.env.PREFIX+"listpermissions"
                             , "List all permissions for the bot."
                           )
                 .addField (   
-                              "/showpermissions"
+                              ""+process.env.PREFIX+"showpermissions"
                             , "Show for every permissions the role sets for the bot."
                           )
                 .addField (   
-                              "/deletehouse <housename>"
+                              ""+process.env.PREFIX+"deletehouse <housename>"
                             , "Delete the house <houseName> then reboot the bot."
                           )
                 .addField (   
-                              "/deletealias <housename> <alias>"
+                              ""+process.env.PREFIX+"deletealias <housename> <alias>"
                             , "Delete the aliases <alias> from <housename> then reboot the bot."
                           )
                 .addField (   
-                              "/deletepermission <permission> <role>"
+                              ""+process.env.PREFIX+"deletepermission <permission> <role>"
                             , "Delete the permission <permission> for the role <role> then reboot the bot."
                           )
                 .addField (   
-                              "/reboot"
+                              ""+process.env.PREFIX+"reboot"
                             , "Reboot the bot."
                           )
                 .addField (   
-                              "/addrole <role>"
+                              ""+process.env.PREFIX+"addrole <role>"
                             , "Add the role <role> to the server."
                           )
                 .addField (   
-                              "/giverole <role> <@someone>"
+                              ""+process.env.PREFIX+"giverole <role> <@someone>"
                             , "Give the role <role> to <@someone>."
                           )
                 .addField (   
-                              "/housebot? <question>"
+                              ""+process.env.PREFIX+"housebot? <question>"
                             , "Sometimes it's good to let the bot decide, sometimes it's not."
                           ) 
                 .addField (   
-                              "/negativehouses <true|false>"
+                              ""+process.env.PREFIX+"negativehouses <true|false>"
                             , "Set if you want to allow or not the houses to have negative points."
                           ) 
                 ;
@@ -1186,7 +1185,7 @@ addCommand ("maxpoints", async function (args) {
   }
   var params                 = args.params ;
   if (! params.length) {
-    args.send ("Missing args. Use /maxpoints <integer>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"maxpoints <integer>") ;
     return ;
   }
   var points                 = params [0] ;
@@ -1228,7 +1227,7 @@ addCommand ("minpoints", async function (args) {
   }
   var params                 = args.params ;
   if (! params.length) {
-    args.send ("Missing args. Use /minpoints <integer>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"minpoints <integer>") ;
     return ;
   }
   var points                 = params [0] ;
@@ -1328,14 +1327,14 @@ addCommand ("displayleaderboard", function (args) {
   }
   var params                 = args.params ;
   if (! params.length) {
-    args.send ("Missing args. Use /displayleaderboard <true|false>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"displayleaderboard <true|false>") ;
     return ;
   }
   var bool                   = params [0] ;
   if (    bool != "true"
        && bool != "false"
      ) {
-    args.send ("Wrong args. Use /displayleaderboard <true|false>") ;
+    args.send ("Wrong args. Use "+process.env.PREFIX+"displayleaderboard <true|false>") ;
     return ;
   }
   bool                       = bool == "true" ;
@@ -1365,13 +1364,13 @@ addCommand ("setpermission", async function (args) {
   }
   var params                 = args.params ;
   if (! params.length) {
-    args.send ("Missing args. Use /addRole <permission> <role>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"addRole <permission> <role>") ;
     return ;
   }
   var perm                   = params [0] ;
   var role                   = params [1] ;
   if (! perm_list.includes(perm)) {
-    args.send ("The permission "+perm+" is not defined. Use /listpermission for more infos.") ;
+    args.send ("The permission "+perm+" is not defined. Use "+process.env.PREFIX+"listpermission for more infos.") ;
     return ;
   }
   Roles
@@ -1493,7 +1492,7 @@ addCommand ("deletehouse", async function (args) {
     return ;
   }
   if (! args.params.length) {
-    args.send ("Missing args. Use /deletehouse <housename>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"deletehouse <housename>") ;
     return ;
   }
   var HouseName              = args.params [0].trim () ;
@@ -1528,7 +1527,7 @@ addCommand ("deletealias", async function (args) {
     return ;
   }
   if (args.params.length < 2) {
-    args.send ("Missing args. Use /deletealias <housename> <alias>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"deletealias <housename> <alias>") ;
     return ;
   }
   var HouseName            = args.params [0] ;
@@ -1560,13 +1559,13 @@ addCommand ("deletepermission", async function (args) {
     return ;
   }
   if (args.params.length < 2) {
-    args.send ("Missing args. Use /deletepermission <permission> <role>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"deletepermission <permission> <role>") ;
     return ;
   } 
   var perm                   = args.params [0] ;
   var role                   = args.params [1] ;
   if (! perm_list.includes (perm)) {
-    args.send ("The permission "+perm+" is not defined. Use /listpermission for more infos.") ;
+    args.send ("The permission "+perm+" is not defined. Use "+process.env.PREFIX+"listpermission for more infos.") ;
     return ;
   }
   Roles
@@ -1578,7 +1577,7 @@ addCommand ("deletepermission", async function (args) {
         resetBot (args) ;
       } else {
         args.send ("The role "+role+" may not have the permission "+perm+".") ;
-        args.send ("Use /showpermissions for more infos.") ;
+        args.send ("Use "+process.env.PREFIX+"showpermissions for more infos.") ;
         console.log ("The role "+role+" may not have the permission "+perm+".") ;
       }
     })
@@ -1634,7 +1633,7 @@ addCommand ("addrole", function (args) {
     return ;
   }
   if (! args.params.length) {
-    args.send ("Missing args. Use /addrole <role>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"addrole <role>") ;
     return ;
   }
   var guild                  = args.guild ;
@@ -1661,7 +1660,7 @@ addCommand ("giverole", function (args) {
     return ;
   }
   if (args.params.length < 2) {
-    args.send ("Missing args. Use /giverole <role> <@someone>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"giverole <role> <@someone>") ;
     return ;
   }
   var roleInput              = args.params [0] ;
@@ -1681,7 +1680,7 @@ addCommand ("giverole", function (args) {
             args.send ("Successfully added role "+roleInput+" to "+memberMention) ;
             if (! LeRole) {
               args.send ("WARNING : "+roleInput+" does not have any permission yet.") ;
-              args.send ("Run /setpermission <permission> "+roleInput+" to give it one.") ;
+              args.send ("Run "+process.env.PREFIX+"setpermission <permission> "+roleInput+" to give it one.") ;
             }
           })
           .catch ( (err) => {
@@ -1691,7 +1690,7 @@ addCommand ("giverole", function (args) {
           ;
           ; // https://anidiotsguide_old.gitbooks.io/discord-js-bot-guide/content/information/understanding-roles.html
       } else {
-        args.send ("Wrong args. Use /giverole <role> <@someone>") ;
+        args.send ("Wrong args. Use "+process.env.PREFIX+"giverole <role> <@someone>") ;
       }
       
     })
@@ -1708,14 +1707,14 @@ addCommand ("negativehouses", function (args) {
   }
   var params                 = args.params ;
   if (! params.length) {
-    args.send ("Missing args. Use /negativehouses <true|false>") ;
+    args.send ("Missing args. Use "+process.env.PREFIX+"negativehouses <true|false>") ;
     return ;
   }
   var bool                   = params [0] ;
   if (    bool != "true"
        && bool != "false"
      ) {
-    args.send ("Wrong args. Use /negativehouses <true|false>") ;
+    args.send ("Wrong args. Use "+process.env.PREFIX+"negativehouses <true|false>") ;
     return ;
   }
   bool                       = bool == "true" ;
