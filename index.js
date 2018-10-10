@@ -38,6 +38,7 @@ const Configuration = sequelize.define('configuration', {
   , leaderboard_display: {type: Sequelize.BOOLEAN, defaultValue: 1}
   ,          max_points: {type: Sequelize.INTEGER, defaultValue: 100}
   ,          min_points: {type: Sequelize.INTEGER, defaultValue: 1}
+  ,      negative_house: {type: Sequelize.BOOLEAN, defaultValue: 1}
 })
 Configuration
   .sync({alter: true})
@@ -484,6 +485,9 @@ async function housePointsFunc (args) {
     }
     let housePoints = await HPoints.findOne( {where: {name: house}} );
     housePoints.points = housePoints.points - args_points;
+    let negative             = await canDrop (args) ;
+      if (! negative && housePoints.points < 0)
+        housePoints.points   = 0  ;
     housePoints.save()
     .then( () => {
       console.log("Subtracted from " + house + ": " + args_points + " points" );
@@ -623,6 +627,11 @@ async function aliasExists (alias) {
       canDo                  =  true ;
     });
   return canDo ;
+}
+
+async function canDrop (args) {
+  let config                 = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
+  return config.get().negative_house ;
 }
 
 // Prototype definition
@@ -1302,7 +1311,7 @@ addCommand ("bendor", async function (args) {
     });
 }) ;
 
-addCommand ("displayleaderboard", async function (args) {
+addCommand ("displayleaderboard", function (args) {
    if (   ! checkPermissions(args, "doAllOfTheAbove")
       ) {
     args.send ('You do not have permission to do that.') ;
@@ -1321,7 +1330,7 @@ addCommand ("displayleaderboard", async function (args) {
     return ;
   }
   bool                       = bool == "true" ;
-  await Configuration
+  Configuration
     .findOne( {where: {server_id: args.guildId}} )
     .then ( (config) => {
       config.leaderboard_display       = bool ;
@@ -1682,6 +1691,42 @@ addCommand ("giverole", function (args) {
     }) ;
 }) ;
 
+addCommand ("negativehouses", function (args) {
+   if (   ! checkPermissions(args, "doAllOfTheAbove")
+      ) {
+    args.send ('You do not have permission to do that.') ;
+    return ;
+  }
+  var params                 = args.params ;
+  if (! params.length) {
+    args.send ("Missing args. Use /negativehouses <true|false>") ;
+    return ;
+  }
+  var bool                   = params [0] ;
+  if (    bool != "true"
+       && bool != "false"
+     ) {
+    args.send ("Wrong args. Use /negativehouses <true|false>") ;
+    return ;
+  }
+  bool                       = bool == "true" ;
+  Configuration
+    .findOne( {where: {server_id: args.guildId}} )
+    .then ( (config) => {
+      config.negative_house  = bool ;
+      config
+        .save ()
+        .then(() => {
+          console.log ("Set negative_house to "+bool+".");
+          args.send("Houses can "+(bool?"":"not ")+"have negative points value.");
+        })
+        .catch ()
+    })
+    .catch ( (err) => {
+      console.error ("FAIL findOne Configuration on displayleaderboard "+err) ;
+    })
+    ;
+}) ;
 
 //Logs into discord
 client.login (process.env.BOT_TOKEN) ;
