@@ -1,27 +1,27 @@
 //Load env vars
 if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').load();
+  require ('dotenv')
+    .load () ;
 }
 const fs                     = require('fs') ;
-const Sequelize              = exports.Sequelize = require ('sequelize') ;
+const Sequelize              = require ('sequelize') ;
 const Op                     = Sequelize.Op ;
-const sequelize              = new Sequelize 
-                       (   process.env.DB_NAME
-                         , process.env.DB_USER
-                         , process.env.DB_PASS
-                         , {
-                                 host: process.env.DB_HOST
-                            , dialect: process.env.DB_DIALECT
-                            , storage: process.env.DB_STORAGE
-                          }
-                       ) ;
+const sequelize              = new Sequelize (   process.env.DB_NAME
+                                               , process.env.DB_USER
+                                               , process.env.DB_PASS
+                                               , {
+                                                       host: process.env.DB_HOST
+                                                  , dialect: process.env.DB_DIALECT
+                                                  , storage: process.env.DB_STORAGE // only usefull for sqlite
+                                                 }
+                                             ) ;
 sequelize
-  .authenticate()
-  .then(() => {
-    console.log('Connection has been established successfully.');
+  .authenticate ()
+  .then ( () => {
+    console.log ('Connection has been established successfully.') ;
   })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
+  .catch ( (err) => {
+    console.error ('Unable to connect to the database:', err) ;
   }) ;
 
 //For discord
@@ -31,60 +31,69 @@ var   Discord                = require ('discord.js')
 var COMMANDS                 = new Object () ;
 
 // Create configuration table
-const Configuration = sequelize.define('configuration', {
-              server_id: {type: Sequelize.STRING}
-  ,       p_log_channel: {type: Sequelize.STRING}
-  ,  p_leaderboard_post: {type: Sequelize.STRING}
-  , leaderboard_display: {type: Sequelize.BOOLEAN, defaultValue: 1}
-  ,          max_points: {type: Sequelize.INTEGER, defaultValue: 100}
-  ,          min_points: {type: Sequelize.INTEGER, defaultValue: 1}
-  ,      negative_house: {type: Sequelize.BOOLEAN, defaultValue: 1}
-})
+const Configuration          = sequelize.define (   'configuration'
+                                                  , {             server_id: {type: Sequelize.STRING}
+                                                      ,       p_log_channel: {type: Sequelize.STRING}
+                                                      ,  p_leaderboard_post: {type: Sequelize.STRING}
+                                                      , leaderboard_display: {type: Sequelize.BOOLEAN, defaultValue: 1}
+                                                      ,          max_points: {type: Sequelize.INTEGER, defaultValue: 100}
+                                                      ,          min_points: {type: Sequelize.INTEGER, defaultValue: 1}
+                                                      ,      negative_house: {type: Sequelize.BOOLEAN, defaultValue: 1}
+                                                    }
+                                                ) ;
 Configuration
-  .sync({alter: true})
-  .then(() => {
-    console.log("TABLE CREATED: configuration");
+  .sync ({
+      alter: true
   })
-  .catch((err)=> {
-    console.error("FAILED TABLE CREATE: configuration " + err);
+  .then ( () => {
+    console.log ("TABLE CREATED: configuration") ;
+  })
+  .catch ( (err)=> {
+    console.error ("FAILED TABLE CREATE: configuration ", err) ;
   }) ;
 
 // Create house_point table
-const HPoints = sequelize.define('house_point', {
-         name: { type: Sequelize.STRING }
-  , server_id: { type: Sequelize.STRING }
-  ,    points: { type: Sequelize.INTEGER, defaultValue: 0 }
-}) ;
+const HPoints                = sequelize.define (   'house_point'
+                                                  , {        name: {type: Sequelize.STRING}
+                                                      , server_id: {type: Sequelize.STRING}
+                                                      ,    points: {type: Sequelize.INTEGER, defaultValue: 0}
+                                                    }
+                                                ) ;
 HPoints
-  .sync({ alter: true })
-  .then(() => {
-    console.log("TABLE CREATED: house_points");
+  .sync ({
+      alter: true
   })
-  .catch((err) => {
-     console.error("FAILED TABLE CREATE: house_points " + err);
+  .then( () => {
+    console.log ("TABLE CREATED: house_points") ;
+  })
+  .catch( (err) => {
+     console.error ("FAILED TABLE CREATE: house_points ", err) ;
   }) ;
 
 // Create houses table
-const Houses = sequelize.define('houses', {
-         name: { type: Sequelize.STRING }
-  , server_id: { type: Sequelize.STRING }
-  ,      icon: { type: Sequelize.STRING, defaultValue: "" }
-  ,     color: { type: Sequelize.STRING, defaultValue: "0x000000" }
-  ,   aliases: { type: Sequelize.STRING, defaultValue: "[]" }
-}) ;
+const Houses                 = sequelize.define (   'houses'
+                                                  , {        name: {type: Sequelize.STRING}
+                                                      , server_id: {type: Sequelize.STRING}
+                                                      ,      icon: {type: Sequelize.STRING, defaultValue: ""}
+                                                      ,     color: {type: Sequelize.STRING, defaultValue: "0x000000"}
+                                                      ,   aliases: {type: Sequelize.STRING, defaultValue: "[]"}
+                                                    }
+                                                ) ;
 Houses
-  .sync({ alter: true })
-  .then(() => {
-    console.log("TABLE CREATED: houses");
+  .sync ({
+     alter: true
   })
-  .catch((err) => {
-    console.error("FAILED TABLE CREATE: houses " + err);
+  .then ( () => {
+    console.log ("TABLE CREATED: houses") ;
+  })
+  .catch ( (err) => {
+    console.error ("FAILED TABLE CREATE: houses ", err) ;
   }) ;
-  
+
 // Find allHouses
 var allHouses                = new Array () ;
 Houses.findAll ()
-  .then ((houses) => {
+  .then ( (houses) => {
     for (let n = 0 ; n < houses.length; n++) {
       var house                = houses [n] ;
       let houseName            = house.get ({plain: true}).name.toLowerCase () ;
@@ -97,21 +106,24 @@ Houses.findAll ()
     }
   })
   .catch((err) => {
-    console.error ("FAILED to load houses " + err)
+    console.error ("FAILED to load houses ", err)
   }) ;
 
 //Create roles table
-const Roles                  = sequelize.define ('roles', {
-    permission: { type: Sequelize.STRING }
-  ,       role: { type: Sequelize.STRING }
-}) ;
+const Roles                  = sequelize.define (   'roles'
+                                                  , {   permission: {type: Sequelize.STRING}
+                                                      ,       role: {type: Sequelize.STRING}
+                                                    }
+                                                ) ;
 Roles
-  .sync({ alter: true })
-  .then(() => {
-    console.log("TABLE CREATED: roles");
+  .sync ({
+     alter: true
   })
-  .catch((err) => {
-    console.error("FAILED TABLE CREATE: roles " + err);
+  .then ( () => {
+    console.log ("TABLE CREATED: roles") ;
+  })
+  .catch ( (err) => {
+    console.error ("FAILED TABLE CREATE: roles ", err) ;
   }) ;
 
 // Get all permission
@@ -131,9 +143,9 @@ Roles
   .findAll ()
   .then ( (roles) => {
     for (let i = 0 ; i < roles.length ; i ++) {
-      let perm             = roles[i].get().permission ;
-      let role             = roles[i].get().role ;
-      config_roles   [perm] [config_roles [perm].length] = role ;
+      let perm             = roles [i].get ().permission ;
+      let role             = roles [i].get ().role ;
+      config_roles     [perm] [config_roles [perm].length] = role ;
     }
   })
   .catch ( (err) => {
@@ -159,11 +171,17 @@ app.listen(process.env.PORT);
 // All functions needed
 
 //Loads a JSON file
-function loadJSON (dir) {
-    return JSON.parse(fs.readFileSync(dir, 'utf8'));
+function loadJSON 
+                       (   dir
+                       ) {
+    return JSON.parse (fs.readFileSync (dir, 'utf8')
+                      ) ;
 }
 //Writes to a JSON file
-function writeJSON (dir, data) {
+function writeJSON 
+                       (   dir
+                         , data
+                       ) {
     return fs.writeFileSync (
                                 dir
                               , JSON.stringify (data)
@@ -171,77 +189,91 @@ function writeJSON (dir, data) {
                             ) ;
 }
 // Turn bot off (args), then turn it back on
-function resetBot (args) {
+function resetBot 
+                       (   args
+                       ) {
     // send channel a message that you're resetting bot [optional]
     args
-      .send('Rebooting ...')
-      .then (msg => client.destroy ())
-      .then (() => client.login (process.env.BOT_TOKEN))
-      .then (() => args.send ("I'm back !") )
+      .send ('Rebooting ...')
+      .then ( msg => client.destroy ())
+      .then ( () => client.login (process.env.BOT_TOKEN))
+      .then ( () => args.send ("I'm back !") )
       ;
 }
 
-function addCommand (name, func, hide) {
+function addCommand 
+                       (   name
+                         , func
+                         , hide
+                       ) {
   if (name.constructor === Array) {
     for (var i = 0; i < name.length; i++) {
       if (i === 0) {
-        addCommand(name[i], func, false);
+        addCommand (   name [i]
+                     , func
+                     , false
+                   ) ;
       } else {
-        addCommand(name[i], func, true);
+        addCommand (   name [i]
+                     , func
+                     , true
+                   ) ;
       }
     }
   } else {
-    COMMANDS["cmd_" + name] = {
-      name,
-      func,
-      hide: hide || false
-    };
+    COMMANDS   ["cmd_"+name] = {   name
+                                 , func
+                                 , hide: hide || false
+                               } ;
   }
 }
 
-function runCommand (message) {
-  console.log("Verified bot command");
-  var firstArg = message.content.split(' ')[0];
-  if (   (   firstArg.startsWith(process.env.PREFIX)
-          && COMMANDS.hasOwnProperty('cmd_' + firstArg.replace(process.env.PREFIX, ''))
+function runCommand 
+                       (   message
+                       ) {
+  console.log ("Verified bot command") ;
+  var firstArg               = message.content.split (' ') [0] ;
+  if (   (   firstArg.startsWith (process.env.PREFIX)
+          && COMMANDS.hasOwnProperty ('cmd_'+firstArg.replace (process.env.PREFIX, ''))
          )
       || firstArg == "bendor"
      ) {
     //probably don't need most of these, but it's for simplicity if I ever do need them.
-    var processed_content = message.content.trim().replace(/\s{2,}/g, ' ');
-    var args                 = 
-      {
-                message
-        ,          text: processed_content
-        ,        params: processed_content.split(' ').slice(1)
-        ,          send: message.channel.send.bind(message.channel)
-        ,      sendFile: message.channel.sendFile.bind(message.channel)
-        ,          user: message.author
-        ,          nick: message.author.nickanme
-        ,      username: message.author.username
-        ,       userTag: message.author.tag
-        ,   displayName: message.member.displayName
-        ,        avatar: message.author.avatar
-        ,     avatarURL: message.author.avatarURL
-        ,         isBot: message.author.bot
-        ,      authorID: message.author.id
-        ,      mentions: message.mentions.members
-        , lastMessageID: message.author.lastMessageID
-        ,     channelId: message.channel.id
-        ,     messageId: message.id
-        ,       guildId: message.guild.id
-        ,            dm: message.author.send.bind(message.author)
-        ,        dmCode: message.author.sendCode.bind(message.author)
-        ,       dmEmbed: message.author.send.bind(message.author)
-        ,        dmFile: message.author.sendFile.bind(message.author)
-        ,     dmMessage: message.author.send.bind(message.author)
-        ,         guild: message.guild
-      } ;
-    COMMANDS ['cmd_' + firstArg.replace(process.env.PREFIX, '')].func(args);
+    var processed_content = message.content.trim ().replace (/\s{2,}/g, ' ') ;
+    var args                 = {         message: message
+                                 ,          text: processed_content
+                                 ,        params: processed_content.split (' ').slice (1)
+                                 ,          send: message.channel.send.bind (message.channel)
+                                 ,      sendFile: message.channel.sendFile.bind (message.channel)
+                                 ,          user: message.author
+                                 ,          nick: message.author.nickanme
+                                 ,      username: message.author.username
+                                 ,       userTag: message.author.tag
+                                 ,   displayName: message.member.displayName
+                                 ,        avatar: message.author.avatar
+                                 ,     avatarURL: message.author.avatarURL
+                                 ,         isBot: message.author.bot
+                                 ,      authorID: message.author.id
+                                 ,      mentions: message.mentions.members
+                                 , lastMessageID: message.author.lastMessageID
+                                 ,     channelId: message.channel.id
+                                 ,     messageId: message.id
+                                 ,       guildId: message.guild.id
+                                 ,            dm: message.author.send.bind (message.author)
+                                 ,        dmCode: message.author.sendCode.bind (message.author)
+                                 ,       dmEmbed: message.author.send.bind (message.author)
+                                 ,        dmFile: message.author.sendFile.bind (message.author)
+                                 ,     dmMessage: message.author.send.bind (message.author)
+                                 ,         guild: message.guild
+                               } ;
+    COMMANDS ['cmd_'+firstArg.replace (process.env.PREFIX, '')].func (args) ;
   }
 }
 
-function checkPermissions (args, permission) {
+function checkPermissions 
+                                 (   args
+                                   , permission
+                                 ) {
   var   user                 = args.message.member
       , roles                = user.roles
       , targetPermission     = ""
@@ -252,83 +284,101 @@ function checkPermissions (args, permission) {
     }
   }
   if (! targetPermission.length) {
-    console.log("PERMISSION NOT FOUND: " + permission);
-    return false;
+    console.log ("PERMISSION NOT FOUND: "+permission) ;
+    return false ; 
   }
   var allowedRoles           = config_roles [targetPermission] ;
-  console.log("Allowed roles for permission " + permission + ": " + allowedRoles);
+  console.log ("Allowed roles for permission "+permission+": "+allowedRoles) ;
   for (var [key, value] of roles) {
-    if (allowedRoles.includes(value.name)) {
-      console.log("PERMISSION ALLOWED: " + permission);
+    if (allowedRoles.includes (value.name)) {
+      console.log ("PERMISSION ALLOWED: "+permission) ;
       return true ;
     }
   }
-  console.log("PERMISSION DENIED: " + permission);
+  console.log ("PERMISSION DENIED: "+permission) ;
   return false ;
 }
 
-async function postLeaderboard (args) {
+async function postLeaderboard 
+                                 (   args
+                                 ) {
   // Get log channel
   let logChannel             = false ;
-  let server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} );
+  let server_config          = await Configuration.findOne (   {
+                                                                   where: {server_id: args.guildId}
+                                                               }
+                                                           ) ;
   if (server_config.p_log_channel) {
-    logChannel              = args.message.guild.channels.find("id", server_config.p_log_channel);
-    console.log("Found points log channel: " + logChannel);
+    logChannel              = args.message.guild.channels.find (   "id"
+                                                                 , server_config.p_log_channel
+                                                               ) ;
+    console.log ("Found points log channel: "+logChannel) ;
   }
   if (    logChannel
        && server_config.leaderboard_display
      ) {
     // Set up embed
-    var text                 = '';
+    var text                 = '' ;
     var embed                =
-      new Discord.RichEmbed()
-        .setTitle("Points Leaderboard")
-        .setColor(0xFFFFFF)
-        .setFooter("Updated at")
-        .setTimestamp(new Date().toISOString());
-  
-    let pointRows = await HPoints.findAll({ order: [ ['points', 'DESC'] ], raw: true });
+      new Discord.RichEmbed ()
+        .setTitle ("Points Leaderboard")
+        .setColor (0xFFFFFF)
+        .setFooter ("Updated at")
+        .setTimestamp (new Date ().toISOString ()) ;
+
+    let pointRows            = await HPoints.findAll (   {
+                                                             order: [ 
+                                                                      [   'points'
+                                                                        , 'DESC'
+                                                                      ]
+                                                                    ]
+                                                           , raw: true 
+                                                         }
+                                                     ) ;
     // Create leaderboard text
-    for (var i = 0; i < pointRows.length; i++) {
-      var row = pointRows[i];
-      var subtext = `${i+1}` + ". " + row.name.capitalize() + ": " + row.points + " points";
+    for (var i = 0 ; i < pointRows.length ; i++) {
+      var row                = pointRows [i] ;
+      var subtext            = (i+1)+". "+row.name.capitalize ()+": "+row.points+" points" ;
       if (i == 0) {
-        subtext = '**' + subtext + '**';
+        subtext              = '**'+subtext+'**' ;
       }
-      text                   = [text, subtext].join('\n');
+      text                   = new Array (text, subtext).join ('\n') ;
     };
-    embed.setDescription(text);
-    console.log("text: " + text);
+    embed.setDescription (text) ;
+    console.log ("text: "+text) ;
 
 
-     logChannel.send(embed)
-     .then(sentMessage => {
-       // Remove old leaderboard message
-       let oldPostId = server_config.p_leaderboard_post;
-       if (oldPostId) {
-         console.log("Found points old leaderboard post: " + oldPostId);
-         logChannel.fetchMessage(oldPostId)
-         .then(message => {
-           if (message) {
-             message.delete();
-             console.log("Deleted old points leaderboard message");
-           }
+     logChannel
+       .send (embed)
+       .then (sentMessage => {
+         // Remove old leaderboard message
+         let oldPostId       = server_config.p_leaderboard_post ;
+         if (oldPostId) {
+           console.log ("Found points old leaderboard post: "+oldPostId) ;
+           logChannel
+             .fetchMessage (oldPostId)
+             .then (message => {
+               if (message) {
+                 message.delete () ;
+                 console.log ("Deleted old points leaderboard message") ;
+               }
+             })
+             .catch (console.error)
+             ;
+         }
+         // Update p_leaderboard_post with new messageId
+         var sentMessageId   = sentMessage.id;
+         console.log("sentMessageId: "+sentMessageId) ;
+         server_config.p_leaderboard_post        = sentMessageId;
+         server_config.save ().then ( () => {
+           console.log ("Saved p_leaderboard_post to "+sentMessageId) ;
          })
-         .catch(console.error);
-       }
-   
-       // Update p_leaderboard_post with new messageId
-       var sentMessageId     = sentMessage.id;
-       console.log("sentMessageId: " + sentMessageId);
-       server_config.p_leaderboard_post          = sentMessageId;
-       server_config.save().then(() => {
-         console.log("Saved p_leaderboard_post to " + sentMessageId);
-       }).catch(err => {
-         console.log("Failed to save p_leaderboard_post to " + sentMessageId + err);
-       });
-   
-     })
-     .catch(console.error);
+         .catch (err => {
+           console.log ("Failed to save p_leaderboard_post to "+sentMessageId+"", err) ;
+         }) ;
+       })
+       .catch (console.error)
+       ;
   }
 };
 
