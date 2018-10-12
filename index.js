@@ -125,15 +125,36 @@ Roles
   .catch ( (err) => {
     console.error ("FAILED TABLE CREATE: roles ", err) ;
   }) ;
-
+// SOME CONSTANTS
 // Get all permission
-const perm_list              = [   'setPoints'
-                                 , 'givePoints'
-                                 , 'takePoints'
-                                 , 'addHouse'
-                                 , 'doAllOfTheAbove'
-                               ] ;
-
+const perm_list              = new Array
+                                           (   'setPoints'
+                                             , 'givePoints'
+                                             , 'takePoints'
+                                             , 'addHouse'
+                                             , 'doAllOfTheAbove'
+                                           ) ;
+// GIVE
+const GIVE                   = new Array
+                                           (   'give'
+                                             , 'add'
+                                             , 'increase'
+                                             , 'inc'
+                                             , '+'
+                                           ) ;
+// TAKE
+const TAKE                   = new Array 
+                                           (   'take'
+                                             , 'subtract'
+                                             , 'sub'
+                                             , 'decrease'
+                                             , 'dec'
+                                             , '-'
+                                           ) ;
+// SET
+const SET                    = new Array
+                                           (   'set'
+                                           ) ;
 // Get all (perm,role)
 var config_roles             = new Object () ;
 for (let i = 0 ; i < perm_list.length ; i++) {
@@ -382,7 +403,9 @@ async function postLeaderboard
   }
 };
 
-async function housePointsFunc (args) {
+async function housePointsFunc 
+                                 (   args
+                                 ) {
   console.log("Begin points manipulation commands");
   var   house                = this
       , user                 = args.message.member
@@ -402,57 +425,61 @@ async function housePointsFunc (args) {
   }
   var server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
   // Save first param as command name
-  var firstParam = args.params[0];
+  var firstParam             = args.params [0] ;
   if (firstParam !== undefined) {
     if (firstParam.toLowerCase !== undefined) {
-      firstParam = firstParam.toLowerCase();
+      firstParam             = firstParam.toLowerCase () ;
     }
   }
-  console.log("Command: " + firstParam + ", Params: " + args.params);
+  console.log("Command: "+firstParam+", Params: "+args.params) ;
   
   // Check second param is a number
-  let args_points           = Number(args.params [1]) ;
+  let args_points           = Number (args.params [1]) ;
   if (      isNaN (args_points)
        && ! Number.isInteger (args_points)
       ) {
-    args.send('Point values must be an integer.');
-    console.log(' Point values must be an integer.');
+    args.send ('Point values must be an integer.') ;
+    console.log (' Point values must be an integer.') ;
     return ;
   }
 
   // Setup user from param's mention if possible
-  var targetUser             = args.mentions.first();
-  var targetUserMention;
+  var targetUser             = args.mentions.first () ;
+  var targetUserMention      = "" ;
   if (targetUser !== undefined) {
     targetUserMention = "<@!" + targetUser.id + ">";
   }
 
   // Save reason param
-  let args_reason;
-  if ( targetUser && args.params[2].startsWith('<@') && args.params[2].endsWith('>') ){
+  let args_reason            = "" ;
+  let startAt                = 2 ;
+  if (    targetUser
+       && args.params [2].startsWith ('<@')
+       && args.params [2].endsWith('>')
+     ) {
     // Ignore mentions in reason param
-    args_reason              = args.params.slice(3).join(" ");
+    startAt                  = 3 ;
   }
   else {
     // Not directed at a particular user
     targetUser               = undefined ; // Needs to be set if no user param but there is a mention in reason
-    args_reason              = args.params.slice(2).join(" ");
   }
+  args_reason                = args.params.slice (startAt).join (" ") ;
   if (!args_reason) {
-    args.send('Please include a reason.');
-    return;
+    args.send ('Please include a reason.') ;
+    return ;
   }
-  console.log("Mentions: " + targetUser);
-  console.log("Reason: " + args_reason);
+  console.log ("Mentions: "+targetUser) ;
+  console.log ("Reason: "+args_reason) ;
   let logChannel             = false ;
-  
+
  // Get log channel if there is one
   if (server_config.p_log_channel) {
-    logChannel               = args.message.guild.channels.find("id", server_config.p_log_channel);
-    console.log("Found points log channel: " + logChannel);
+    logChannel               = args.message.guild.channels.find ("id", server_config.p_log_channel) ;
+    console.log ("Found points log channel: "+logChannel) ;
   }
-  
-  if ( (['give', 'add', 'increase', 'inc', '+'].includes(firstParam)) && canGivePoints === true ) {
+
+  if ( (GIVE.includes(firstParam)) && canGivePoints === true ) {
     if (    args_points < server_config.min_points
         || args_points > server_config.max_points
       ) {
@@ -522,7 +549,7 @@ async function housePointsFunc (args) {
     if (server_config.leaderboard_display)
       await postLeaderboard(args);
   }
-  else if ( (['take', 'subtract', 'sub', 'decrease', 'dec', '-'].includes(firstParam)) && canTakePoints === true ) {
+  else if ( (TAKE.includes(firstParam)) && canTakePoints === true ) {
     // Subtract points
     // Update DB with points
     if (    args_points < server_config.min_points
@@ -592,7 +619,7 @@ async function housePointsFunc (args) {
     if (server_config.leaderboard_display)
       await postLeaderboard(args);
   }
-  else if ( (['set'].includes(firstParam)) && canSetPoints === true ) {
+  else if ( (SET.includes(firstParam)) && canSetPoints === true ) {
     // Set points
     // Set points
     // Update DB with points
