@@ -740,7 +740,7 @@ client.on ("message", (message) => {
   if(message.author.bot)
     return ;
   console.log(message.author.username + ' : ' + message.content);
-  var galt = /bendor/i ;
+  var galt = /bendur/i ;
   if (galt.test(message.content))
     message.content = "bendor" ;
   // Ignore messages that don't start with prefix
