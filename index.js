@@ -287,6 +287,7 @@ function runCommand
                                  ,     dmMessage: message.author.send.bind (message.author)
                                  ,         guild: message.guild
                                } ;
+    console.log ("cmd called : "+'cmd_'+firstArg.replace (process.env.PREFIX, ''))
     COMMANDS ['cmd_'+firstArg.replace (process.env.PREFIX, '')].func (args) ;
   }
 }
