@@ -746,7 +746,7 @@ client.on ("message", (message) => {
   // Ignore messages that don't start with prefix
   if(message.content.indexOf(process.env.PREFIX) !== 0 && message.content != "bendor")
     return ;
-
+  console.log ("In message.content : "+message.content) ;
   runCommand (message) ;
 }) ;
 // catch error
