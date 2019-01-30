@@ -299,8 +299,8 @@ function checkPermissions
       , roles                = user.roles
       , targetPermission     = ""
       ;
-  console.log ("ROLES      : "+roles) ;
-  console.log ("PERMISSION : "+permission) ;
+  console.log ("ROLES      : ",roles) ;
+  console.log ("PERMISSION : ",permission) ;
   for (var i = 0 ; i < perm_list.length ; i++) {
     if (permission == perm_list [i]) {
       targetPermission       = perm_list [i] ;
