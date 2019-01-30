@@ -1395,7 +1395,7 @@ addCommand ("bendor", async function (args) {
      , args_points = 10
      , args_reason = "Bendor"
      ;
- 
+  console.log ("BENDOR") ;
   let logChannel;
   let server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} );
   if (server_config.p_log_channel) {
