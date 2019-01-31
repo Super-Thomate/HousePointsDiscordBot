@@ -189,6 +189,7 @@ const app                    = express () ;
 app.engine ('hbs', exhandlebars ({extname:'.hbs'})) ;
 // Use Handlebars view engine
 app.set ('view engine', 'hbs') ;
+app.set ('views', __dirname+"/views") ;
 
 app.get("/", (request, response) => {
   console.log(""+dateToday() + " Ping Received");
