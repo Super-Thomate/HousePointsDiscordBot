@@ -176,29 +176,41 @@ Roles
 
 // 
 
-// Is this still relevant ?
-/**/
-const http = require('http');
-const express = require('express');
-const app = express();
+/**
+ * HTTP SERVER => BOT MANAGER
+ */
+const http                   = require ('http') ;
+const express                = require ('express') ;
+const path                   = require ('path') ;
+const handlebars             = require ('handlebars') ;
+const exhandlebars           = require ('express-handlebars') ;
+const app                    = express () ;
+// Register Handlebars view engine
+app.engine ('hbs', exhandlebars ({defaultLayout: 'main', extname:'.hbs'})) ;
+// Use Handlebars view engine
+app.set ('view engine', 'hbs') ;
+
 app.get("/", (request, response) => {
-  console.log(""+Date.now() + " Ping Received");
-  response.sendStatus(200);
+  console.log(""+dateToday() + " Ping Received");
+  response.render ("index", {title: "Spoon !"}) ;
+  //response.sendFile(path.join(__dirname + '/html/index.html'));
+  //response.sendStatus(200);
 });
 app.listen(process.env.PORT);
-/**/
-
+/**
+ * BACK TO THE BOT
+ */
 
 // All functions needed
 
-//Loads a JSON file
+// Loads a JSON file
 function loadJSON 
                        (   dir
                        ) {
     return JSON.parse (fs.readFileSync (dir, 'utf8')
                       ) ;
 }
-//Writes to a JSON file
+// Writes to a JSON file
 function writeJSON 
                        (   dir
                          , data
@@ -293,9 +305,9 @@ function runCommand
 }
 
 function checkPermissions 
-                                 (   args
-                                   , permission
-                                 ) {
+                       (   args
+                         , permission
+                       ) {
   var   user                 = args.message.member
       , roles                = user.roles
       , targetPermission     = ""
@@ -319,6 +331,13 @@ function checkPermissions
   }
   console.log ("PERMISSION DENIED: "+permission) ;
   return false ;
+}
+
+function dateToday
+                       (
+                       ) {
+  let date                   = new Date () ;
+  return "{"+date.toString ()+"}" ;
 }
 
 async function postLeaderboard 
