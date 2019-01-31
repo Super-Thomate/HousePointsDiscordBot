@@ -186,13 +186,13 @@ const handlebars             = require ('handlebars') ;
 const exhandlebars           = require ('express-handlebars') ;
 const app                    = express () ;
 // Register Handlebars view engine
-app.engine ('hbs', exhandlebars ()) ;
+app.engine ('hbs', exhandlebars ({extname:'.hbs'})) ;
 // Use Handlebars view engine
 app.set ('view engine', 'hbs') ;
 
 app.get("/", (request, response) => {
   console.log(""+dateToday() + " Ping Received");
-  response.render ("./index", {title: "Spoon !"}) ;
+  response.render ("index", {title: "Spoon !"}) ;
   //response.sendFile(path.join(__dirname + '/html/index.html'));
   //response.sendStatus(200);
 });
