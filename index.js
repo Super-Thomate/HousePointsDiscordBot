@@ -186,7 +186,7 @@ const handlebars             = require ('handlebars') ;
 const exhandlebars           = require ('express-handlebars') ;
 const app                    = express () ;
 // Register Handlebars view engine
-app.engine ('hbs', exhandlebars ({defaultLayout: 'main', extname:'.hbs'})) ;
+app.engine ('hbs', exhandlebars ()) ;
 // Use Handlebars view engine
 app.set ('view engine', 'hbs') ;
 
