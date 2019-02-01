@@ -201,16 +201,19 @@ app.set ('views', __dirname+"/views") ;
 // assets
 app.use(express.static(__dirname + '/public'));
 app.use ('/static', express.static (__dirname+'public')) ;
+var PARAMS                   = new Object () ;
+PARAMS.isLogged              = false ;
+PARAMS.isLogged              = true ;
 app
   .route ("/")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /") ;
-    response.render ("index", {title: "Spoon !"}) ;
+    response.render ("index", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /") ;
     console.log ("REQ", request.body)
-    response.render ("index", {title: "Spoon !"}) ;
+    response.render ("index", PARAMS) ;
     
   }) ;
 
