@@ -154,6 +154,7 @@ const TAKE                   = new Array
 // SET
 const SET                    = new Array
                                            (   'set'
+                                             , '='
                                            ) ;
 // Get all (perm,role)
 var config_roles             = new Object () ;
@@ -184,19 +185,35 @@ const express                = require ('express') ;
 const path                   = require ('path') ;
 const handlebars             = require ('handlebars') ;
 const exhandlebars           = require ('express-handlebars') ;
+const bodyParser             = require ('body-parser') ;
 const app                    = express () ;
+// Parser
+app.use (bodyParser.json()) ;       // to support JSON-encoded bodies
+app.use (bodyParser.urlencoded ({     // to support URL-encoded bodies
+    extended: true
+  })
+); 
 // Register Handlebars view engine
 app.engine ('hbs', exhandlebars ({extname:'.hbs'})) ;
 // Use Handlebars view engine
 app.set ('view engine', 'hbs') ;
 app.set ('views', __dirname+"/views") ;
+// assets
+app.use(express.static(__dirname + '/public'));
+app.use ('/static', express.static (__dirname+'public')) ;
+app
+  .route ("/")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /") ;
+    response.render ("index", {title: "Spoon !"}) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /") ;
+    console.log ("REQ", request.body)
+    response.render ("index", {title: "Spoon !"}) ;
+    
+  }) ;
 
-app.get("/", (request, response) => {
-  console.log(""+dateToday() + " Ping Received");
-  response.render ("index", {title: "Spoon !"}) ;
-  //response.sendFile(path.join(__dirname + '/html/index.html'));
-  //response.sendStatus(200);
-});
 app.listen(process.env.PORT);
 /**
  * BACK TO THE BOT
