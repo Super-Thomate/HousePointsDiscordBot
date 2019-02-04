@@ -198,23 +198,59 @@ app.engine ('hbs', exhandlebars ({extname:'.hbs'})) ;
 // Use Handlebars view engine
 app.set ('view engine', 'hbs') ;
 app.set ('views', __dirname+"/views") ;
+app.set ('partials', __dirname+"/views/partials") ;
 // assets
 app.use(express.static(__dirname + '/public'));
 app.use ('/static', express.static (__dirname+'public')) ;
 var PARAMS                   = new Object () ;
 PARAMS.isLogged              = false ;
 PARAMS.isLogged              = true ;
+PARAMS.currentPage           = new Object () ;
 app
   .route ("/")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.index = true ;
     response.render ("index", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.index = true ;
     console.log ("REQ", request.body)
     response.render ("index", PARAMS) ;
-    
+  }) ;
+app
+  .route ("/house")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /house") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.house = true ;
+    response.render ("house", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /house") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.house = true ;
+    console.log ("REQ", request.body)
+    response.render ("house", PARAMS) ;
+  }) ;
+  
+/**
+ * ERROR 404
+ */
+app
+  .route ("*")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET 404") ;
+    PARAMS.currentPage       = {} ;
+    response.status (404).render ("err_404", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST 404") ;
+    PARAMS.currentPage       = {} ;
+    response.status (404).render ("err_404", PARAMS) ;
   }) ;
 
 app.listen(process.env.PORT);
