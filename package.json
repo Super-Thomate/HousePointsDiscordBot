@@ -11,6 +11,7 @@
     "license": "ISC",
     "dependencies": {
         "airbrake-js": "^1.4.3",
+        "bcrypt": "^3.0.4",
         "body-parser": "^1.18.3",
         "discord.js": "^11.3.2",
         "dotenv": "^6.0.0",
