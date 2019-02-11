@@ -1,0 +1,59 @@
+<body class="bg-dark text-light">
+  <div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="active">
+      <div class="sidebar-header">
+        <h3>House Points Discord Bot</h3>
+      </div>
+        <ul class="list-unstyled components">
+          <p>Navigation</p>
+          <li {{#if currentPage.index}}class="active"{{/if}}>
+             <a href="/">Index</a>
+          </li>
+          {{#if isLogged}}
+          <li {{#if currentPage.house}}class="active"{{/if}}>
+              <a href="/house">Competition</a>
+          </li>
+          <li {{#if currentPage.user}}class="active"{{/if}}>
+              <a href="#userSubmenu" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle">User</a>
+              <ul class="collapse list-unstyled" id="userSubmenu">
+                <li {{#if currentPage.add}}class="active"{{/if}}>
+                  <a href="/user/add">Add user</a>
+                </li>
+                <li {{#if currentPage.info}}class="active"{{/if}}>
+                  <a href="/user/info">My info</a>
+                </li>
+              </ul>
+          </li>
+          
+          <li {{#if currentPage.disconnect}}class="active"{{/if}}>
+              <a href="/disconnect">Disconnect</a>
+          </li>
+          {{else}}
+          <li {{#if currentPage.connect}}class="active"{{/if}}>
+            <a href="/connect">Connect</a>
+          </li>
+          {{/if}}
+      </ul>
+    </nav>
+    <!-- Page Content -->
+    <div id="content" class="active">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+          <button type="button" id="sidebarCollapse" class="btn btn-info">
+            <i class="fas fa-align-justify"></i>
+          </button>
+          <div>
+             <a href="/" class="btn btn-secondary{{#if currentPage.index}} focus{{/if}}" title="Index"><i class="fas fa-home"></i></a>
+            {{#if isLogged}}
+              <a href="/house" class="btn btn-success{{#if currentPage.house}} focus{{/if}}" title="Manage competition"><i class="fas fa-hat-wizard"></i></a>
+              <a href="/user/add" class="btn btn-primary{{#if currentPage.add}} focus{{/if}}" title="Add user"><i class="fas fa-user-plus"></i></a>
+              <a href="/user/info" class="btn btn-info{{#if currentPage.params}} focus{{/if}}" title="User info"><i class="fas fa-user-cog"></i></a>
+              <a href="/disconnect" class="btn btn-danger{{#if currentPage.disconnect}} focus{{/if}}" title="Disconnect"><i class="fas fa-user-slash"></i></a>
+            {{else}}
+              <a href="/connect" class="btn btn-success{{#if currentPage.connect}} focus{{/if}}" title="Connect"><i class="fas fa-user"></i></a>
+            {{/if}}
+          </div>
+        </div>
+      </nav>
+    

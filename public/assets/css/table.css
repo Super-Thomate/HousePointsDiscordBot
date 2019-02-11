@@ -1,0 +1,22 @@
+table {
+  width: 25% ;
+  margin: auto ;
+  border-collapse: separate;
+  border-radius: 5px 5px 5px 5px;
+  background-color: #EEEEEE;
+}
+table, th, td {
+  border: 1px black solid ;
+}
+th, td {
+  background-color: #343a40 ; 
+}
+/*th:not(.color), td:not(.color)*/
+
+.color {
+  width: 2% ;
+  border-radius: 5px 0px 0px 5px;
+}
+.points {
+  border-radius: 0px 5px 5px 0px;
+}

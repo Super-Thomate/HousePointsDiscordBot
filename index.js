@@ -53,12 +53,15 @@ Configuration
   }) ;
 
 // Create house_point table
+/*
 const HPoints                = sequelize.define (   'house_point'
                                                   , {        name: {type: Sequelize.STRING}
                                                       , server_id: {type: Sequelize.STRING}
                                                       ,    points: {type: Sequelize.INTEGER, defaultValue: 0}
                                                     }
                                                 ) ;
+*/
+/*
 HPoints
   .sync ({
       alter: true
@@ -69,6 +72,7 @@ HPoints
   .catch( (err) => {
      console.error ("FAILED TABLE CREATE: house_points ", err) ;
   }) ;
+*/
 
 // Create houses table
 const Houses                 = sequelize.define (   'houses'
@@ -77,6 +81,7 @@ const Houses                 = sequelize.define (   'houses'
                                                       ,      icon: {type: Sequelize.STRING, defaultValue: ""}
                                                       ,     color: {type: Sequelize.STRING, defaultValue: "0x000000"}
                                                       ,   aliases: {type: Sequelize.STRING, defaultValue: "[]"}
+                                                      ,    points: {type: Sequelize.INTEGER, defaultValue: 0}
                                                     }
                                                 ) ;
 Houses
@@ -88,25 +93,6 @@ Houses
   })
   .catch ( (err) => {
     console.error ("FAILED TABLE CREATE: houses ", err) ;
-  }) ;
-
-// Find allHouses
-var allHouses                = new Array () ;
-Houses.findAll ()
-  .then ( (houses) => {
-    for (let n = 0 ; n < houses.length; n++) {
-      var house                = houses [n] ;
-      let houseName            = house.get ({plain: true}).name.toLowerCase () ;
-      let aliases              = JSON.parse (house.get ().aliases) ;
-      allHouses       [allHouses.length] = houseName ;
-      console.log ("--------------------------------------------------------") ;
-      console.log (houseName, aliases) ;
-      console.log ("--------------------------------------------------------") ;
-      addCommand (aliases, housePointsFunc.bind (houseName)) ;
-    }
-  })
-  .catch((err) => {
-    console.error ("FAILED to load houses ", err)
   }) ;
 
 //Create roles table
@@ -124,6 +110,26 @@ Roles
   })
   .catch ( (err) => {
     console.error ("FAILED TABLE CREATE: roles ", err) ;
+  }) ;
+
+// Find allHouses
+var allHouses                = new Array () ;
+var completeHouses           = new Array () ;
+Houses.findAll ()
+  .then ( (houses) => {
+    for (let n = 0 ; n < houses.length; n++) {
+      var house                = houses [n] ;
+      let houseName            = house.get ({plain: true}).name.toLowerCase () ;
+      let aliases              = JSON.parse (house.get ().aliases) ;
+      allHouses     [allHouses.length] = houseName ;
+      console.log ("--------------------------------------------------------") ;
+      console.log (houseName, aliases) ;
+      console.log ("--------------------------------------------------------") ;
+      addCommand (aliases, housePointsFunc.bind (houseName)) ;
+    }
+  })
+  .catch((err) => {
+    console.error ("FAILED to load houses ", err)
   }) ;
 // SOME CONSTANTS
 // Get all permission
@@ -203,24 +209,76 @@ app.set ('partials', __dirname+"/views/partials") ;
 app.use(express.static(__dirname + '/public'));
 app.use ('/static', express.static (__dirname+'public')) ;
 var PARAMS                   = new Object () ;
+PARAMS.BotName               = process.env.BOT_NAME ;
 PARAMS.isLogged              = false ;
 PARAMS.isLogged              = true ;
 PARAMS.currentPage           = new Object () ;
+
+var allHousesAndPoints       = new Array () ;
 app
   .route ("/")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /") ;
+    //allHousesAndPoints       = getAllHousesAndPoints () ;
     PARAMS.currentPage       = {} ;
     PARAMS.currentPage.index = true ;
+    PARAMS.STYLES            = ["table"] ;
+    Houses
+      .findAll ()
+      .then ((houses) => {
+        
+      })
+      .catch ((e) => {
+        console.error ("Error on Houses.findAll () : ", e) ;
+      }) ;
+    PARAMS.houses            = allHousesAndPoints ;
+    console.log ("GET /", allHousesAndPoints) ;
+    // console.log ("PARAMS", PARAMS) ;
     response.render ("index", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /") ;
+    //allHousesAndPoints       = getAllHousesAndPoints () ;
     PARAMS.currentPage       = {} ;
     PARAMS.currentPage.index = true ;
+    PARAMS.houses            = allHousesAndPoints ;
+    PARAMS.STYLES            = ["table"] ;
+    console.log ("POST /", allHousesAndPoints) ;
     console.log ("REQ", request.body)
     response.render ("index", PARAMS) ;
   }) ;
+app
+  .route ("/connect")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /connect") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.connect = true ;
+    response.render ("connect", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /connect") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.connect = true ;
+    console.log ("REQ", request.body)
+    response.render ("connect", PARAMS) ;
+  }) ;
+  
+app
+  .route ("/disconnect")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /disconnect") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.disconnect = true ;
+    response.render ("disconnect", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /disconnect") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.disconnect = true ;
+    console.log ("REQ", request.body)
+    response.render ("disconnect", PARAMS) ;
+  }) ;
+  
 app
   .route ("/house")
   .get ((request, response) => {
@@ -235,6 +293,58 @@ app
     PARAMS.currentPage.house = true ;
     console.log ("REQ", request.body)
     response.render ("house", PARAMS) ;
+  }) ;
+  
+app
+  .route ("/user")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /user") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.user = true ;
+    response.render ("user", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /user") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.user = true ;
+    console.log ("REQ", request.body)
+    response.render ("user", PARAMS) ;
+  }) ;
+  
+app
+  .route ("/user/add")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /user/add") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.add = true ;
+    PARAMS.currentPage.user = true ;
+    response.render ("add", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /user/add") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.add = true ;
+    PARAMS.currentPage.user = true ;
+    console.log ("REQ", request.body)
+    response.render ("add", PARAMS) ;
+  }) ;
+  
+app
+  .route ("/user/info")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /user/info") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.info = true ;
+    PARAMS.currentPage.user = true ;
+    response.render ("info", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /user/info") ;
+    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage.info = true ;
+    PARAMS.currentPage.user = true ;
+    console.log ("REQ", request.body)
+    response.render ("info", PARAMS) ;
   }) ;
   
 /**
@@ -254,6 +364,12 @@ app
   }) ;
 
 app.listen(process.env.PORT);
+
+function getAllHousesAndPoints () {
+  console.log ("getAllHousesAndPoints has been called.") ;
+  
+}
+
 /**
  * BACK TO THE BOT
  */
@@ -424,7 +540,7 @@ async function postLeaderboard
         .setFooter ("Updated at")
         .setTimestamp (new Date ().toISOString ()) ;
 
-    let pointRows            = await HPoints.findAll (   {
+    let pointRows            = await Houses.findAll (   {
                                                              order: [ 
                                                                       [   'points'
                                                                         , 'DESC'
@@ -550,7 +666,7 @@ async function housePointsFunc
   console.log ("Reason: "+args_reason) ;
   let logChannel             = false ;
 
- // Get log channel if there is one
+  // Get log channel if there is one
   if (server_config.p_log_channel) {
     logChannel               = args.message.guild.channels.find ("id", server_config.p_log_channel) ;
     console.log ("Found points log channel: "+logChannel) ;
@@ -568,7 +684,7 @@ async function housePointsFunc
     try {
       // Add points
       // Update DB with points
-      let housePoints = await HPoints.findOne( {where: {name: house}} );
+      let housePoints = await Houses.findOne( {where: {name: house}} );
       housePoints.points = housePoints.points + args_points;
       housePoints.save()
       .then( () => {
@@ -637,7 +753,7 @@ async function housePointsFunc
                 ) ;
       return;
     }
-    let housePoints = await HPoints.findOne( {where: {name: house}} );
+    let housePoints = await Houses.findOne( {where: {name: house}} );
     housePoints.points = housePoints.points - args_points;
     let negative             = await canDrop (args) ;
       if (! negative && housePoints.points < 0)
@@ -705,7 +821,7 @@ async function housePointsFunc
       args_points            = 0 ;
       args.send ("WARNING : Houses' points can not be negative.") ;
     }
-    let housePoints = await HPoints.findOne( {where: {name: house}} );
+    let housePoints = await Houses.findOne( {where: {name: house}} );
     housePoints.points = args_points;
     housePoints
       .save()
@@ -770,6 +886,8 @@ async function housePointsFunc
     ''
     ) ;
   }
+  //allHousesAndPoints       =
+  getAllHousesAndPoints () ;
 }
 
 async function aliasExists (alias) {
@@ -895,7 +1013,7 @@ addCommand ("pointssetup", async function (args) {
     return ;
   }
   for (var i = 0; i < allHouses.length; i++) {
-    HPoints
+    Houses
       .findOrCreate ( {where: {name: allHouses [i], server_id: args.guildId}} )
       .spread ((house, created) => {
         console.log ("FINDORCREATE house_points: " + house.get({plain: true}).name)
@@ -940,7 +1058,7 @@ addCommand ('pointsreset', async function (args) {
     return;
   }
   for (var i = 0; i < allHouses.length; i++) {
-    HPoints
+    Houses
      .findOne ( {where: {name: allHouses [i]} } )
      .then ((house) => {
        house.points          = 0;
@@ -1479,7 +1597,7 @@ addCommand ("bendor", async function (args) {
     logChannel              = args.message.guild.channels.find("id", server_config.p_log_channel);
     console.log("Found points log channel: " + logChannel);
   }
- let housePoints = await HPoints.findOne( {where: {name: house}} );
+ let housePoints = await Houses.findOne( {where: {name: house}} );
     housePoints.points = housePoints.points - args_points;
     housePoints.save()
     .then( () => {
@@ -1706,18 +1824,10 @@ addCommand ("deletehouse", async function (args) {
     .destroy ({where: {name: HouseName.toLowerCase() } })
     .then ( (val) => {
       if (val > 0) {
-        HPoints.destroy ({where: {name: HouseName.toLowerCase() } })
-        .then ( (val) => {
-          if (val > 0) {
-            args.send ("Successfully delete "+HouseName) ;
-            resetBot (args) ;
-          } else
-            args.send ("Something went wrong") ;
-        })
-        .catch ( (err) => {
-          console.log ("Cannot find house "+err) ;
-        })
-      }
+        args.send ("Successfully delete "+HouseName) ;
+        resetBot (args) ;
+      } else
+        args.send ("Something went wrong") ;
     })
     .catch ( (err) => {
       console.log ("Cannot find house "+err) ;

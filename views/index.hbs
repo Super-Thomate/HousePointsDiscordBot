@@ -1,5 +1,35 @@
 {{> header }}
+{{> nav }}
   <main>
-   
+    <h1>Index</h1>
+    <div>
+      <table>
+       <thead>
+          <tr class="text-center">
+            <th colspan="3">{{BotName}}</th>
+          </tr>
+          <tr>
+            <th class="color">&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th class="name">Name</th>
+            <th class="points">Points</th>
+          </tr>
+        </thead>
+        <tbody>
+        {{#each houses}}
+          <tr>
+            <td class="color" style="background-color:#{{this.color}};"></td>
+            <td class="name">{{this.name}}</td>
+            <td class="points">{{this.points}}</td>
+          </tr>
+        {{else}}
+          <tr>
+             <td class="color"></td>
+             <td class="name">No content</td>
+             <td class="points">0</td>
+          </tr>
+        {{/each}}
+        </tbody>
+      </table>
+    </div>
   </main>
 {{> footer }}
