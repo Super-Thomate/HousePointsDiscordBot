@@ -95,6 +95,23 @@ Houses
     console.error ("FAILED TABLE CREATE: houses ", err) ;
   }) ;
 
+//Create users table
+const Users                  = sequelize.define (   'users'
+                                                  , {       name: {type: Sequelize.STRING}
+                                                      , password: {type: Sequelize.STRING}
+                                                    }
+                                                ) ;
+Users
+  .sync ({
+     alter: true
+  })
+  .then ( () => {
+    console.log ("TABLE CREATED: users") ;
+  })
+  .catch ( (err) => {
+    console.error ("FAILED TABLE CREATE: users ", err) ;
+  }) ;
+
 //Create roles table
 const Roles                  = sequelize.define (   'roles'
                                                   , {   permission: {type: Sequelize.STRING}
@@ -214,30 +231,37 @@ PARAMS.isLogged              = false ;
 PARAMS.isLogged              = true ;
 PARAMS.currentPage           = new Object () ;
 
-var allHousesAndPoints       = new Array () ;
 app
   .route ("/")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /") ;
-    //allHousesAndPoints       = getAllHousesAndPoints () ;
+    var allHousesAndPoints   = new Array () ;
     PARAMS.currentPage       = {} ;
     PARAMS.currentPage.index = true ;
     PARAMS.STYLES            = ["table"] ;
     Houses
       .findAll ()
       .then ((houses) => {
-        
+        for (let n = 0 ; n < houses.length ; n++) {
+          let house          = houses [n] ;
+          allHousesAndPoints [allHousesAndPoints.length] =
+              {     name: house.get ({plain: true}).name.toLowerCase ()
+                ,  color: house.get ().color.substring (2)
+                , points: house.get ().points
+                //,   icon: house.get ().icon
+              } ;
+        }
+        PARAMS.houses            = allHousesAndPoints ;
+        response.render ("index", PARAMS) ;
       })
       .catch ((e) => {
         console.error ("Error on Houses.findAll () : ", e) ;
+        response.render ("index", PARAMS) ;
       }) ;
-    PARAMS.houses            = allHousesAndPoints ;
-    console.log ("GET /", allHousesAndPoints) ;
-    // console.log ("PARAMS", PARAMS) ;
-    response.render ("index", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /") ;
+    var allHousesAndPoints   = new Array () ;
     //allHousesAndPoints       = getAllHousesAndPoints () ;
     PARAMS.currentPage       = {} ;
     PARAMS.currentPage.index = true ;
