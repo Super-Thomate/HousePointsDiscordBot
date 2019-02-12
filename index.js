@@ -235,16 +235,17 @@ var PARAMS                   = new Object () ;
 PARAMS.BotName               = process.env.BOT_NAME ;
 PARAMS.isLogged              = false ;
 PARAMS.isLogged              = true ;
-PARAMS.currentPage           = new Object () ;
 
 app
   .route ("/")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /") ;
     var allHousesAndPoints   = new Array () ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.index = true ;
-    PARAMS.STYLES            = ["table"] ;
+    PARAMS.STYLES         [PARAMS.STYLES.length] = "table" ;
     Houses
       .findAll ()
       .then ((houses) => {
@@ -268,8 +269,10 @@ app
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /") ;
     var allHousesAndPoints   = new Array () ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
     //allHousesAndPoints       = getAllHousesAndPoints () ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.index = true ;
     PARAMS.houses            = allHousesAndPoints ;
     PARAMS.STYLES            = ["table"] ;
@@ -281,13 +284,17 @@ app
   .route ("/connect")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /connect") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.connect = true ;
     response.render ("connect", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /connect") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.connect = true ;
     console.log ("REQ", request.body)
     response.render ("connect", PARAMS) ;
@@ -297,13 +304,17 @@ app
   .route ("/disconnect")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /disconnect") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.disconnect = true ;
     response.render ("disconnect", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /disconnect") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.disconnect = true ;
     console.log ("REQ", request.body)
     response.render ("disconnect", PARAMS) ;
@@ -313,13 +324,17 @@ app
   .route ("/house")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /house") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.house = true ;
     response.render ("house", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /house") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.house = true ;
     console.log ("REQ", request.body)
     response.render ("house", PARAMS) ;
@@ -329,13 +344,17 @@ app
   .route ("/user")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /user") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.user = true ;
     response.render ("user", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /user") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.user = true ;
     console.log ("REQ", request.body)
     response.render ("user", PARAMS) ;
@@ -345,14 +364,18 @@ app
   .route ("/user/add")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /user/add") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.add = true ;
     PARAMS.currentPage.user = true ;
     response.render ("add", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /user/add") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.add = true ;
     PARAMS.currentPage.user = true ;
     console.log ("REQ", request.body) ;
@@ -390,14 +413,18 @@ app
   .route ("/user/info")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /user/info") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.info = true ;
     PARAMS.currentPage.user = true ;
     response.render ("info", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /user/info") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.currentPage.info = true ;
     PARAMS.currentPage.user = true ;
     console.log ("REQ", request.body)
@@ -408,7 +435,9 @@ app
   .route ("/join")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /join") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.botname           = process.env.BOTNAME ;
     PARAMS.username          = request.query.un ;
     PARAMS.usertoken         = request.query.tk ;
@@ -417,7 +446,9 @@ app
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /join") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     PARAMS.botname           = process.env.BOTNAME ;
     PARAMS.username          = request.body.un ;
     PARAMS.usertoken         = request.body.tk ;
@@ -425,8 +456,10 @@ app
         , toRender           = "join"
         ;
     switch (step) {
-      case 1:
+      case       1:
+      case     "1":
         toRender             = "join_st1" ;
+        PARAMS.SCRIPTS   [PARAMS.SCRIPTS.length] = "join_validate" ;
       break ;
     }
     console.log ("REQ : ", request.body) ;
@@ -441,12 +474,16 @@ app
   .route ("*")
   .get ((request, response) => {
     console.log(""+dateToday() + " GET 404") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     response.status (404).render ("err_404", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST 404") ;
-    PARAMS.currentPage       = {} ;
+    PARAMS.STYLES            = new Array () ;
+    PARAMS.SCRIPTS           = new Array () ;
+    PARAMS.currentPage       = new Object () ;
     response.status (404).render ("err_404", PARAMS) ;
   }) ;
 
@@ -1060,7 +1097,7 @@ client.on ("guildCreate", (guild) => {
   }
   if (canCreate)
     guild
-      .createRole ({name:'Headmaster', permissions:[]})
+      .createRole ({name:'Headmaster', permissions:new Array ()})
       .catch(error => console.log(error))
       ;
 }) ;
@@ -2057,7 +2094,7 @@ addCommand ("addrole", function (args) {
     }
   }
   guild
-    .createRole ({name:roleInput, permissions:[]})
+    .createRole ({name:roleInput, permissions:new Array ()})
     .then ( (roles) => {
       args.send ("Created role "+roleInput+".") ;
     })
