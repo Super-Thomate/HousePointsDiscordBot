@@ -408,7 +408,10 @@ app
   .get ((request, response) => {
     console.log(""+dateToday() + " GET /join") ;
     PARAMS.currentPage       = {} ;
-    
+    PARAMS.botname           = process.env.BOTNAME ;
+    PARAMS.username          = request.query.un ;
+    PARAMS.token             = request.query.tk ;
+    console.log ("query : ",request.query) ;
     response.render ("join", PARAMS) ;
   })
   .post ((request, response) => {
@@ -986,7 +989,7 @@ function createInvite (User) {
   message                   +=
               "Hello "+name+" !\n"+
               "You have been invited to join "+process.env.BOT_NAME+" interface at "+
-              "https://"+"/join?tk=1&un="+name+
+              "https://"+process.env.DN+"/join?tk=1&un="+name+
               ".\n"+
               "" ;
   return message ;
