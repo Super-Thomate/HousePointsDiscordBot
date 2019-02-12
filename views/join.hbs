@@ -1,15 +1,18 @@
 {{> header }}
 {{> nav }}
   <main>
-    <p>Hello {{username}} !<p>
-    <p>You have been invited to join {{botname}} web interface !</p>
-    <p>First of all, I need you to accept this invitation by clicking "Join" !</p>
-    <form method="POST" class="text-center">
-      <input type="hidden" name="username" value="{{username}}">
-      <input type="hidden" name="usertoken" value="{{usertoken}}">
-      <button class="btn btn-primary">
-        Join
-      </button>
-    </form>
+    <div class="text-center">
+      <p>Hello {{username}} !<p>
+      <p>You have been invited to join {{botname}} web interface !</p>
+      <p>First of all, I need you to accept this invitation by clicking "Join" !</p>
+      <form method="POST">
+        <input type="hidden" name="un" value="{{username}}">
+        <input type="hidden" name="tk" value="{{usertoken}}">
+        <input type="hidden" name="st" value="1">
+        <button class="btn btn-primary">
+          Join
+        </button>
+      </form>
+    </div>
   </main>
 {{> footer }}

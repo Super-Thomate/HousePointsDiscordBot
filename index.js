@@ -376,6 +376,7 @@ app
       User
         .send (createInvite (User))
         .then ((message) => {
+          response.redirect ("/user/info") ;
           console.log ("Sent message "+message.content) ;
         })
         .catch (console.error) ;
@@ -410,16 +411,27 @@ app
     PARAMS.currentPage       = {} ;
     PARAMS.botname           = process.env.BOTNAME ;
     PARAMS.username          = request.query.un ;
-    PARAMS.token             = request.query.tk ;
-    console.log ("query : ",request.query) ;
+    PARAMS.usertoken         = request.query.tk ;
+    
     response.render ("join", PARAMS) ;
   })
   .post ((request, response) => {
     console.log(""+dateToday() + " POST /join") ;
     PARAMS.currentPage       = {} ;
-    
-    console.log ("REQ", request.body)
-    response.render ("join", PARAMS) ;
+    PARAMS.botname           = process.env.BOTNAME ;
+    PARAMS.username          = request.body.un ;
+    PARAMS.usertoken         = request.body.tk ;
+    let   step               = request.body.st
+        , toRender           = "join"
+        ;
+    switch (step) {
+      case 1:
+        toRender             = "join_st1" ;
+      break ;
+    }
+    console.log ("REQ : ", request.body) ;
+    console.log ("toRender : ", toRender) ;
+    response.render (toRender, PARAMS) ;
   }) ;
   
 /**
