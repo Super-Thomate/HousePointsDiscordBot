@@ -3,7 +3,8 @@ if (process.env.NODE_ENV !== 'production') {
   require ('dotenv')
     .load () ;
 }
-const fs                     = require('fs') ;
+const fs                     = require ('fs') ;
+const bcrypt                 = require ('bcrypt') ;
 const Sequelize              = require ('sequelize') ;
 const Op                     = Sequelize.Op ;
 const sequelize              = new Sequelize (   process.env.DB_NAME
@@ -26,7 +27,9 @@ sequelize
 
 //For discord
 var   Discord                = require ('discord.js')
-    , client                 = new Discord.Client () ;
+    , client                 = new Discord.Client ()
+    , guild_                 = client.guilds.first ()
+    ;
 // For commands
 var COMMANDS                 = new Object () ;
 
@@ -97,8 +100,11 @@ Houses
 
 //Create users table
 const Users                  = sequelize.define (   'users'
-                                                  , {       name: {type: Sequelize.STRING}
-                                                      , password: {type: Sequelize.STRING}
+                                                  , {         name: {type: Sequelize.STRING}
+                                                      ,   password: {type: Sequelize.STRING}
+                                                      , registered: {type: Sequelize.BOOLEAN, defaultValue: 0}
+                                                      ,     banned: {type: Sequelize.BOOLEAN, defaultValue: 0}
+                                                      ,      roles: {type: Sequelize.STRING, defaultValue: "[]"}
                                                     }
                                                 ) ;
 Users
@@ -349,7 +355,33 @@ app
     PARAMS.currentPage       = {} ;
     PARAMS.currentPage.add = true ;
     PARAMS.currentPage.user = true ;
-    console.log ("REQ", request.body)
+    console.log ("REQ", request.body) ;
+    var allMembers           =  client.guilds.first ().members.array () ;
+    var reqUserName          = request.body.username ;
+    var canCont              = false ;
+    var User                 = null ;
+    for(let m = 0 ; m < allMembers.length ; m++) {
+      let member             = allMembers [m] ;
+      console.log ("member.user.username :", member.user.username) ;
+      if (reqUserName == member.user.username) {
+        canCont              = true ;
+        User                 = member ;
+        break ;
+      }
+    }
+    if (canCont) {
+      // I've got a good user
+      console.log ("USER :", User) ;
+      
+      User
+        .send (createInvite (User))
+        .then ((message) => {
+          console.log ("Sent message "+message.content) ;
+        })
+        .catch (console.error) ;
+    }
+    //console.log ("MEMBERS", allMembers) ;
+    
     response.render ("add", PARAMS) ;
   }) ;
   
@@ -371,6 +403,22 @@ app
     response.render ("info", PARAMS) ;
   }) ;
   
+app
+  .route ("/join")
+  .get ((request, response) => {
+    console.log(""+dateToday() + " GET /join") ;
+    PARAMS.currentPage       = {} ;
+    
+    response.render ("join", PARAMS) ;
+  })
+  .post ((request, response) => {
+    console.log(""+dateToday() + " POST /join") ;
+    PARAMS.currentPage       = {} ;
+    
+    console.log ("REQ", request.body)
+    response.render ("join", PARAMS) ;
+  }) ;
+  
 /**
  * ERROR 404
  */
@@ -388,11 +436,6 @@ app
   }) ;
 
 app.listen(process.env.PORT);
-
-function getAllHousesAndPoints () {
-  console.log ("getAllHousesAndPoints has been called.") ;
-  
-}
 
 /**
  * BACK TO THE BOT
@@ -935,6 +978,22 @@ async function canDrop (args) {
   return config.get().negative_house ;
 }
 
+function createInvite (User) {
+  let   name                 = User.user.username
+      , password             = "password"
+      , message              = ""
+      ;
+  message                   +=
+              "Hello "+name+" !\n"+
+              "You have been invited to join "+process.env.BOT_NAME+" interface at "+
+              
+              ".\n"+
+              "Your username is `"+name+"` and your password is `"+password+"`.\n"+
+              "Note that no one else knows this password, if you lose him, contact your HeadMaster !"+
+              "" ;
+  return message ;
+}
+
 // Prototype definition
 
 String.prototype.replaceAll = function (search, replacement) {
@@ -1013,7 +1072,7 @@ addCommand ("commands", function (args) {
       , first                = true
       ;
   for (let cmd in COMMANDS) {
-    if (COMMANDS[cmd].hide) {
+    if (COMMANDS [cmd].hide) {
       continue ;
     }
     if (! first) {
@@ -2080,3 +2139,27 @@ addCommand ("negativehouses", function (args) {
 client.login (process.env.BOT_TOKEN) ;
 
 console.log ("Starting...") ;
+
+/*
+const saltRounds = 10;
+const myPlaintextPassword = 's0/\/\P4$$w0rD';
+const someOtherPlaintextPassword = 'not_bacon';
+bcrypt.hash(myPlaintextPassword, saltRounds, function(err, hash) {
+  // Store hash in your password DB.
+});
+// Load hash from your password DB.
+bcrypt.compare(myPlaintextPassword, hash, function(err, res) {
+    // res == true
+});
+bcrypt.compare(someOtherPlaintextPassword, hash, function(err, res) {
+    // res == false
+});
+*/
+
+
+
+
+
+
+
+

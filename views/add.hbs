@@ -1,6 +1,14 @@
 {{> header }}
 {{> nav }}
   <main>
-   
+    <form method="POST" class="text-center">
+      <div class="form-group col-6 m-auto">
+        <input type="text" class="form-control" name="username" aria-describedby="usernameHelp" placeholder="Username" value="Thomate">
+        <small id="usernameHelp" class="form-text text-muted">Discord username</small>
+      </div>
+      <button class="btn btn-primary">
+        Add
+      </button>
+    </form>
   </main>
 {{> footer }}
