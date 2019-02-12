@@ -986,10 +986,8 @@ function createInvite (User) {
   message                   +=
               "Hello "+name+" !\n"+
               "You have been invited to join "+process.env.BOT_NAME+" interface at "+
-              
+              "https://"+"/join?tk=1&un="+name+
               ".\n"+
-              "Your username is `"+name+"` and your password is `"+password+"`.\n"+
-              "Note that no one else knows this password, if you lose him, contact your HeadMaster !"+
               "" ;
   return message ;
 }
