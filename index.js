@@ -1012,7 +1012,7 @@ async function housePointsFunc
 }
 
 async function aliasExists (alias) {
-  var canDo                  = "pasteque" ;
+  var canDo                  = true ;
   await Houses
     .findOne ({ where: { aliases: { [Op.like]:'%'+alias+'%' } } } )
     .then ( (house) => {
@@ -1426,7 +1426,7 @@ client.on ("ready", () => {
                                       " [DiscordModelHogwartsBot](https://github.com/MinusGix/DiscordModelHogwartsBot),"+
                                       " it was upgraded by rykanrar as"+
                                       " [HousePointsDiscordBot](https://github.com/rykanrar/HousePointsDiscordBot).\n"+
-                                      "The current version is a work of Super-Thomate build"+
+                                      "The current Sorting Hat is a work of Super-Thomate build"+
                                       " on top of the two previous version."+
                                       ""
                                   )
@@ -1482,7 +1482,7 @@ client.on ("ready", () => {
                                       " [DiscordModelHogwartsBot](https://github.com/MinusGix/DiscordModelHogwartsBot),"+
                                       " it was upgraded by rykanrar as"+
                                       " [HousePointsDiscordBot](https://github.com/rykanrar/HousePointsDiscordBot).\n"+
-                                      "The current version is a work of Super-Thomate build"+
+                                      "The current Sorting Hat is a work of Super-Thomate build"+
                                       " on top of the two previous version."+
                                       ""
                                   )
@@ -1512,19 +1512,19 @@ client.on ("ready", () => {
                             ) // 6
                   .addField (
                                 ""+process.env.PREFIX+"listpermissions"
-                              , "List all permissions for the bot."
+                              , "List all permissions for the Sorting Hat."
                             ) // 7
                   .addField (
                                 ""+process.env.PREFIX+"showpermissions"
-                              , "Show for every permissions the role sets for the bot."
+                              , "Show for every permissions the role sets for the Sorting Hat."
                             ) // 8
                   .addField (
                                 ""+process.env.PREFIX+"deletehouse <housename>"
-                              , "Delete the house <houseName> then reboot the bot."
+                              , "Delete the house <houseName> then reboot the Sorting Hat."
                             ) // 9
                   .addField (
                                 ""+process.env.PREFIX+"deletealias <housename> <alias>"
-                              , "Delete the aliases <alias> from <housename> then reboot the bot."
+                              , "Delete the aliases <alias> from <housename> then reboot the Sorting Hat."
                             ) // 10
                   .setFooter ("2/3")
                   ;
@@ -1538,13 +1538,13 @@ client.on ("ready", () => {
                                       " [DiscordModelHogwartsBot](https://github.com/MinusGix/DiscordModelHogwartsBot),"+
                                       " it was upgraded by rykanrar as"+
                                       " [HousePointsDiscordBot](https://github.com/rykanrar/HousePointsDiscordBot).\n"+
-                                      "The current version is a work of Super-Thomate build"+
+                                      "The current Sorting Hat is a work of Super-Thomate build"+
                                       " on top of the two previous version."+
                                       ""
                                   )
                   .addField (
                                 ""+process.env.PREFIX+"deletepermission <permission> <role>"
-                              , "Delete the permission <permission> for the role <role> then reboot the bot."
+                              , "Delete the permission <permission> for the role <role> then reboot the Sorting Hat."
                             ) // 1
                   .addField (
                                 ""+process.env.PREFIX+"reboot"
@@ -1560,7 +1560,7 @@ client.on ("ready", () => {
                             ) // 4
                   .addField (
                                 ""+process.env.PREFIX+"housebot? <question>"
-                              , "Sometimes it's good to let the bot decide, sometimes it's not."
+                              , "Sometimes it's good to let the Sorting Hat decide, sometimes it's not."
                             ) // 5
                   .addField (
                                 ""+process.env.PREFIX+"negativehouses <true|false>"
@@ -2191,7 +2191,6 @@ client.login (process.env.BOT_TOKEN) ;
 
 var   guild_                 = client.guilds
     ;
-console.log (">>>>>>>>>>>>>>>> client  : \n", client) ;
 console.log (">>>>>>>>>>>>>>>> guilds_ : \n", Array.from (guild_)) ;
 
 console.log ("Starting...") ;
