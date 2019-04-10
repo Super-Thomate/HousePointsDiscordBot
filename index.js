@@ -1784,7 +1784,7 @@ client.on ("ready", () => {
       return ;
     }
     Roles
-      .findOrCreate ({where: {permission:perm, role: role}})
+      .findOrCreate ({where: {permission:perm, role: role, server_id: args.guildId}})
       .spread ( (roles, created) => {
         if (created) {
            config_roles  [perm] [config_roles [perm].length] = role ;
@@ -1971,7 +1971,7 @@ client.on ("ready", () => {
       return ;
     }
     Roles
-      .destroy ({where: {permission:perm, role: role}})
+      .destroy ({where: {permission:perm, role: role, server_id: args.guildId}})
       .then ( (val) => {
         if (val) {
           args.send ("The role "+role+" does not have the permission "+perm+" anymore.") ;
