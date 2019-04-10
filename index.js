@@ -3,6 +3,8 @@ if (process.env.NODE_ENV !== 'production') {
   require ('dotenv')
     .load () ;
 }
+console.log ("TEST : ", process.env.TEST) ;
+console.log ("BOT_TOKEN : ", process.env.BOT_TOKEN) ;
 const fs                     = require ('fs') ;
 const bcrypt                 = require ('bcrypt') ;
 const Sequelize              = require ('sequelize') ;
