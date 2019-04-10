@@ -10,18 +10,18 @@
     "author": "MinusGix",
     "license": "ISC",
     "dependencies": {
-        "airbrake-js": "^1.4.3",
-        "bcrypt": "^3.0.4",
+        "airbrake-js": "^1.6.6",
+        "bcrypt": "^3.0.5",
         "body-parser": "^1.18.3",
-        "discord.js": "^11.3.2",
-        "dotenv": "^6.0.0",
-        "express": "^4.16.3",
-        "express-handlebars": "^3.0.0",
-        "handlebars": "^4.0.12",
-        "mysql2": "^1.6.1",
-        "pg": "^7.5.0",
+        "discord.js": "^11.4.2",
+        "dotenv": "^6.2.0",
+        "express": "^4.16.4",
+        "express-handlebars": "^3.0.2",
+        "handlebars": "^4.1.1",
+        "mysql2": "^1.6.5",
+        "pg": "^7.9.0",
         "pg-hstore": "^2.3.2",
-        "sequelize": "^4.38.0",
-        "sqlite3": "^4.0.2"
+        "sequelize": "^4.43.1",
+        "sqlite3": "^4.0.6"
     }
 }
