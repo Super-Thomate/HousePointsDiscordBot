@@ -1061,7 +1061,6 @@ String.prototype.capitalize = function () {
 // Go !
 client.on ("ready", () => {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
-  console.log ("<<<<<<<<<<<<<<<<<<<< guilds : \n", Array.from (guild_)) ;
 
   //   _____                                          _
   //  / ____|                                        | |
@@ -2188,10 +2187,6 @@ client.on ("guildDelete", (guild) => {
 
 //Logs into discord
 client.login (process.env.BOT_TOKEN) ;
-
-var   guild_                 = client.guilds
-    ;
-console.log (">>>>>>>>>>>>>>>> guilds_ : \n", Array.from (guild_)) ;
 
 console.log ("Starting...") ;
 
