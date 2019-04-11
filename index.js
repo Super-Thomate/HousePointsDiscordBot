@@ -25,7 +25,7 @@ sequelize
     console.error ('Unable to connect to the database:', err) ;
   }) ;
 
-const current_server_id      = process.even.GUILD_ID ;
+const current_server_id      = process.env.GUILD_ID ;
 
 //For discord
 var   Discord                = require ('discord.js')
