@@ -1674,6 +1674,9 @@ client.on ("ready", () => {
   });
 
   addCommand ("bendor", async function (args) {
+    if (process.env.BENDOR !== "bendor") {
+      return ;
+    }
    var house = "Firebendor"
        , args_points = 10
        , args_reason = "Bendor"
