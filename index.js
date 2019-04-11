@@ -3,8 +3,6 @@ if (process.env.NODE_ENV !== 'production') {
   require ('dotenv')
     .load () ;
 }
-console.log ("TEST : ", process.env.TEST) ;
-console.log ("BOT_TOKEN : ", process.env.BOT_TOKEN) ;
 const fs                     = require ('fs') ;
 const bcrypt                 = require ('bcrypt') ;
 const Sequelize              = require ('sequelize') ;
@@ -26,6 +24,8 @@ sequelize
   .catch ( (err) => {
     console.error ('Unable to connect to the database:', err) ;
   }) ;
+
+const current_server_id      = process.even.GUILD_ID ;
 
 //For discord
 var   Discord                = require ('discord.js')
@@ -141,7 +141,7 @@ Roles
 // Find allHouses
 var allHouses                = new Array () ;
 var completeHouses           = new Array () ;
-Houses.findAll ()
+Houses.findAll ({where: {server_id:current_server_id}})
   .then ( (houses) => {
     for (let n = 0 ; n < houses.length; n++) {
       var house                = houses [n] ;
@@ -194,7 +194,7 @@ for (let i = 0 ; i < perm_list.length ; i++) {
   config_roles       [perm_list [i]] = new Array () ;
 }
 Roles
-  .findAll ()
+  .findAll ({where: {server_id:current_server_id}})
   .then ( (roles) => {
     for (let i = 0 ; i < roles.length ; i ++) {
       let perm             = roles [i].get ().permission ;
@@ -250,7 +250,7 @@ app
     PARAMS.currentPage.index = true ;
     PARAMS.STYLES         [PARAMS.STYLES.length] = "table" ;
     Houses
-      .findAll ()
+      .findAll ({where: {server_id:current_server_id}})
       .then ((houses) => {
         for (let n = 0 ; n < houses.length ; n++) {
           let house          = houses [n] ;
@@ -670,6 +670,7 @@ async function postLeaderboard
                                                                       ]
                                                                     ]
                                                            , raw: true
+                                                           , server_id: current_server_id
                                                          }
                                                      ) ;
     // Create leaderboard text
@@ -1316,7 +1317,7 @@ client.on ("ready", () => {
     if (! params.length) {
       // Infos on all houses
       Houses
-        .findAll ()
+        .findAll ({where: {server_id:current_server_id}})
         .then ((houses) => {
           var embed            =
             new Discord
@@ -1851,7 +1852,7 @@ client.on ("ready", () => {
       allPermRoles       [perm_list [i]] = new Array () ;
     }
     await Roles
-      .findAll ()
+      .findAll ({where: {server_id:current_server_id}})
       .then ( (roles) => {
         for (let i = 0 ; i < roles.length ; i ++) {
           let perm             = roles[i].get().permission ;
