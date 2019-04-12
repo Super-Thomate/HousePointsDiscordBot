@@ -1562,7 +1562,8 @@ client.on ("ready", () => {
                             ) // 4
                   .addField (
                                 ""+process.env.PREFIX+"housebot? <question>"
-                              , "Sometimes it's good to let the Sorting Hat decide, sometimes it's not."
+                              , "Sometimes it's good to let the Sorting Hat decide, sometimes it's not.\n"+
+                                "Alias "+process.env.PREFIX+"hb? <question>"
                             ) // 5
                   .addField (
                                 ""+process.env.PREFIX+"negativehouses <true|false>"
