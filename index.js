@@ -2004,7 +2004,7 @@ client.on ("ready", () => {
     resetBot (args) ;
   }) ;
 
-  addCommand ("housebot?", function (args) {
+  addCommand (["housebot?","hb?"], function (args) {
     if (! args.params.length) {
       args.send ("What was the question again ?") ;
       return ;
