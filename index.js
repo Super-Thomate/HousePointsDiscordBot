@@ -670,7 +670,7 @@ async function postLeaderboard
                                                                       ]
                                                                     ]
                                                            , raw: true
-                                                           , server_id: current_server_id
+                                                           , where: {server_id: current_server_id}
                                                          }
                                                      ) ;
     // Create leaderboard text
