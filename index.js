@@ -43,6 +43,7 @@ const Configuration          = sequelize.define (   'configuration'
                                                       ,          max_points: {type: Sequelize.INTEGER, defaultValue: 100}
                                                       ,          min_points: {type: Sequelize.INTEGER, defaultValue: 1}
                                                       ,      negative_house: {type: Sequelize.BOOLEAN, defaultValue: 1}
+                                                      ,   mandatory_reasons: {type: Sequelize.BOOLEAN, defaultValue: 1}
                                                     }
                                                 ) ;
 Configuration
@@ -782,7 +783,9 @@ async function housePointsFunc
     targetUser               = undefined ; // Needs to be set if no user param but there is a mention in reason
   }
   args_reason                = args.params.slice (startAt).join (" ") ;
-  if (!args_reason) {
+  if (    (! args_reason)
+       && (server_config.mandatory_reasons == "true")
+     ) {
     args.send ('Please include a reason.') ;
     return ;
   }
@@ -2136,6 +2139,43 @@ client.on ("ready", () => {
           .then(() => {
             console.log ("Set negative_house to "+bool+".");
             args.send("Houses can "+(bool?"":"not ")+"have negative points value.");
+          })
+          .catch ()
+      })
+      .catch ( (err) => {
+        console.error ("FAIL findOne Configuration on displayleaderboard "+err) ;
+      })
+      ;
+  }) ;
+
+  addCommand ("mandatoryreasons", function (args) {
+     if (   ! checkPermissions(args, "doAllOfTheAbove")
+        ) {
+      args.send ('You do not have permission to do that.') ;
+      return ;
+    }
+    var params                 = args.params ;
+    if (! params.length) {
+      args.send ("Missing args. Use "+process.env.PREFIX+"mandatoryreasons <true|false>") ;
+      return ;
+    }
+    var bool                   = params [0] ;
+    if (    bool != "true"
+         && bool != "false"
+       ) {
+      args.send ("Wrong args. Use "+process.env.PREFIX+"mandatoryreasons <true|false>") ;
+      return ;
+    }
+    bool                       = bool == "true" ;
+    Configuration
+      .findOne( {where: {server_id: args.guildId}} )
+      .then ( (config) => {
+        config.mandatory_reasons       = bool ;
+        config
+          .save ()
+          .then(() => {
+            console.log ("Set mandatory_reasons to "+bool+".");
+            args.send("Reasons now "+(bool?"mandatory":"optional ")+".");
           })
           .catch ()
       })
