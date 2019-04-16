@@ -2074,7 +2074,7 @@ client.on ("ready", () => {
     }
     var roleInput              = args.params [0] ;
     Roles
-      .findOne ({where: {role:roleInput}})
+      .findOne ({where: {role:roleInput, server_id:args.guildId}})
       .then ( (LeRole) => {
         //console.log ("roles", LeRole) ;
         var member             = args.mentions.first();
@@ -2168,7 +2168,7 @@ client.on ("error", (err) => {
 client.on ("guildCreate", (guild) => {
   console.log (guild) ;
   Roles
-    .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster" } })
+    .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster", server_id:current_server_id } })
     .spread ((roles, created) => {
       console.log ("State "+(created?"created":"found")+".") ;
     })
