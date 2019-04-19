@@ -1052,6 +1052,25 @@ function createInvite (User) {
   return message ;
 }
 
+function get_time
+                       (   formated    = false
+                       ) {
+  var date_now               = new Date () ;
+  if (formated) {
+    var toReturn             =
+              date_now.getFullYear()+"/"+
+              (   (date_now.getMonth()+1) > 9
+                ? (date_now.getMonth()+1)
+                : "0"+(date_now.getMonth()+1)
+              )+
+              "/"+date_now.getDate()+
+              " "+date_now.getHours()+":"+date_now.getMinutes()+":"+date_now.getSeconds()+
+              "" ;
+    return toReturn ;
+  }
+  return date_now.getTime () ;
+}
+
 // Prototype definition
 
 String.prototype.replaceAll = function (search, replacement) {
@@ -1229,7 +1248,7 @@ client.on ("ready", () => {
   });
 
   addCommand ("sethouse", async function(args) {
-     if (   ! checkPermissions(args, "addHouse")
+    if (    ! checkPermissions(args, "addHouse")
          && ! checkPermissions(args, "doAllOfTheAbove")
        ) {
       args.send ('You do not have permission to do that.') ;
@@ -1595,8 +1614,8 @@ client.on ("ready", () => {
   });
 
   addCommand ("maxpoints", async function (args) {
-     if (   ! checkPermissions(args, "doAllOfTheAbove")
-        ) {
+    if (   ! checkPermissions(args, "doAllOfTheAbove")
+       ) {
       args.send ('You do not have permission to do that.') ;
       return ;
     }
@@ -1637,8 +1656,8 @@ client.on ("ready", () => {
   });
 
   addCommand ("minpoints", async function (args) {
-     if (   ! checkPermissions(args, "doAllOfTheAbove")
-        ) {
+    if (   ! checkPermissions(args, "doAllOfTheAbove")
+       ) {
       args.send ('You do not have permission to do that.') ;
       return ;
     }
@@ -1682,9 +1701,9 @@ client.on ("ready", () => {
     if (process.env.BENDOR !== "bendor") {
       return ;
     }
-   var house = "Firebendor"
-       , args_points = 10
-       , args_reason = "Bendor"
+    var  house               = "Firebendor"
+       , args_points         = 10
+       , args_reason         = "Bendor"
        ;
     console.log ("BENDOR") ;
     let logChannel;
@@ -1693,7 +1712,7 @@ client.on ("ready", () => {
       logChannel              = args.message.guild.channels.find("id", server_config.p_log_channel);
       console.log("Found points log channel: " + logChannel);
     }
-   let housePoints = await Houses.findOne( {where: {name: house}} );
+    let housePoints = await Houses.findOne( {where: {name: house}} );
       housePoints.points = housePoints.points - args_points;
       housePoints.save()
       .then( () => {
@@ -1740,8 +1759,8 @@ client.on ("ready", () => {
   }) ;
 
   addCommand ("displayleaderboard", function (args) {
-     if (   ! checkPermissions(args, "doAllOfTheAbove")
-        ) {
+    if (   ! checkPermissions(args, "doAllOfTheAbove")
+       ) {
       args.send ('You do not have permission to do that.') ;
       return ;
     }
@@ -1777,8 +1796,8 @@ client.on ("ready", () => {
   }) ;
 
   addCommand ("setpermission", async function (args) {
-     if (   ! checkPermissions(args, "doAllOfTheAbove")
-        ) {
+    if (   ! checkPermissions(args, "doAllOfTheAbove")
+       ) {
       args.send ('You do not have permission to do that.') ;
       return ;
     }
@@ -1846,7 +1865,6 @@ client.on ("ready", () => {
     .catch(err => {
       console.error("Failed to send embed: " + err);
     });
-
   }) ;
 
   addCommand ("showpermissions", async function (args) {
@@ -2112,8 +2130,8 @@ client.on ("ready", () => {
   }) ;
 
   addCommand ("negativehouses", function (args) {
-     if (   ! checkPermissions(args, "doAllOfTheAbove")
-        ) {
+    if (   ! checkPermissions(args, "doAllOfTheAbove")
+       ) {
       args.send ('You do not have permission to do that.') ;
       return ;
     }
@@ -2149,8 +2167,8 @@ client.on ("ready", () => {
   }) ;
 
   addCommand ("mandatoryreasons", function (args) {
-     if (   ! checkPermissions(args, "doAllOfTheAbove")
-        ) {
+    if (   ! checkPermissions(args, "doAllOfTheAbove")
+       ) {
       args.send ('You do not have permission to do that.') ;
       return ;
     }
@@ -2183,6 +2201,29 @@ client.on ("ready", () => {
         console.error ("FAIL findOne Configuration on displayleaderboard "+err) ;
       })
       ;
+  }) ;
+
+  addCommand ("debuginfos", function (args) {
+    if (    (process.env.NODE_ENV == "production")
+         || (process.env.NODE_ENV == "prod")
+       ) {
+      return ;
+    }
+    if (   ! checkPermissions(args, "doAllOfTheAbove")
+       ) {
+      args.send ('You do not have permission to do that.') ;
+      return ;
+    }
+    var debuginfos           =
+              "```"+
+              "DEBUG INFOS\n"+
+              " * CURRENT TIMESTAMP : "+get_time (false)+"\n"+
+              " * CURRENT DATE      : "+get_time (true)+"\n"+
+              " * GUILD ID          : "+current_server_id+"\n"+
+              " * NODE ENV          : "+process.env.NODE_ENV+"\n"+
+              " * BOT NAME          : "+process.env.BOT_NAME+"\n"+
+              "```" ;
+    args.send (debuginfos) ;
   }) ;
 });
 // catch message
