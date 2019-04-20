@@ -138,25 +138,8 @@ Roles
   .catch ( (err) => {
     console.error ("FAILED TABLE CREATE: roles ", err) ;
   }) ;
+var config_roles             = new Object () ;
 
-// Find allHouses
-var allHouses                = new Array () ;
-Houses.findAll ({where: {server_id:current_server_id}})
-  .then ( (houses) => {
-    for (let n = 0 ; n < houses.length; n++) {
-      var house                = houses [n] ;
-      let houseName            = house.get ({plain: true}).name.toLowerCase () ;
-      let aliases              = JSON.parse (house.get ().aliases) ;
-      allHouses     [allHouses.length] = houseName ;
-      console.log ("--------------------------------------------------------") ;
-      console.log (houseName, aliases) ;
-      console.log ("--------------------------------------------------------") ;
-      addCommand (aliases, housePointsFunc.bind (houseName)) ;
-    }
-  })
-  .catch((err) => {
-    console.error ("FAILED to load houses ", err)
-  }) ;
 // SOME CONSTANTS
 // Get all permission
 const perm_list              = new Array
@@ -188,26 +171,6 @@ const SET                    = new Array
                                            (   'set'
                                              , '='
                                            ) ;
-// Get all (perm,role)
-var config_roles             = new Object () ;
-for (let i = 0 ; i < perm_list.length ; i++) {
-  config_roles       [perm_list [i]] = new Array () ;
-}
-Roles
-  .findAll ({where: {server_id:current_server_id}})
-  .then ( (roles) => {
-    for (let i = 0 ; i < roles.length ; i ++) {
-      let perm             = roles [i].get ().permission ;
-      let role             = roles [i].get ().role ;
-      config_roles     [perm] [config_roles [perm].length] = role ;
-    }
-  })
-  .catch ( (err) => {
-    console.log ("FAIL findOrCreate Roles "+err) ;
-  })
-  ;
-
-//
 
 /**
  * HTTP SERVER => BOT MANAGER
@@ -722,6 +685,7 @@ async function postLeaderboard
 
 async function housePointsFunc
                                  (   args
+
                                  ) {
   console.log("Begin points manipulation commands");
   var   house                = this
@@ -1085,6 +1049,41 @@ String.prototype.capitalize = function () {
 // Go !
 client.on ("ready", () => {
   console.log("logged in serving in " + client.guilds.array().length + " servers");
+  // Find allHouses
+  var allHouses              = new Array () ;
+  Houses.findAll ({where: {server_id:current_server_id}})
+    .then ( (houses) => {
+      for (let n = 0 ; n < houses.length; n++) {
+        var house            = houses [n] ;
+        let houseName        = house.get ({plain: true}).name.toLowerCase () ;
+        let aliases          = JSON.parse (house.get ().aliases) ;
+        allHouses     [allHouses.length] = houseName ;
+        console.log ("--------------------------------------------------------") ;
+        console.log (houseName, aliases) ;
+        console.log ("--------------------------------------------------------") ;
+        addCommand (aliases, housePointsFunc.bind (houseName)) ;
+      }
+    })
+    .catch((err) => {
+      console.error ("FAILED to load houses ", err)
+    }) ;
+  // Get all (perm,role)
+  for (let i = 0 ; i < perm_list.length ; i++) {
+    config_roles       [perm_list [i]] = new Array () ;
+  }
+  Roles
+    .findAll ({where: {server_id:current_server_id}})
+    .then ( (roles) => {
+      for (let i = 0 ; i < roles.length ; i ++) {
+        let perm             = roles [i].get ().permission ;
+        let role             = roles [i].get ().role ;
+        config_roles     [perm] [config_roles [perm].length] = role ;
+      }
+    })
+    .catch ( (err) => {
+      console.log ("FAIL findOrCreate Roles "+err) ;
+    })
+    ;
 
   //   _____                                          _
   //  / ____|                                        | |
