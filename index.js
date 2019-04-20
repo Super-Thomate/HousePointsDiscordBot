@@ -141,7 +141,6 @@ Roles
 
 // Find allHouses
 var allHouses                = new Array () ;
-var completeHouses           = new Array () ;
 Houses.findAll ({where: {server_id:current_server_id}})
   .then ( (houses) => {
     for (let n = 0 ; n < houses.length; n++) {
@@ -256,7 +255,7 @@ app
         for (let n = 0 ; n < houses.length ; n++) {
           let house          = houses [n] ;
           allHousesAndPoints [allHousesAndPoints.length] =
-              {     name: house.get ({plain: true}).name.toLowerCase ()
+              {     name: house.get ({plain: true}).name
                 ,  color: house.get ().color.substring (2)
                 , points: house.get ().points
                 //,   icon: house.get ().icon
