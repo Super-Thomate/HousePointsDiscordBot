@@ -1590,6 +1590,10 @@ client.on ("ready", () => {
                                 ""+process.env.PREFIX+"negativehouses <true|false>"
                               , "Set if you want to allow or not the houses to have negative points."
                             ) // 6
+                  .addField (
+                                ""+process.env.PREFIX+"mandatoryreasons <true|false>"
+                              , "Set if you want the reason is mandatory or optional."
+                            ) // 7
                   .setFooter ("3/3")
                   ;
     let embed                  = "" ;
