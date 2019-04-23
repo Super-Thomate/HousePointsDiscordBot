@@ -633,7 +633,7 @@ async function postLeaderboard
                                                                       ]
                                                                     ]
                                                            , raw: true
-                                                           , where: {server_id: current_server_id}
+                                                           , where: {server_id: args.guildId}
                                                          }
                                                      ) ;
     // Create leaderboard text
@@ -1048,7 +1048,11 @@ String.prototype.capitalize = function () {
 // Discord events
 // Go !
 client.on ("ready", () => {
-  console.log("logged in serving in " + client.guilds.array().length + " servers");
+  console.log ("logged in serving in " + client.guilds.array().length + " servers") ;
+  console.log ("--------------------------------------------------------") ;
+  console.log ("guilds ", client.guilds.array()[0].id) ;
+  console.log ("guilds ", current_server_id) ;
+  console.log ("--------------------------------------------------------") ;
   // Find allHouses
   var allHouses              = new Array () ;
   Houses.findAll ({where: {server_id:current_server_id}})
@@ -1337,7 +1341,7 @@ client.on ("ready", () => {
     if (! params.length) {
       // Infos on all houses
       Houses
-        .findAll ({where: {server_id:current_server_id}})
+        .findAll ({where: {server_id:args.guildId}})
         .then ((houses) => {
           var embed            =
             new Discord
@@ -1872,7 +1876,7 @@ client.on ("ready", () => {
       allPermRoles       [perm_list [i]] = new Array () ;
     }
     await Roles
-      .findAll ({where: {server_id:current_server_id}})
+      .findAll ({where: {server_id:args.guildId}})
       .then ( (roles) => {
         for (let i = 0 ; i < roles.length ; i ++) {
           let perm             = roles[i].get().permission ;
@@ -2245,9 +2249,9 @@ client.on ("error", (err) => {
 }) ;
 //added to a server
 client.on ("guildCreate", (guild) => {
-  console.log (guild) ;
+  console.log (guild.id) ;
   Roles
-    .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster", server_id:current_server_id } })
+    .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster", server_id:guild.id } })
     .spread ((roles, created) => {
       console.log ("State "+(created?"created":"found")+".") ;
     })
@@ -2268,7 +2272,6 @@ client.on ("guildCreate", (guild) => {
 //removed from a server
 client.on ("guildDelete", (guild) => {
     console.log("NOOOOOOOOOOOOOOOOOOO !",) ;
-    //remove from guildArray
 }) ;
 
 //Logs into discord
