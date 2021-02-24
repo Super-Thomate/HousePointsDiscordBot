@@ -490,8 +490,12 @@ app
     PARAMS.currentPage       = new Object () ;
     response.status (404).render ("err_404", PARAMS) ;
   }) ;
+try {
+  app.listen(process.env.PORT);
+} catch (err) {
+  console.error (err);
+}
 
-app.listen(process.env.PORT);
 
 /**
  * BACK TO THE BOT
