@@ -1089,7 +1089,7 @@ String.prototype.capitalize = function () {
 // Discord events
 // Go !
 client.on ("ready", () => {
-  console.log("logged in serving in " + client.guilds.array().length + " servers");
+  //console.log("logged in serving in " + client.guilds.array().length + " servers");
 
   //   _____                                          _
   //  / ____|                                        | |
