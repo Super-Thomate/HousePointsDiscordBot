@@ -1,7 +1,8 @@
 //Load env vars
 if (process.env.NODE_ENV !== 'production') {
   require ('dotenv')
-    .load () ;
+    .config() ;
+    // .load () ;
 }
 const fs                     = require ('fs') ;
 const bcrypt                 = require ('bcrypt') ;
