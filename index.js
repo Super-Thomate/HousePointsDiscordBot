@@ -578,7 +578,6 @@ function runCommand
                                  ,          text: processed_content
                                  ,        params: processed_content.split (' ').slice (1)
                                  ,          send: message.channel.send.bind (message.channel)
-                                 ,      sendFile: message.channel.sendFile.bind (message.channel)
                                  ,          user: message.author
                                  ,          nick: message.author.nickanme
                                  ,      username: message.author.username
@@ -594,9 +593,7 @@ function runCommand
                                  ,     messageId: message.id
                                  ,       guildId: message.guild.id
                                  ,            dm: message.author.send.bind (message.author)
-                                 ,        dmCode: message.author.sendCode.bind (message.author)
                                  ,       dmEmbed: message.author.send.bind (message.author)
-                                 ,        dmFile: message.author.sendFile.bind (message.author)
                                  ,     dmMessage: message.author.send.bind (message.author)
                                  ,         guild: message.guild
                                } ;
@@ -610,9 +607,13 @@ function checkPermissions
                          , permission
                        ) {
   var   user                 = args.message.member
-      , roles                = user.roles
+      , roles                = user.roles.cache
       , targetPermission     = ""
       ;
+  if (user.hasPermission("ADMINISTRATOR")) {
+    console.log ("ADMINISTRATOR !") ;
+    return true ;
+  }
   for (var i = 0 ; i < perm_list.length ; i++) {
     if (permission == perm_list [i]) {
       targetPermission       = perm_list [i] ;
@@ -662,7 +663,7 @@ async function postLeaderboard
     // Set up embed
     var text                 = '' ;
     var embed                =
-      new Discord.RichEmbed ()
+      new Discord.MessageEmbed ()
         .setTitle ("Points Leaderboard")
         .setColor (0xFFFFFF)
         .setFooter ("Updated at")
@@ -830,7 +831,7 @@ async function housePointsFunc
     }
 
     var text = '';
-    var embed = new Discord.RichEmbed()
+    var embed = new Discord.MessageEmbed()
       .setFooter(`Rewarded by: ${args.displayName}`, 'https://i.imgur.com/Ur1VL2r.png');
 
     var description = "";
@@ -899,7 +900,7 @@ async function housePointsFunc
     });
 
     var text = '';
-    var embed = new Discord.RichEmbed()
+    var embed = new Discord.MessageEmbed()
       .setFooter(`Taken by: ${args.displayName}`, 'https://i.imgur.com/jM0Myc5.png');
 
     var description = "";
@@ -966,7 +967,7 @@ async function housePointsFunc
       })
       ;
 
-    var embed = new Discord.RichEmbed()
+    var embed = new Discord.MessageEmbed()
       .setFooter(`Set by: ${args.displayName}`, 'https://i.imgur.com/Ur1VL2r.png');
 
     var description = "";
@@ -1089,7 +1090,7 @@ String.prototype.capitalize = function () {
 // Discord events
 // Go !
 client.on ("ready", () => {
-  //console.log("logged in serving in " + client.guilds.array().length + " servers");
+  console.log("logged in serving in " + client.guilds.cache.length + " servers");
 
   //   _____                                          _
   //  / ____|                                        | |
@@ -1130,7 +1131,8 @@ client.on ("ready", () => {
     for (var i = 0; i < allHouses.length; i++) {
       Houses
         .findOrCreate ( {where: {name: allHouses [i], server_id: args.guildId}} )
-        .spread ((house, created) => {
+        .then ((result) => {
+          var house = result [0], created  = result [1] ;
           console.log ("FINDORCREATE house_points: " + house.get({plain: true}).name)
           args.send ("Created house entry " + house.get({plain: true}).name + " in points table.");
         })
@@ -1149,7 +1151,8 @@ client.on ("ready", () => {
 
     Configuration
     .findOrCreate ({where: {server_id: args.guildId}})
-    .spread ((server_configs, created) => {
+    .then ((result) => {
+      var server_configshouse = result [0], created  = result [1] ;
       var old_log_channel      = server_configs.p_log_channel;
       server_configs.p_log_channel       = args.channelId ;
       server_configs
@@ -1230,7 +1233,8 @@ client.on ("ready", () => {
                               }
                      }
                     )
-      .spread ( (house, created) => {
+      .then ( (result) => {
+        var house = result [0], created  = result [1] ;
         if (created) {
           house.aliasescolor   = JSON.stringify ([house.get({plain: true}).name]) ;
           house.save () ;
@@ -1347,8 +1351,8 @@ client.on ("ready", () => {
         .then ((houses) => {
           var embed            =
             new Discord
-                  .RichEmbed ()
-                  .setColor (0x2EB050)
+                  .MessageEmbed ()
+                  .setColor ("LIME")
                 ;
           var foundHouses      = false ;
           for (let n = 0 ; n < houses.length; n++) {
@@ -1392,8 +1396,8 @@ client.on ("ready", () => {
       var houseName                 = params [0].capitalize () ;
       var embed                     =
         new Discord
-             .RichEmbed ()
-             .setColor (0x2EB050)
+             .MessageEmbed ()
+             .setColor ("LIME")
            ;
       Houses
         .findOne ({where:{name:houseName.toLowerCase()}})
@@ -1446,8 +1450,8 @@ client.on ("ready", () => {
     }
     let embed1                 =
             new Discord
-                  .RichEmbed ()
-                  .setColor (0x2EB050)
+                  .MessageEmbed ()
+                  .setColor ("LIME")
                   .setTitle ("Help for "+process.env.BOT_NAME)
                   .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
                                       "Initially created by MinusGix as"+
@@ -1502,8 +1506,8 @@ client.on ("ready", () => {
                   ;
     let embed2                 =
             new Discord
-                  .RichEmbed ()
-                  .setColor (0x2EB050)
+                  .MessageEmbed ()
+                  .setColor ("LIME")
                   .setTitle ("Help for "+process.env.BOT_NAME)
                   .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
                                       "Initially created by MinusGix as"+
@@ -1558,8 +1562,8 @@ client.on ("ready", () => {
                   ;
     let embed3                 =
             new Discord
-                  .RichEmbed ()
-                  .setColor (0x2EB050)
+                  .MessageEmbed ()
+                  .setColor ("LIME")
                   .setTitle ("Help for "+process.env.BOT_NAME)
                   .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
                                       "Initially created by MinusGix as"+
@@ -1705,6 +1709,7 @@ client.on ("ready", () => {
       });
   });
 
+  /*
   addCommand ("bendor", async function (args) {
     if (process.env.BENDOR !== "bendor") {
       return ;
@@ -1731,7 +1736,7 @@ client.on ("ready", () => {
         return;
       });
     var text = '';
-      var embed = new Discord.RichEmbed()
+      var embed = new Discord.MessageEmbed()
         .setFooter(`Lost by: ${args.displayName}`, 'https://i.imgur.com/jM0Myc5.png');
 
       var description = "";
@@ -1765,7 +1770,8 @@ client.on ("ready", () => {
       console.error("Failed to send embed: " + err);
       });
   }) ;
-
+  */
+  
   addCommand ("displayleaderboard", function (args) {
     if (   ! checkPermissions(args, "doAllOfTheAbove")
        ) {
@@ -1811,7 +1817,7 @@ client.on ("ready", () => {
     }
     var params                 = args.params ;
     if (! params.length) {
-      args.send ("Missing args. Use "+process.env.PREFIX+"addRole <permission> <role>") ;
+      args.send ("Missing args. Use "+process.env.PREFIX+"setpermission <permission> <role>") ;
       return ;
     }
     var perm                   = params [0] ;
@@ -1822,7 +1828,8 @@ client.on ("ready", () => {
     }
     Roles
       .findOrCreate ({where: {permission:perm, role: role, server_id: args.guildId}})
-      .spread ( (roles, created) => {
+      .then ( (result) => {
+        var roles = result [0], created  = result [1] ;
         if (created) {
            config_roles  [perm] [config_roles [perm].length] = role ;
           args.send ("Created permission "+perm+" for "+role+".") ;
@@ -1841,8 +1848,8 @@ client.on ("ready", () => {
   addCommand ("listpermissions", function (args) {
     var embed                  =
       new Discord
-            .RichEmbed ()
-            .setColor (0x2EB050)
+            .MessageEmbed ()
+            .setColor ("LIME")
             .setTitle ("List all permissions for "+process.env.BOT_NAME)
             //.setDescription ()
             .addField (
@@ -1896,8 +1903,8 @@ client.on ("ready", () => {
       ;
     var embed                  =
       new Discord
-            .RichEmbed ()
-            .setColor (0x2EB050)
+            .MessageEmbed ()
+            .setColor ("LIME")
             .setTitle ("Show for every permissions the role sets for "+process.env.BOT_NAME)
             //.setDescription ()
            ;
@@ -2076,14 +2083,18 @@ client.on ("ready", () => {
     }
     var guild                  = args.guild ;
     var roleInput              = args.params [0] ;
-    for (var [key, value] of guild.roles) {
+    for (var [key, value] of guild.roles.cache) {
       if (value.name == roleInput) {
         args.send ("Role "+roleInput+" already exists.") ;
         return null ;
       }
     }
     guild
-      .createRole ({name:roleInput, permissions:new Array ()})
+      .roles
+      .create ( {   data:{name:roleInput, permissions:new Array ()}
+                  , reason : "Invoked addrole"
+                }
+             )
       .then ( (roles) => {
         args.send ("Created role "+roleInput+".") ;
       })
@@ -2111,7 +2122,7 @@ client.on ("ready", () => {
         if (member !== undefined) {
           memberMention        = "<@!" + member.id + ">";
           //console.log ("In args : \n", args) ;
-          var role             = args.guild.roles.find("name", roleInput) ;
+          var role             = args.guild.roles.cache.find("name", roleInput) ;
           member
             .addRole (role)
             .then ( () => {
@@ -2134,6 +2145,29 @@ client.on ("ready", () => {
       })
       .catch ( (err) => {
         console.log ("FAIL findOne Roles where role: "+roleInput+" => ", err) ;
+      }) ;
+  }) ;
+
+  addCommand ("listrole", function (args) {
+
+    Roles
+      .findAll ()
+      .then ( (roles) => {
+        console.log ("roles", roles) ;
+        if (roles.length) {
+          var to_send        = "" ;
+          for (let i = 0 ; i < roles.length ; i ++) {
+            let perm         = roles [i].get ().permission ;
+            let role         = roles [i].get ().role ;
+            to_send         += "**"+role+"** "+perm+"\n" ;
+          }
+          args.send (to_send) ;
+        } else {
+          args.send ("No role on this guild !") ;
+        }
+      })
+      .catch ( (err) => {
+        console.log ("FAIL findAll Roles => ", err) ;
       }) ;
   }) ;
 
@@ -2258,12 +2292,13 @@ client.on ("guildCreate", (guild) => {
   console.log (guild) ;
   Roles
     .findOrCreate ({where: { permission:"doAllOfTheAbove" , role:"Headmaster", server_id:current_server_id } })
-    .spread ((roles, created) => {
+    .then ((result) => {
+      var roles = result [0], created  = result [1] ;
       console.log ("State "+(created?"created":"found")+".") ;
     })
     ;
   var canCreate              = true ;
-  for (var [key, value] of guild.roles) {
+  for (var [key, value] of guild.roles.cache) {
     if (value.name == "Headmaster") {
       canCreate              = false ;
       break ;
@@ -2271,7 +2306,11 @@ client.on ("guildCreate", (guild) => {
   }
   if (canCreate)
     guild
-      .createRole ({name:'Headmaster', permissions:new Array ()})
+      .roles
+      .create ( {   data:{name:'Headmaster', permissions:new Array ()}
+                  , reason : "Invoked addrole"
+                }
+             )
       .catch(error => console.log(error))
       ;
 }) ;
