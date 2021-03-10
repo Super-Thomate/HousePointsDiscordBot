@@ -152,6 +152,7 @@ Houses.findAll ({where: {server_id:current_server_id}})
       console.log ("--------------------------------------------------------") ;
       console.log (houseName, aliases) ;
       console.log ("--------------------------------------------------------") ;
+      addCommand (houseName, housePointsFunc.bind (houseName)) ;
       addCommand (aliases, housePointsFunc.bind (houseName)) ;
     }
   })
@@ -213,6 +214,7 @@ Roles
 /**
  * HTTP SERVER => BOT MANAGER
  */
+/*
 const http                   = require ('http') ;
 const express                = require ('express') ;
 const path                   = require ('path') ;
@@ -471,10 +473,11 @@ app
     console.log ("toRender : ", toRender) ;
     response.render (toRender, PARAMS) ;
   }) ;
-
+*/
 /**
  * ERROR 404
  */
+/*
 app
   .route ("*")
   .get ((request, response) => {
@@ -496,7 +499,7 @@ try {
 } catch (err) {
   console.error (err);
 }
-
+*/
 
 /**
  * BACK TO THE BOT
@@ -565,7 +568,7 @@ function addCommand
 function runCommand
                        (   message
                        ) {
-  console.log ("Verified bot command") ;
+  console.log ("Verification bot command") ;
   var firstArg               = message.content.split (' ') [0] ;
   if (   (   firstArg.startsWith (process.env.PREFIX)
           && COMMANDS.hasOwnProperty ('cmd_'+firstArg.replace (process.env.PREFIX, ''))
@@ -647,14 +650,18 @@ async function postLeaderboard
                                  ) {
   // Get log channel
   let logChannel             = false ;
-  let server_config          = await Configuration.findOne (   {
+  let result            = await Configuration.findOrCreate (   {
                                                                    where: {server_id: args.guildId}
                                                                }
                                                            ) ;
+  let server_config = result [0] ;
   if (server_config.p_log_channel) {
-    logChannel              = args.message.guild.channels.find (   "id"
-                                                                 , server_config.p_log_channel
-                                                               ) ;
+    logChannel              = args
+                              .message
+                              .guild
+                              .channels
+                              .cache
+                              .find ((channel) => channel.id ==  server_config.p_log_channel) ;
     console.log ("Found points log channel: "+logChannel) ;
   }
   if (    logChannel
@@ -665,7 +672,7 @@ async function postLeaderboard
     var embed                =
       new Discord.MessageEmbed ()
         .setTitle ("Points Leaderboard")
-        .setColor (0xFFFFFF)
+        .setColor ("AQUA")
         .setFooter ("Updated at")
         .setTimestamp (new Date ().toISOString ()) ;
 
@@ -700,7 +707,8 @@ async function postLeaderboard
          if (oldPostId) {
            console.log ("Found points old leaderboard post: "+oldPostId) ;
            logChannel
-             .fetchMessage (oldPostId)
+             .messages
+             .fetch (oldPostId)
              .then (message => {
                if (message) {
                  message.delete () ;
@@ -746,7 +754,8 @@ async function housePointsFunc
     args.send('You do not have permission to do that.') ;
     return;
   }
-  var server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
+  var result        = await Configuration.findOrCreate( {where: {server_id: args.guildId}} ) ;
+  var server_config = result [0] ;
   // Save first param as command name
   var firstParam             = args.params [0] ;
   if (firstParam !== undefined) {
@@ -800,7 +809,12 @@ async function housePointsFunc
 
   // Get log channel if there is one
   if (server_config.p_log_channel) {
-    logChannel               = args.message.guild.channels.find ("id", server_config.p_log_channel) ;
+    logChannel               = args
+                              .message
+                              .guild
+                              .channels
+                              .cache
+                              .find ((channel) => channel.id ==  server_config.p_log_channel) ;
     console.log ("Found points log channel: "+logChannel) ;
   }
 
@@ -1018,8 +1032,7 @@ async function housePointsFunc
     ''
     ) ;
   }
-  //allHousesAndPoints       =
-  getAllHousesAndPoints () ;
+  //allHousesAndPoints       = getAllHousesAndPoints () ;
 }
 
 async function aliasExists (alias) {
@@ -1039,8 +1052,8 @@ async function aliasExists (alias) {
 }
 
 async function canDrop (args) {
-  let config                 = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
-  return config.get().negative_house ;
+  let config                 = await Configuration.findOrCreate( {where: {server_id: args.guildId}} ) ;
+  return config [0].get().negative_house ;
 }
 
 function createInvite (User) {
@@ -1148,11 +1161,10 @@ client.on ("ready", () => {
       args.send('You do not have permission to do that.');
       return ;
     }
-
     Configuration
     .findOrCreate ({where: {server_id: args.guildId}})
     .then ((result) => {
-      var server_configshouse = result [0], created  = result [1] ;
+      var server_configs       = result [0], created  = result [1] ;
       var old_log_channel      = server_configs.p_log_channel;
       server_configs.p_log_channel       = args.channelId ;
       server_configs
@@ -1196,9 +1208,10 @@ client.on ("ready", () => {
   });
 
   addCommand ('points', async function(args) {
-    var server_config          = await Configuration.findOne( {where: {server_id: args.guildId}} ) ;
-      if (server_config.leaderboard_display)
-        await postLeaderboard(args);
+    var result          = await Configuration.findOrCreate( {where: {server_id: args.guildId}} ) ;
+    var server_config   = result [0] ;
+    if (server_config.leaderboard_display)
+      await postLeaderboard(args);
     args.message.delete () ;
   });
 
@@ -1298,48 +1311,48 @@ client.on ("ready", () => {
     }
     // add in Houses
     Houses
-            .findOne ({where: {name: HouseName.toLowerCase() } })
-            .then ( (house) => {
-              switch (attribute) {
-                case "alias" :
-                  var oldAliases         = JSON.parse (house.get().aliases) ;
-                  for (let i = 0 ; i < newAliases.length ; i++) {
-                    if (    ! oldAliases.includes (newAliases [i])
-                       )
-                      oldAliases [oldAliases.length] = newAliases [i];
-                  }
-                  house.aliases          = JSON.stringify (oldAliases) ;
-                  addCommand (newAliases, housePointsFunc.bind (HouseName.toLowerCase())) ;
-                break ;
-                case "color" :
-                  const rex    = /[0-9a-f]{6}/i ;
-                  if (rex.test (value)) {
-                    house.color          = "0x"+value ;
-                    args.send ({embed: {
-                        color: parseInt (parseInt (value, 16), 10)
-                      , description: value.toUpperCase()
-                    }})
-                  }
-                  else {
-                    args.send ("Invalid value for color "+value+".");
-                    args.send ("Use hexadecimal value (e.g. 00ff00)");
-                    return ;
-                  }
-                break ;
-                case "icon" :
-                  house.icon   = value ;
-                break ;
-              }
-               house.save()
-                 .then(() => {
-                   console.log ("Update house entry " + house.get({plain: true}).name + " in houses table.");
-                   args.send("Update house entry " + house.get({plain: true}).name + " in houses table.");
-                 });
-            })
-            .catch(err => {
-              args.send("Failed to update "+HouseName+" entry in houses table.");
-              console.error("FAILED to findOne house entry in houses " + err)
-            });
+      .findOne ({where: {name: HouseName.toLowerCase() } })
+      .then ( (house) => {
+        switch (attribute) {
+          case "alias" :
+            var oldAliases         = JSON.parse (house.get().aliases) ;
+            for (let i = 0 ; i < newAliases.length ; i++) {
+              if (    ! oldAliases.includes (newAliases [i])
+                 )
+                oldAliases [oldAliases.length] = newAliases [i];
+            }
+            house.aliases          = JSON.stringify (oldAliases) ;
+            addCommand (newAliases, housePointsFunc.bind (HouseName.toLowerCase())) ;
+          break ;
+          case "color" :
+            const rex    = /[0-9a-f]{6}/i ;
+            if (rex.test (value)) {
+              house.color          = "0x"+value ;
+              args.send ({embed: {
+                  color: parseInt (parseInt (value, 16), 10)
+                , description: value.toUpperCase()
+              }})
+            }
+            else {
+              args.send ("Invalid value for color "+value+".");
+              args.send ("Use hexadecimal value (e.g. 00ff00)");
+              return ;
+            }
+          break ;
+          case "icon" :
+            house.icon   = value ;
+          break ;
+        }
+         house.save()
+           .then(() => {
+             console.log ("Update house entry " + house.get({plain: true}).name + " in houses table.");
+             args.send("Update house entry " + house.get({plain: true}).name + " in houses table.");
+           });
+      })
+      .catch(err => {
+        args.send("Failed to update "+HouseName+" entry in houses table.");
+        console.error("FAILED to findOne house entry in houses " + err)
+      });
   });
 
   addCommand ("infos", async function (args) {
@@ -1352,7 +1365,7 @@ client.on ("ready", () => {
           var embed            =
             new Discord
                   .MessageEmbed ()
-                  .setColor ("LIME")
+                  .setColor ("GREEN")
                 ;
           var foundHouses      = false ;
           for (let n = 0 ; n < houses.length; n++) {
@@ -1397,7 +1410,7 @@ client.on ("ready", () => {
       var embed                     =
         new Discord
              .MessageEmbed ()
-             .setColor ("LIME")
+             .setColor ("GREEN")
            ;
       Houses
         .findOne ({where:{name:houseName.toLowerCase()}})
@@ -1451,7 +1464,7 @@ client.on ("ready", () => {
     let embed1                 =
             new Discord
                   .MessageEmbed ()
-                  .setColor ("LIME")
+                  .setColor ("GREEN")
                   .setTitle ("Help for "+process.env.BOT_NAME)
                   .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
                                       "Initially created by MinusGix as"+
@@ -1507,7 +1520,7 @@ client.on ("ready", () => {
     let embed2                 =
             new Discord
                   .MessageEmbed ()
-                  .setColor ("LIME")
+                  .setColor ("GREEN")
                   .setTitle ("Help for "+process.env.BOT_NAME)
                   .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
                                       "Initially created by MinusGix as"+
@@ -1563,7 +1576,7 @@ client.on ("ready", () => {
     let embed3                 =
             new Discord
                   .MessageEmbed ()
-                  .setColor ("LIME")
+                  .setColor ("GREEN")
                   .setTitle ("Help for "+process.env.BOT_NAME)
                   .setDescription (   "This is the help page for "+process.env.BOT_NAME+".\n"+
                                       "Initially created by MinusGix as"+
@@ -1647,9 +1660,10 @@ client.on ("ready", () => {
     }
     // add in Configuration
     Configuration
-      .findOne ({where: {server_id: args.guildId} })
-      .then ( (config) => {
-        let min                = config.get().min_points ;
+      .findOrCreate ({where: {server_id: args.guildId} })
+      .then ( (result) => {
+        var config           = result [0] ;
+        let min              = config.get().min_points ;
         if (min > points) {
           args.send('Point values must be greater or equal than '+min+'.') ;
           return ;
@@ -1689,9 +1703,10 @@ client.on ("ready", () => {
     }
     // add in Configuration
     Configuration
-      .findOne ({where: {server_id: args.guildId} })
-      .then ( (config) => {
-        let max                = config.get().max_points ;
+      .findOrCreate ({where: {server_id: args.guildId} })
+      .then ( (result) => {
+        var config           = result [0] ;
+        let max              = config.get().max_points ;
         if (max < points) {
           args.send('Point values must be lesser or equal than '+max+'.') ;
           return ;
@@ -1792,8 +1807,10 @@ client.on ("ready", () => {
     }
     bool                       = bool == "true" ;
     Configuration
-      .findOne( {where: {server_id: args.guildId}} )
-      .then ( (config) => {
+      .findOrCreate( {where: {server_id: args.guildId}} )
+      .then ( (result) => {
+        var config           = result [0] ;
+        console.log (config) ;
         config.leaderboard_display       = bool ;
         config
           .save ()
@@ -1849,7 +1866,7 @@ client.on ("ready", () => {
     var embed                  =
       new Discord
             .MessageEmbed ()
-            .setColor ("LIME")
+            .setColor ("GREEN")
             .setTitle ("List all permissions for "+process.env.BOT_NAME)
             //.setDescription ()
             .addField (
@@ -1904,7 +1921,7 @@ client.on ("ready", () => {
     var embed                  =
       new Discord
             .MessageEmbed ()
-            .setColor ("LIME")
+            .setColor ("GREEN")
             .setTitle ("Show for every permissions the role sets for "+process.env.BOT_NAME)
             //.setDescription ()
            ;
@@ -2191,8 +2208,9 @@ client.on ("ready", () => {
     }
     bool                       = bool == "true" ;
     Configuration
-      .findOne( {where: {server_id: args.guildId}} )
-      .then ( (config) => {
+      .findOrCreate( {where: {server_id: args.guildId}} )
+      .then ( (result) => {
+        var config = result [0] ;
         config.negative_house  = bool ;
         config
           .save ()
@@ -2228,8 +2246,9 @@ client.on ("ready", () => {
     }
     bool                       = bool == "true" ;
     Configuration
-      .findOne( {where: {server_id: args.guildId}} )
-      .then ( (config) => {
+      .findOrCreate( {where: {server_id: args.guildId}} )
+      .then ( (result) => {
+        var config = result [0] ;
         config.mandatory_reasons       = bool ;
         config
           .save ()
